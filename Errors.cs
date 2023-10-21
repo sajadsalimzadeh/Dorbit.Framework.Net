@@ -1,0 +1,36 @@
+﻿namespace Dorbit
+{
+    internal enum Errors
+    {
+        CaptchaSizeIsTooLarg,
+        CaptchaNotCorrect,
+        CaptchaNotSet,
+        TooMuchRequest,
+        UsernameOrPasswordInvalid,
+        UserIsDeactive,
+        InvalidMaxSizeUploadFile,
+        PasswordNotCorrect,
+        UsernameIsExist,
+        UsernameIsInValid,
+        VerificationCodeNotSend,
+        VerificationCodeTimeExpired,
+        CellphoneIsVerified,
+        UserIsNotActive,
+        ToManyRequest,
+        VerificationCodeIsInCorrect,
+        UsernameNotFound,
+        UserNotFound,
+        PolicyNotFound,
+        SendSmsFailed,
+        SendReceiverNumberIsInBlackList,
+        ResetPasswordCodeExpired,
+        ResetPasswordCodeInvalid,
+        ServerError,
+        AccessDenied,
+        UnAuthorized,
+        EntityIsReadonly,
+        EntityIsUnDeletable,
+        CanNotChangeVerifiedFile,
+        TransactionRollback
+    }
+}

@@ -1,0 +1,13 @@
+﻿namespace Dorbit.Commands.Abstractions;
+
+public interface ICommandContext
+{
+    Dictionary<string, object> Arguments { get; set; }
+
+    void Error(string message);
+    void Success(string message);
+    void Log(string message);
+
+    object GetArg(string name);
+    string GetArgAsString(string name);
+}
