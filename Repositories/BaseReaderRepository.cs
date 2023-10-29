@@ -3,8 +3,6 @@ using Dorbit.Entities.Abstractions;
 using Dorbit.Models;
 using Dorbit.Repositories.Abstractions;
 using Dorbit.Utils.Queries;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Repositories
 {
@@ -34,33 +32,9 @@ namespace Dorbit.Repositories
             return Set().ToList();
         }
 
-        public IEnumerable<T> GetAllWithCache(TimeSpan? timeSpan = null)
-        {
-            var memoryCache = ServiceProvider.GetService<IMemoryCache>();
-            var key = $"{GetType().Name}-{typeof(T).Name}-{nameof(GetAllWithCache)}";
-            if (!memoryCache.TryGetValue<IEnumerable<T>>(key, out var items))
-            {
-                items = GetAll();
-                memoryCache.Set(key, items, timeSpan ?? TimeSpan.FromMinutes(1));
-            }
-            return items;
-        }
-
-        public virtual T GetById(long id)
+        public virtual T GetById(Guid id)
         {
             return Set().FirstOrDefault(x => x.Id == id);
-        }
-
-        public T GetByIdWithCache(long id, TimeSpan? timeSpan = null)
-        {
-            var memoryCache = ServiceProvider.GetService<IMemoryCache>();
-            var key = $"{GetType().Name}-{typeof(T).Name}-{nameof(GetByIdWithCache)}";
-            if (!memoryCache.TryGetValue<T>(key, out var item))
-            {
-                item = GetById(id);
-                memoryCache.Set(key, item, timeSpan ?? TimeSpan.FromMinutes(1));
-            }
-            return item;
         }
 
         public virtual T First()

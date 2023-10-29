@@ -7,8 +7,8 @@ namespace Dorbit.Repositories.Abstractions
         T Insert(T model);
         T Insert<TR>(TR dto);
         T Update(T model);
-        T Update<TR>(long id, TR dto);
-        T Remove(long id);
+        T Update<TR>(Guid id, TR dto);
+        T Remove(Guid id);
         T Remove(T model);
     }
 }

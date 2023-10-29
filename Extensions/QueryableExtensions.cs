@@ -2,9 +2,9 @@
 
 namespace Dorbit.Repositories
 {
-    public static class Extensions
+    public static class QueryableExtensions
     {
-        public static T GetById<T>(this IEnumerable<T> query, long id) where T : IEntity
+        public static T GetById<T>(this IQueryable<T> query, Guid id) where T : IEntity
         {
             return query.FirstOrDefault(x => x.Id == id);
         }

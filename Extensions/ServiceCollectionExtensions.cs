@@ -144,7 +144,6 @@ public static class ServiceCollectionExtensions
         var settings = new ConfigurationBuilder()
             .SetBasePath(basePath)
             .AddJsonFile(filename, false).Build();
-        ;
 
         var appSettings = Activator.CreateInstance<T>();
         settings.Bind(appSettings);

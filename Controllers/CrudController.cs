@@ -26,7 +26,7 @@ namespace Dorbit.Controllers
 
         [HttpGet("{id}")]
         [Auth("[entity]-Select")]
-        public virtual QueryResult<TGetDto> GetById(long id)
+        public virtual QueryResult<TGetDto> GetById(Guid id)
         {
             return Mapper.Map<TGetDto>(Repository.GetById(id)).ToQueryResult();
         }
@@ -40,7 +40,7 @@ namespace Dorbit.Controllers
 
         [HttpPatch("{id}")]
         [Auth("[entity]-Save")]
-        public virtual QueryResult<TGetDto> Update(long id, [FromBody] TUpdateDto dto)
+        public virtual QueryResult<TGetDto> Update(Guid id, [FromBody] TUpdateDto dto)
         {
             dto.Id = id;
             return Mapper.Map<TGetDto>(Repository.Update(id, dto)).ToQueryResult();
@@ -48,7 +48,7 @@ namespace Dorbit.Controllers
 
         [HttpDelete("{id}")]
         [Auth("[entity]-Remove")]
-        public virtual QueryResult<TGetDto> Remove(long id)
+        public virtual QueryResult<TGetDto> Remove(Guid id)
         {
             return Mapper.Map<TGetDto>(Repository.Remove(id)).ToQueryResult();
         }

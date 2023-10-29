@@ -20,7 +20,6 @@ namespace Dorbit.Database.Abstractions
         IEnumerable<Type> GetLookupEntities();
 
         void Migrate();
-        void UnTrackhUnChangeEntries<T>(T model) where T : class, IEntity;
         List<T> Query<T>(string query, Dictionary<string, object> parameters);
     }
 }

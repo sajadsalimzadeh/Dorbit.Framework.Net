@@ -21,7 +21,7 @@ namespace Dorbit.Services
         {
             if (dto.Width > 500 || dto.Height > 500) throw new OperationException(Errors.CaptchaSizeIsTooLarg);
 
-            if (dto.Dificulty == Enums.CaptchaDificulty.None) dto.Dificulty = appSetting.Captcha.Dificulty;
+            if (dto.Dificulty == Enums.CaptchaDificulty.None) dto.Dificulty = appSetting.Captcha.Difficulty;
             if (dto.Length == 0) dto.Length = appSetting.Captcha.Length;
             if (string.IsNullOrEmpty(dto.Pattern)) dto.Pattern = appSetting.Captcha.Pattern;
 

@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Data;
 using System.Reflection;
-using AutoMapper;
 using Dorbit.Database.Abstractions;
 using Dorbit.Entities;
 using Dorbit.Entities.Abstractions;
@@ -11,8 +10,8 @@ using Dorbit.Hosts;
 using Dorbit.Repositories;
 using Dorbit.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+// ReSharper disable SuspiciousTypeConversion.Global
 
 namespace Dorbit.Database
 {
@@ -21,28 +20,24 @@ namespace Dorbit.Database
         private bool autoExcludeDeleted = true;
         private EfTransactionContext efTransactionContext;
         private readonly List<Type> lookupEntities;
-        private readonly IMapper mapper;
 
         private IUserResolver _userResolver;
-        private IUserResolver userResolver => _userResolver ??= ServiceProvider.GetService<IUserResolver>();
+        private IUserResolver UserResolver => _userResolver ??= ServiceProvider.GetService<IUserResolver>();
 
         private ITenantResolver _tenantResolver;
-        private ITenantResolver tenantResolver => _tenantResolver ??= ServiceProvider.GetService<ITenantResolver>();
+        private ITenantResolver TenantResolver => _tenantResolver ??= ServiceProvider.GetService<ITenantResolver>();
 
         private IServerResolver _serverResolver;
-        private IServerResolver serverResolver => _serverResolver ??= ServiceProvider.GetService<IServerResolver>();
+        private IServerResolver ServerResolver => _serverResolver ??= ServiceProvider.GetService<IServerResolver>();
 
         private ISoftwareResolver _softwareResolver;
-        private ISoftwareResolver softwareResolver => _softwareResolver ??= ServiceProvider.GetService<ISoftwareResolver>();
+        private ISoftwareResolver SoftwareResolver => _softwareResolver ??= ServiceProvider.GetService<ISoftwareResolver>();
 
         private ILoggerService _loggerService;
-        private ILoggerService loggerService => _loggerService ??= ServiceProvider.GetService<ILoggerService>();
-
-        private IMemoryCache _memoryCache;
-        private IMemoryCache memoryCache => _memoryCache ??= ServiceProvider.GetService<IMemoryCache>();
+        private ILoggerService LoggerService => _loggerService ??= ServiceProvider.GetService<ILoggerService>();
 
         private LoggerHost _loggerHost;
-        private LoggerHost loggerHost => _loggerHost ??= ServiceProvider.GetService<LoggerHost>();
+        private LoggerHost LoggerHost => _loggerHost ??= ServiceProvider.GetService<LoggerHost>();
 
         public IServiceProvider ServiceProvider { get; }
 
@@ -51,11 +46,8 @@ namespace Dorbit.Database
         public EfDbContext(DbContextOptions options, IServiceProvider serviceProvider) : base(options)
         {
             lookupEntities = new List<Type>();
-            mapper = serviceProvider.GetService<IMapper>();
             efTransactionContext = new EfTransactionContext(this);
-
-            ChangeTracker.AutoDetectChangesEnabled = false;
-            this.ServiceProvider = serviceProvider;
+            ServiceProvider = serviceProvider;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -66,10 +58,10 @@ namespace Dorbit.Database
 
             foreach (var type in modelBuilder.Model.GetEntityTypes())
             {
-                foreach (var fkeys in type.GetForeignKeys()
+                foreach (var keys in type.GetForeignKeys()
                     .Where(x => !x.IsOwnership && x.DeleteBehavior == DeleteBehavior.Cascade))
                 {
-                    fkeys.DeleteBehavior = DeleteBehavior.NoAction;
+                    keys.DeleteBehavior = DeleteBehavior.NoAction;
                 }
             }
 
@@ -154,25 +146,25 @@ namespace Dorbit.Database
             if (model is ICreationTime creationTime) creationTime.CreationTime = DateTime.Now;
             if (model is ICreationAudit creationAudit)
             {
-                var user = userResolver?.GetUser();
+                var user = UserResolver?.GetUser();
                 creationAudit.CreatorId = user?.Id;
                 creationAudit.CreatorName = user?.Name;
             }
             if (model is ITenantAudit tenantAudit)
             {
-                var tenant = tenantResolver?.GetTenant();
+                var tenant = TenantResolver?.GetTenant();
                 tenantAudit.TenantId = tenant?.Id;
                 tenantAudit.TenantName = tenant?.Name;
             }
             if (model is IServerAudit serverAudit)
             {
-                var server = serverResolver?.GetServer();
+                var server = ServerResolver?.GetServer();
                 serverAudit.ServerId = server?.Id;
                 serverAudit.ServerName = server?.Name;
             }
             if (model is ISoftwareAudit softwareAudit)
             {
-                var software = softwareResolver?.GetSoftware();
+                var software = SoftwareResolver?.GetSoftware();
                 softwareAudit.SoftwareId = software?.Id;
                 softwareAudit.SoftwareName = software?.Name;
             }
@@ -181,7 +173,8 @@ namespace Dorbit.Database
                 historical.IsHistorical = false;
                 historical.HistoryId = Guid.NewGuid();
             }
-            Entry(model).State = EntityState.Added;
+
+            if(model.Id == Guid.Empty) model.Id = Guid.NewGuid();
             SaveIfNotInTransaction();
             if (model is ICreationLogging logging) Log(logging, LogAction.Insert);
             return model;
@@ -200,25 +193,27 @@ namespace Dorbit.Database
             if (model is IModificationTime modificationTime) modificationTime.ModificationTime = DateTime.Now;
             if (model is IModificationAudit modificationAudit)
             {
-                var user = userResolver?.GetUser();
+                var user = UserResolver?.GetUser();
                 modificationAudit.ModifierId = user?.Id;
                 modificationAudit.ModifierName = user?.Name;
             }
-            UnTrackhUnChangeEntries<T>(model.Id);
             var oldModel = DbSet<T>().FirstOrDefault(x => x.Id == model.Id);
             if (model is IHistorical historical)
             {
                 using var transaction = BeginTransaction();
                 var oldHistoricalModel = oldModel as IHistorical;
-                oldHistoricalModel.IsHistorical = true;
-                Entry(oldHistoricalModel).State = EntityState.Modified;
+                if (oldHistoricalModel != null)
+                {
+                    oldHistoricalModel.IsHistorical = true;
+                    Entry(oldHistoricalModel).State = EntityState.Modified;
+                }
+
                 if (oldModel is ICreationTime creationTime) Entry(creationTime).Property(x => x.CreationTime).IsModified = false;
                 if (oldModel is ICreationAudit creationAudit)
                 {
                     Entry(creationAudit).Property(x => x.CreatorId).IsModified = false;
                     Entry(creationAudit).Property(x => x.CreatorName).IsModified = false;
                 }
-                historical.Id = 0;
                 InsertEntity(historical);
                 transaction.Commit();
             }
@@ -250,23 +245,22 @@ namespace Dorbit.Database
 
             var e = new ModelValidationException();
             if (model is IValidator validator) validator.Validate(e, ServiceProvider);
-            if (model is IDeletationValidator deletationValidator) deletationValidator.ValidateOnDelete(e, ServiceProvider);
+            if (model is IDeletationValidator deletionValidator) deletionValidator.ValidateOnDelete(e, ServiceProvider);
             e.ThrowIfHasError();
 
-            UnTrackhUnChangeEntries<T>(model.Id);
             if (model is ISoftDelete)
             {
                 var softDelete = DbSet<T>(false).GetById(model.Id) as ISoftDelete;
-                if (!softDelete.IsDeleted)
+                if (softDelete != null && softDelete.IsDeleted)
                 {
                     softDelete.IsDeleted = true;
 
-                    if (softDelete is IDeletationTime deletationTime) deletationTime.DeletationTime = DateTime.Now;
-                    if (softDelete is IDeletationAudit deletationAudit)
+                    if (softDelete is IDeletationTime deletionTime) deletionTime.DeletionTime = DateTime.Now;
+                    if (softDelete is IDeletationAudit deletionAudit)
                     {
-                        var user = userResolver?.GetUser();
-                        deletationAudit.DeleterId = user?.Id;
-                        deletationAudit.DeleterName = user?.Name;
+                        var user = UserResolver?.GetUser();
+                        deletionAudit.DeleterId = user?.Id;
+                        deletionAudit.DeleterName = user?.Name;
                     }
 
                     Entry(softDelete).State = EntityState.Detached;
@@ -294,31 +288,15 @@ namespace Dorbit.Database
             }
         }
 
-        private void UnTrackhUnChangeEntries<T>(long id) where T : class, IEntity
-        {
-            ChangeTracker.Entries<T>()
-                .Where(x => x.State == EntityState.Unchanged && x.Entity.Id == id)
-                .ToList()
-                .ForEach(x =>
-                {
-                    x.State = EntityState.Detached;
-                });
-        }
-
-        public void UnTrackhUnChangeEntries<T>(T model) where T : class, IEntity
-        {
-            UnTrackhUnChangeEntries<T>(model.Id);
-        }
-
         private void Log(IEntity newObj, LogAction action, IEntity oldObj = null)
         {
-            loggerHost.Add(new Models.Loggers.LogRequest()
+            LoggerHost.Add(new Models.Loggers.LogRequest()
             {
                 NewObj = newObj,
                 OldObj = oldObj,
                 Action = action,
                 Module = GetType().Name.Replace("DbContext", ""),
-                User = userResolver?.GetUser(),
+                User = UserResolver?.GetUser(),
             });
         }
 
@@ -330,7 +308,7 @@ namespace Dorbit.Database
             }
             catch (Exception ex)
             {
-                loggerService.LogError(ex);
+                LoggerService.LogError(ex);
                 throw;
             }
         }

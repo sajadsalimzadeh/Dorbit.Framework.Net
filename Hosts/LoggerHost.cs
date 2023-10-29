@@ -82,7 +82,7 @@ namespace Dorbit.Hosts
                                     {
                                         Module = request.Module,
                                         EntityType = request.NewObj.GetType().Name,
-                                        ReferenceId = request.NewObj.Id,
+                                        ReferenceId = request.NewObj.Id.ToString(),
                                         Data = JsonConverterWrapper.SerializeObject(diff, 1),
                                         Action = request.Action,
                                         CreationTime = DateTime.Now,

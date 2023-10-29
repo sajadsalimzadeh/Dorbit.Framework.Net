@@ -36,12 +36,12 @@ namespace Dorbit.Repositories
             return Insert(mapper.Map<T>(dto));
         }
 
-        public T Remove(long id)
+        public T Remove(Guid id)
         {
             return Remove(GetById(id));
         }
 
-        public T Update<TR>(long id, TR dto)
+        public T Update<TR>(Guid id, TR dto)
         {
             var mapper = dbContext.ServiceProvider.GetService<IMapper>();
             return Update(mapper.Map(dto, GetById(id)));
