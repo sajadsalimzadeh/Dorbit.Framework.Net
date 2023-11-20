@@ -1,8 +1,7 @@
-﻿namespace Dorbit.Entities.Abstractions
+﻿namespace Dorbit.Entities.Abstractions;
+
+public interface ISoftwareAudit
 {
-    public interface ISoftwareAudit
-    {
-        long? SoftwareId { get; set; }
-        string SoftwareName { get; set; }
-    }
+    long? SoftwareId { get; set; }
+    string SoftwareName { get; set; }
 }

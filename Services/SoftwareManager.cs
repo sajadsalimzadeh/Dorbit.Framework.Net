@@ -2,26 +2,25 @@
 using Dorbit.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Services
+namespace Dorbit.Services;
+
+[ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
+public class SoftwareManager : ISoftwareManager
 {
-    [ServiceRegisterar(Lifetime = ServiceLifetime.Singleton)]
-    public class SoftwareManager : ISoftwareManager
+    private readonly IServiceProvider serviceProvider;
+
+    public SoftwareManager(IServiceProvider serviceProvider)
     {
-        private readonly IServiceProvider serviceProvider;
+        this.serviceProvider = serviceProvider;
+    }
 
-        public SoftwareManager(IServiceProvider serviceProvider)
-        {
-            this.serviceProvider = serviceProvider;
-        }
+    public IEnumerable<ISoftwareService> GetAllSoftwares()
+    {
+        return serviceProvider.GetServices<ISoftwareService>();
+    }
 
-        public IEnumerable<ISoftwareService> GetAllSoftwares()
-        {
-            return serviceProvider.GetServices<ISoftwareService>();
-        }
-
-        public ISoftwareService GetSoftwares(string identifier)
-        {
-            return GetAllSoftwares().FirstOrDefault(x => x.Identifier == identifier);
-        }
+    public ISoftwareService GetSoftwares(string identifier)
+    {
+        return GetAllSoftwares().FirstOrDefault(x => x.Identifier == identifier);
     }
 }

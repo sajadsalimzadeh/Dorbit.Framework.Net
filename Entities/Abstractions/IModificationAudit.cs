@@ -1,8 +1,7 @@
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface IModificationAudit : IModificationTime
 {
-    public interface IModificationAudit : IModificationTime
-    {
-        long? ModifierId { get; set; }
-        string ModifierName { get; set; }
-    }
+    Guid? ModifierId { get; set; }
+    string ModifierName { get; set; }
 }

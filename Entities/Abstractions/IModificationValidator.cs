@@ -1,9 +1,8 @@
 ﻿using Dorbit.Exceptions;
 
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface IModificationValidator
 {
-    public interface IModificationValidator
-    {
-        void ValidateOnModify(ModelValidationException e, IServiceProvider sp);
-    }
+    void ValidateOnModify(ModelValidationException e, IServiceProvider sp);
 }

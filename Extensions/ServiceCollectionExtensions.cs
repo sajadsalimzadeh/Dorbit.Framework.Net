@@ -2,6 +2,7 @@
 using Dorbit.Attributes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Dorbit.Extensions;
 
@@ -118,36 +119,31 @@ public static class ServiceCollectionExtensions
             services.RegisterServicesByAttribute(type, implementationType, registerAttr, descriptors);
         }
     }
-
-    private static string GetAppSettingsFilename()
-    {
-        var names = new List<string>();
-        names.Add($"appsettings.{AppDomain.CurrentDomain.GetEnvironment()?.ToLower()}.json");
-        names.Add("appsettings.json");
-        foreach (var name in names)
-        {
-            var filename = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, name);
-            if (File.Exists(filename)) return filename;
-        }
-
-        throw new Exception("AppSettings file not found");
-    }
-
+    
     public static T BindConfiguration<T>(this IServiceCollection services, string filename = null) where T : class
     {
-        if (string.IsNullOrEmpty(filename))
-        {
-            filename = GetAppSettingsFilename();
-        }
-
         var basePath = Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "./";
         var settings = new ConfigurationBuilder()
             .SetBasePath(basePath)
-            .AddJsonFile(filename, false).Build();
+            .AddJsonFile("appsettings.json", false)
+            .AddJsonFile($"appsettings.{AppDomain.CurrentDomain.GetEnvironment()?.ToLower()}.json", true)
+            .Build();
 
         var appSettings = Activator.CreateInstance<T>();
         settings.Bind(appSettings);
         services.AddSingleton(appSettings);
         return appSettings;
+    }
+
+    public static IMvcBuilder AddControllers(this IServiceCollection services, Assembly assembly)
+    {
+        var mvcBuilder = services.AddControllers().AddApplicationPart(assembly);
+        services.TryAddSingleton(mvcBuilder);
+        return mvcBuilder;
+    }
+
+    public static IMvcBuilder AddControllers<T>(this IServiceCollection services)
+    {
+        return services.AddControllers(typeof(T).Assembly);
     }
 }

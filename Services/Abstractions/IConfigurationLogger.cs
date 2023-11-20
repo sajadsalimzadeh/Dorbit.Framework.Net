@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Services.Abstractions
+namespace Dorbit.Services.Abstractions;
+
+public interface IConfigurationLogger
 {
-    public interface IConfigurationLogger
-    {
-        void Configure(IServiceCollection services);
-    }
+    void Configure(IServiceCollection services);
 }

@@ -1,65 +1,48 @@
-﻿using Dorbit.Services;
+﻿using Dorbit.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Dorbit.Hosts;
 
-public abstract class BaseHost : IHostedService
+public abstract class BaseHost : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
+    
+    protected readonly ILoggerService LoggerService;
 
-    protected Thread Thread { get; set; }
-
-    /// <summary>
-    /// Seconds
-    /// </summary>
-    protected abstract int Interval { get; }
+    protected abstract int IntervalInSec { get; }
 
     public BaseHost(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+        LoggerService = serviceProvider.GetService<ILoggerService>();
     }
 
-    public Task StartAsync(CancellationToken cancellationToken = default)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Start();
-        return Task.CompletedTask;
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.CompletedTask;
-    }
-
-    public void Start()
-    {
-        Thread = new Thread(() =>
+        return Task.Run(async () =>
         {
-            for (long i = 0; ThreadService.MainThread.IsAlive; i++)
+            for (var i = 0; !stoppingToken.IsCancellationRequested; i ++)
             {
                 try
                 {
-                    if (i % Interval != 0) continue;
-                    var sp = _serviceProvider.CreateScope().ServiceProvider;
-                    var logger = sp.GetService<ILogger>();
+                    if (i % IntervalInSec != 0) continue;
                     try
                     {
-                        Invoke(sp);
+                        await InvokeAsync(_serviceProvider.CreateScope().ServiceProvider, stoppingToken);
                     }
                     catch (Exception ex)
                     {
-                        logger?.LogError(ex.Message);
+                        LoggerService?.LogError(ex.Message);
                     }
                 }
                 finally
                 {
-                    Thread.Sleep(1000);
+                    await Task.Delay(100);
                 }
             }
         });
-        Thread.Start();
     }
 
-    protected abstract void Invoke(IServiceProvider serviceProvider);
+    protected abstract Task InvokeAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken);
 }

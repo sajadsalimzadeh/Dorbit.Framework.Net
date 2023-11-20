@@ -10,6 +10,7 @@ public class MessageEmailRequest : MessageRequest
     public string Cc { get; set; }
     public string Bcc { get; set; }
     public List<MessageEmailRequestAttachment> Attachments { get; set; }
+    public object[] Args { get; set; }
 }
 
 public class MessageEmailRequestAttachment

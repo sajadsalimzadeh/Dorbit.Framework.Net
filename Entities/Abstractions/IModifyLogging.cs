@@ -1,6 +1,5 @@
-﻿namespace Dorbit.Entities.Abstractions
+﻿namespace Dorbit.Entities.Abstractions;
+
+public interface IModifyLogging : IEntity
 {
-    public interface IModifyLogging : IEntity
-    {
-    }
 }

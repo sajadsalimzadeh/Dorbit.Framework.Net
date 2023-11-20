@@ -1,6 +1,5 @@
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface IFullAudit : ICreationAudit, IModificationAudit, IDeletationAudit
 {
-    public interface IFullAudit : ICreationAudit, IModificationAudit, IDeletationAudit
-    {
-    }
 }

@@ -1,7 +1,6 @@
-namespace Dorbit.Services.Abstractions
+namespace Dorbit.Services.Abstractions;
+
+public interface ICancellationTokenService
 {
-    public interface ICancellationTokenService
-    {
-        CancellationToken CancellationToken { get; set; }
-    }
+    CancellationToken CancellationToken { get; set; }
 }

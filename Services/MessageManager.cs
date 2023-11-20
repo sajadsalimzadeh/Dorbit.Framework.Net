@@ -13,13 +13,13 @@ public class MessageManager
     private readonly AppSetting _appSetting;
     private readonly IServiceProvider _serviceProvider;
 
-    internal MessageManager(AppSetting appSetting, IServiceProvider serviceProvider)
+    public MessageManager(IServiceProvider serviceProvider)
     {
-        _appSetting = appSetting;
         _serviceProvider = serviceProvider;
+        _appSetting = serviceProvider.GetService<AppSetting>();
     }
 
-    public Task<OperationResult> Send(MessageRequest request)
+    public Task<OperationResult> SendAsync(MessageRequest request)
     {
         if (request is MessageSmsRequest smsRequest)
         {

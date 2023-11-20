@@ -1,7 +1,6 @@
-﻿namespace Dorbit.Services.Abstractions
+﻿namespace Dorbit.Services.Abstractions;
+
+public interface ILookupService
 {
-    public interface ILookupService
-    {
-        void Initiate();
-    }
+    void Initiate();
 }

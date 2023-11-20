@@ -1,8 +1,7 @@
-﻿namespace Dorbit.Services.Abstractions
+﻿namespace Dorbit.Services.Abstractions;
+
+public interface ISoftwareManager
 {
-    public interface ISoftwareManager
-    {
-        IEnumerable<ISoftwareService> GetAllSoftwares();
-        ISoftwareService GetSoftwares(string identifier);
-    }
+    IEnumerable<ISoftwareService> GetAllSoftwares();
+    ISoftwareService GetSoftwares(string identifier);
 }

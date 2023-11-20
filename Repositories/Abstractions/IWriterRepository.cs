@@ -1,14 +1,13 @@
 using Dorbit.Entities.Abstractions;
 
-namespace Dorbit.Repositories.Abstractions
+namespace Dorbit.Repositories.Abstractions;
+
+public interface IWriterRepository<T> : IReaderRepository<T> where T : class, IEntity
 {
-    public interface IWriterRepository<T> : IReaderRepository<T> where T : class, IEntity
-    {
-        T Insert(T model);
-        T Insert<TR>(TR dto);
-        T Update(T model);
-        T Update<TR>(Guid id, TR dto);
-        T Remove(Guid id);
-        T Remove(T model);
-    }
+    Task<T> InsertAsync(T model);
+    Task<T> InsertAsync<TR>(TR dto);
+    Task<T> UpdateAsync(T model);
+    Task<T> UpdateAsync<TR>(Guid id, TR dto);
+    Task<T> RemoveAsync(Guid id);
+    Task<T> RemoveAsync(T model);
 }

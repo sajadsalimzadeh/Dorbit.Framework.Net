@@ -1,7 +1,6 @@
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface IDeletationTime : IEntity
 {
-    public interface IDeletationTime : IEntity
-    {
-        DateTime? DeletionTime { get; set; }
-    }
+    DateTime? DeletionTime { get; set; }
 }

@@ -1,8 +1,7 @@
-﻿namespace Dorbit.Models.Captchas
+﻿namespace Dorbit.Models.Captchas;
+
+public class CaptchaGenerateCommand
 {
-    public class CaptchaGenerateCommand
-    {
-        public int Width { get; set; }
-        public int Height { get; set; }
-    }
+    public int Width { get; set; }
+    public int Height { get; set; }
 }

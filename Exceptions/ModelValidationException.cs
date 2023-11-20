@@ -1,36 +1,35 @@
-﻿namespace Dorbit.Exceptions
+﻿namespace Dorbit.Exceptions;
+
+public class ModelValidationException : Exception
 {
-    public class ModelValidationException : Exception
+    public List<ModelValidationExceptionItem> Errors { get; } = new List<ModelValidationExceptionItem>();
+
+    public ModelValidationException Add(string field, ValidationMessage message)
     {
-        public List<ModelValidationExceptionItem> Errors { get; } = new List<ModelValidationExceptionItem>();
-
-        public ModelValidationException Add(string field, ValidationMessage message)
-        {
-            Errors.Add(new ModelValidationExceptionItem(field, message));
-            return this;
-        }
-
-        public ModelValidationException Add(string field, string message)
-        {
-            Errors.Add(new ModelValidationExceptionItem(field, message));
-            return this;
-        }
-
-        public void ThrowIfHasError()
-        {
-            if (Errors.Count > 0) throw this;
-        }
+        Errors.Add(new ModelValidationExceptionItem(field, message));
+        return this;
     }
-    public class ModelValidationExceptionItem : OperationException
+
+    public ModelValidationException Add(string field, string message)
     {
-        public string Field { get; set; }
-        public ModelValidationExceptionItem(string field, string message) : base(message)
-        {
-            Field = field;
-        }
-        public ModelValidationExceptionItem(string field, ValidationMessage e) : base(e)
-        {
-            Field = field;
-        }
+        Errors.Add(new ModelValidationExceptionItem(field, message));
+        return this;
+    }
+
+    public void ThrowIfHasError()
+    {
+        if (Errors.Count > 0) throw this;
+    }
+}
+public class ModelValidationExceptionItem : OperationException
+{
+    public string Field { get; set; }
+    public ModelValidationExceptionItem(string field, string message) : base(message)
+    {
+        Field = field;
+    }
+    public ModelValidationExceptionItem(string field, ValidationMessage e) : base(e)
+    {
+        Field = field;
     }
 }

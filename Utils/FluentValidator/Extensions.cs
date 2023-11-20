@@ -1,12 +1,11 @@
 using FluentValidation.Results;
 
-namespace Dorbit.Utils.FluentValidator
+namespace Dorbit.Utils.FluentValidator;
+
+public static class Extensions
 {
-    public static class Extensions
+    public static ValidationResult Merge(this ValidationResult result, ValidationResult target)
     {
-        public static ValidationResult Merge(this ValidationResult result, ValidationResult target)
-        {
-            return new ValidationResult(result.Errors.Concat(target.Errors));
-        }
+        return new ValidationResult(result.Errors.Concat(target.Errors));
     }
 }

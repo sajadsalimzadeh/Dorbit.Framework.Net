@@ -51,7 +51,7 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest>
                 }
             }
         }
-        builder.HtmlBody = request.Body;
+        builder.HtmlBody = string.Format(request.Body, request.Args);
         email.Body = builder.ToMessageBody();
         using var smtp = new SmtpClient();
         smtp.Connect(Server, Port, SecureSocketOptions.StartTls);

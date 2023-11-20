@@ -1,38 +1,37 @@
-namespace Dorbit.Utils.Queries
+namespace Dorbit.Utils.Queries;
+
+[AttributeUsage(AttributeTargets.All)]
+internal class FilterQueryOptionSqlAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.All)]
-    internal class FilterQueryOptionSqlAttribute : Attribute
+    public string Value { get; set; }
+    public FilterQueryOptionSqlAttribute(string value)
     {
-        public string Value { get; set; }
-        public FilterQueryOptionSqlAttribute(string value)
-        {
-            Value = value;
-        }
+        Value = value;
     }
-    [AttributeUsage(AttributeTargets.All)]
-    internal class FilterQueryOptionFormatAttribute : Attribute
-    {
-        public string Format { get; set; }
+}
+[AttributeUsage(AttributeTargets.All)]
+internal class FilterQueryOptionFormatAttribute : Attribute
+{
+    public string Format { get; set; }
 
-        public FilterQueryOptionFormatAttribute(string format)
-        {
-            Format = format;
-        }
+    public FilterQueryOptionFormatAttribute(string format)
+    {
+        Format = format;
     }
-    internal static class FilterQueryOptionAttributeExtension
+}
+internal static class FilterQueryOptionAttributeExtension
+{
+    public static string GetSqlValue(this Enum value)
     {
-        public static string GetSqlValue(this Enum value)
-        {
-            var type = value.GetType();
-            var name = Enum.GetName(type, value);
-            return type.GetField(name).GetCustomAttributes(false).OfType<FilterQueryOptionSqlAttribute>().SingleOrDefault()?.Value;
-        }
+        var type = value.GetType();
+        var name = Enum.GetName(type, value);
+        return type.GetField(name).GetCustomAttributes(false).OfType<FilterQueryOptionSqlAttribute>().SingleOrDefault()?.Value;
+    }
 
-        public static string GetFormat(this Enum value)
-        {
-            var type = value.GetType();
-            var name = Enum.GetName(type, value);
-            return type.GetField(name).GetCustomAttributes(false).OfType<FilterQueryOptionFormatAttribute>().SingleOrDefault()?.Format;
-        }
+    public static string GetFormat(this Enum value)
+    {
+        var type = value.GetType();
+        var name = Enum.GetName(type, value);
+        return type.GetField(name).GetCustomAttributes(false).OfType<FilterQueryOptionFormatAttribute>().SingleOrDefault()?.Format;
     }
 }

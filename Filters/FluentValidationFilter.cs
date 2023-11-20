@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Dorbit.Filters
+namespace Dorbit.Filters;
+
+public class FluentValidationFilter : ActionFilterAttribute
 {
-    public class FluentValidationFilter : ActionFilterAttribute
+    public override void OnActionExecuted(ActionExecutedContext context)
     {
-        public override void OnActionExecuted(ActionExecutedContext context)
-        {
-            base.OnActionExecuted(context);
-        }
+        base.OnActionExecuted(context);
     }
 }

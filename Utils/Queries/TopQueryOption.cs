@@ -1,15 +1,14 @@
-namespace Dorbit.Utils.Queries
-{
-    public class TopQueryOption
-    {
-        public int Value { get; set; }
+namespace Dorbit.Utils.Queries;
 
-        public TopQueryOption Clone()
+public class TopQueryOption
+{
+    public int Value { get; set; }
+
+    public TopQueryOption Clone()
+    {
+        return new TopQueryOption()
         {
-            return new TopQueryOption()
-            {
-                Value = Value
-            };
-        }
+            Value = Value
+        };
     }
 }

@@ -1,7 +1,6 @@
-namespace Dorbit.Utils.Queries
+namespace Dorbit.Utils.Queries;
+
+public class QueryOptionsPatches
 {
-    public class QueryOptionsPatches
-    {
-        public bool BypassPagination { get; set; }
-    }
+    public bool BypassPagination { get; set; }
 }

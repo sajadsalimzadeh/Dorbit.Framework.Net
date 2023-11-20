@@ -3,53 +3,53 @@ using Dorbit.Entities.Abstractions;
 using Dorbit.Models;
 using Dorbit.Repositories.Abstractions;
 using Dorbit.Utils.Queries;
+using Microsoft.EntityFrameworkCore;
 
-namespace Dorbit.Repositories
+namespace Dorbit.Repositories;
+
+public class BaseReaderRepository<T> : IReaderRepository<T> where T : class, IEntity
 {
-    public class BaseReaderRepository<T> : IReaderRepository<T> where T : class, IEntity
+    private readonly IDbContext dbContext;
+
+    protected IServiceProvider ServiceProvider => dbContext.ServiceProvider;
+
+    public BaseReaderRepository(IDbContext dbContext)
     {
-        private readonly IDbContext dbContext;
+        this.dbContext = dbContext;
+    }
 
-        protected IServiceProvider ServiceProvider => dbContext.ServiceProvider;
+    public virtual IQueryable<T> Set(bool excludeDeleted = true)
+    {
+        return dbContext.DbSet<T>(excludeDeleted);
+    }
 
-        public BaseReaderRepository(IDbContext dbContext)
-        {
-            this.dbContext = dbContext;
-        }
+    public virtual Task<int> CountAsync()
+    {
+        return Set().CountAsync();
+    }
 
-        public virtual IQueryable<T> Set(bool excludeDeleted = true)
-        {
-            return dbContext.DbSet<T>(excludeDeleted);
-        }
+    public virtual Task<List<T>> GetAll()
+    {
+        return Set().ToListAsync();
+    }
 
-        public virtual int Count()
-        {
-            return Set().Count();
-        }
+    public virtual Task<T> GetByIdAsync(Guid id)
+    {
+        return Set().FirstOrDefaultAsync(x => x.Id == id);
+    }
 
-        public virtual IEnumerable<T> GetAll()
-        {
-            return Set().ToList();
-        }
+    public virtual Task<T> First()
+    {
+        return Set().FirstOrDefaultAsync();
+    }
 
-        public virtual T GetById(Guid id)
-        {
-            return Set().FirstOrDefault(x => x.Id == id);
-        }
+    public virtual Task<T> Last()
+    {
+        return Set().OrderByDescending(x => x.Id).FirstOrDefaultAsync();
+    }
 
-        public virtual T First()
-        {
-            return Set().FirstOrDefault();
-        }
-
-        public virtual T Last()
-        {
-            return Set().OrderByDescending(x => x.Id).FirstOrDefault();
-        }
-
-        public virtual PagedListResult<T> Select(QueryOptions queryOptions)
-        {
-            return Set().ApplyToPagedList(queryOptions);
-        }
+    public virtual Task<PagedListResult<T>> Select(QueryOptions queryOptions)
+    {
+        return Set().ApplyToPagedListAsync(queryOptions);
     }
 }

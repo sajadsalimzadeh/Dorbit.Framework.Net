@@ -1,7 +1,6 @@
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface IModificationTime : IEntity
 {
-    public interface IModificationTime : IEntity
-    {
-        DateTime? ModificationTime { get; set; }
-    }
+    DateTime? ModificationTime { get; set; }
 }

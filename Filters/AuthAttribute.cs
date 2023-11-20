@@ -6,73 +6,78 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Filters
+namespace Dorbit.Filters;
+
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
+public class AuthAttribute : Attribute, IAsyncAuthorizationFilter
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
-    public class AuthAttribute : Attribute, IAuthorizationFilter
+    private IEnumerable<string> _accesses;
+    public string Tenant { get; set; }
+
+    public AuthAttribute(params string[] accesses)
     {
-        private IEnumerable<string> Policies;
-        public string Tenant { get; set; }
+        _accesses = accesses;
+    }
 
-        public AuthAttribute(params string[] policies)
+    public IEnumerable<string> GetAccesses(Type type)
+    {
+        var accesses = _accesses.ToList();
+        var preType = type;
+        while (type is not null)
         {
-            Policies = policies;
+            if (type.IsAssignableFrom(typeof(CrudController)))
+            {
+                var entityType = preType.GenericTypeArguments.FirstOrDefault();
+                if (entityType is not null)
+                {
+                    accesses = accesses.ConvertAll(x => x.Replace("[entity]", entityType.Name));
+                }
+
+                break;
+            }
+
+            preType = type;
+            type = type.BaseType;
         }
 
-        public IEnumerable<string> GetPolicies(Type type)
+        return accesses.Select(x => x.ToLower());
+    }
+
+    public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+    {
+        if (context.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
         {
-            var policies = Policies.ToList();
-            Type preType = type;
-            while (type is not null)
-            {
-                if (type.IsAssignableFrom(typeof(CrudController)))
-                {
-                    var entityType = preType.GenericTypeArguments.FirstOrDefault();
-                    if (entityType is not null)
-                    {
-                        policies = policies.ConvertAll(x => x.Replace("[entity]", entityType.Name));
-                    }
-                    break;
-                }
-                preType = type;
-                type = type.BaseType;
-            }
-            return policies.Select(x => x.ToLower());
+            if (actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null) return;
         }
 
-        public void OnAuthorization(AuthorizationFilterContext context)
+        var userResolver = context.HttpContext.RequestServices.GetService<IUserResolver>() ?? throw new Exception($"{nameof(IUserResolver)} not implemented");
+        var user = userResolver.User;
+        if (user is null) throw new UnauthorizedAccessException("UnAuthorized");
+        else
         {
-            if (context.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
+            var userStateService = context.HttpContext.RequestServices.GetService<IUserStateService>();
+            var state = userStateService.GetUserState(user.Id);
+            state.Url = context.HttpContext.Request.GetDisplayUrl();
+            state.LastRequestTime = DateTime.Now;
+            if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var agent))
             {
-                if (actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null) return;
+                userStateService.LoadClientInfo(state, agent);
             }
-            var userResolver = context.HttpContext.RequestServices.GetService<IUserResolver>();
-            var user = userResolver.GetUser();
-            if (user is null) throw new UnauthorizedAccessException("UnAuthorized");
-            else
+
+            userStateService.LoadGeoInfo(state, context.HttpContext.Connection.RemoteIpAddress?.ToString());
+            if (_accesses?.Count() > 0)
             {
-                var userStateService = context.HttpContext.RequestServices.GetService<IUserStateService>();
-                var state = userStateService.GetUserState(user.Id);
-                state.Url = context.HttpContext.Request.GetDisplayUrl();
-                state.LastRequestTime = DateTime.Now;
-                if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var agent))
+                IEnumerable<string> policies;
+                if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
                 {
-                    userStateService.LoadClientInfo(state, agent);
+                    policies = GetAccesses(controllerActionDescriptor.ControllerTypeInfo);
                 }
-                userStateService.LoadGeoInfo(state, context.HttpContext.Connection.RemoteIpAddress.ToString());
-                if (Policies?.Count() > 0)
+                else throw new Exception("ActionDescription is Not ControllerActionDescriptor");
+
+                var authenticationService = context.HttpContext.RequestServices.GetService<IAuthService>();
+                if (!await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
                 {
-                    IEnumerable<string> policies;
-                    if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
-                    {
-                        policies = GetPolicies(controllerActionDescriptor.ControllerTypeInfo);
-                    }
-                    else throw new Exception("ActionDescription is Not ControllerActionDescriptor");
-                    var authenticationService = context.HttpContext.RequestServices.GetService<IAuthenticationService>();
-                    if (!authenticationService.HasPolicy(policies.ToArray()))
-                    {
-                        throw new UnauthorizedAccessException("AccessDenied");
-                    }
+                    throw new UnauthorizedAccessException("AccessDenied");
                 }
             }
         }

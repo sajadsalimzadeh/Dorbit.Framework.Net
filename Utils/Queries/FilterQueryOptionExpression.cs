@@ -1,10 +1,9 @@
-namespace Dorbit.Utils.Queries
+namespace Dorbit.Utils.Queries;
+
+public class FilterQueryOptionExpression
 {
-    public class FilterQueryOptionExpression
+    public virtual string ToSql(Dictionary<string, object> parameters)
     {
-        public virtual string ToSql(Dictionary<string, object> parameters)
-        {
-            return string.Empty;
-        }
+        return string.Empty;
     }
 }

@@ -1,7 +1,6 @@
-﻿namespace Dorbit.Entities.Abstractions
+﻿namespace Dorbit.Entities.Abstractions;
+
+public interface IVersionAudit
 {
-    public interface IVersionAudit
-    {
-        long Version { get; set; }
-    }
+    long Version { get; set; }
 }

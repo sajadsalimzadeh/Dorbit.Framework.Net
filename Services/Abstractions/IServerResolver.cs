@@ -1,9 +1,8 @@
 ﻿using Dorbit.Models.Abstractions;
 
-namespace Dorbit.Services.Abstractions
+namespace Dorbit.Services.Abstractions;
+
+public interface IServerResolver
 {
-    public interface IServerResolver
-    {
-        IServerDto GetServer();
-    }
+    IServerDto GetServer();
 }

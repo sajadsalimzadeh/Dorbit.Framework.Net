@@ -1,12 +1,11 @@
-﻿namespace Dorbit.Enums
+﻿namespace Dorbit.Enums;
+
+public enum CaptchaDificulty
 {
-    public enum CaptchaDificulty
-    {
-        None = 0,
-        VeryEasy = 1,
-        Easy = 2,
-        Normal = 3,
-        Hard = 4,
-        VeryHard = 5
-    }
+    None = 0,
+    VeryEasy = 1,
+    Easy = 2,
+    Normal = 3,
+    Hard = 4,
+    VeryHard = 5
 }

@@ -1,8 +1,7 @@
-namespace Dorbit.Utils.Queries
+namespace Dorbit.Utils.Queries;
+
+public class QueryOptionsDefaults
 {
-    public class QueryOptionsDefaults
-    {
-        public int PageSize { get; set; } = 50;
-        public int PageIndex { get; set; } = 0;
-    }
+    public int PageSize { get; set; } = 50;
+    public int PageIndex { get; set; } = 0;
 }

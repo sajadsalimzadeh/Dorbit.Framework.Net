@@ -1,12 +1,11 @@
 using System.ComponentModel;
 
-namespace Dorbit.Utils.Queries
+namespace Dorbit.Utils.Queries;
+
+public enum FilterQueryOptionUnaryOperators
 {
-    public enum FilterQueryOptionUnaryOperators
-    {
-        [Description("None")]
-        None = 0,
-        [Description("Not"), FilterQueryOptionSql("NOT")]
-        Not = 1,
-    }
+    [Description("None")]
+    None = 0,
+    [Description("Not"), FilterQueryOptionSql("NOT")]
+    Not = 1,
 }

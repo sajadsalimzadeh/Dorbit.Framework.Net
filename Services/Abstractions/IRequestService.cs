@@ -1,7 +1,6 @@
-﻿namespace Dorbit.Services.Abstractions
+﻿namespace Dorbit.Services.Abstractions;
+
+public interface IRequestService
 {
-    public interface IRequestService
-    {
-        Guid CorrelationId { get; }
-    }
+    Guid CorrelationId { get; }
 }

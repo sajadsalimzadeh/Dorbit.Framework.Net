@@ -1,9 +1,8 @@
 using Dorbit.Entities.Abstractions;
 
-namespace Dorbit.Entities
+namespace Dorbit.Entities;
+
+public abstract class Entity : IEntity
 {
-    public abstract class Entity : IEntity
-    {
-        public virtual Guid Id { get; set; }
-    }
+    public virtual Guid Id { get; set; }
 }

@@ -1,15 +1,14 @@
-namespace Dorbit.Utils.Queries
-{
-    public class SkipQueryOption
-    {
-        public int Value { get; set; }
+namespace Dorbit.Utils.Queries;
 
-        public SkipQueryOption Clone()
+public class SkipQueryOption
+{
+    public int Value { get; set; }
+
+    public SkipQueryOption Clone()
+    {
+        return new SkipQueryOption()
         {
-            return new SkipQueryOption()
-            {
-                Value = Value
-            };
-        }
+            Value = Value
+        };
     }
 }

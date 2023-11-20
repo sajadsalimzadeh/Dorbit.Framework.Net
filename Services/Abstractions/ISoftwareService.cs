@@ -1,6 +1,5 @@
-﻿namespace Dorbit.Services.Abstractions
+﻿namespace Dorbit.Services.Abstractions;
+
+public interface ISoftwareService : ISoftwareIdentifier
 {
-    public interface ISoftwareService : ISoftwareIdentifier
-    {
-    }
 }

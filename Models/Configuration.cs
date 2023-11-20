@@ -1,17 +1,5 @@
 using System.Reflection;
 using Dorbit.Services.Abstractions;
 
-namespace Dorbit.Models
-{
-    public class Configuration
-    {
-        public Assembly EntryAssembly { get; set; }
-        public IConfigurationLogger Logger { get; set; }
-        public string LogConnectionString { get; set; }
+namespace Dorbit.Models;
 
-        public Configuration()
-        {
-            EntryAssembly = Assembly.GetEntryAssembly();
-        }
-    }
-}

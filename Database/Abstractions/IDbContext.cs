@@ -1,25 +1,24 @@
 using Dorbit.Entities.Abstractions;
 
-namespace Dorbit.Database.Abstractions
+namespace Dorbit.Database.Abstractions;
+
+public interface IDbContext
 {
-    public interface IDbContext
-    {
-        IServiceProvider ServiceProvider { get; }
+    IServiceProvider ServiceProvider { get; }
 
-        IDbContext AutoExcludeDeletedEnable();
-        IDbContext AutoExcludeDeletedDisable();
+    IDbContext AutoExcludeDeletedEnable();
+    IDbContext AutoExcludeDeletedDisable();
 
-        IQueryable<T> DbSet<T>() where T : class, IEntity;
-        IQueryable<T> DbSet<T>(bool excludeDeleted) where T : class, IEntity;
-        T InsertEntity<T>(T model) where T : class, IEntity;
-        T UpdateEntity<T>(T model) where T : class, IEntity;
-        T RemoveEntity<T>(T model) where T : class, IEntity;
+    IQueryable<T> DbSet<T>() where T : class, IEntity;
+    IQueryable<T> DbSet<T>(bool excludeDeleted) where T : class, IEntity;
+    Task<T> InsertEntityAsync<T>(T model) where T : class, IEntity;
+    Task<T> UpdateEntityAsync<T>(T model) where T : class, IEntity;
+    Task<T> RemoveEntityAsync<T>(T model) where T : class, IEntity;
+    Task<List<T>> QueryAsync<T>(string query, Dictionary<string, object> parameters);
 
-        ITransaction BeginTransaction();
-        int SaveChanges();
-        IEnumerable<Type> GetLookupEntities();
+    ITransaction BeginTransaction();
+    int SaveChanges();
+    IEnumerable<Type> GetLookupEntities();
 
-        void Migrate();
-        List<T> Query<T>(string query, Dictionary<string, object> parameters);
-    }
+    void Migrate();
 }

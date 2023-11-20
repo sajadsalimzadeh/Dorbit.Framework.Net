@@ -2,16 +2,15 @@ using Dorbit.Entities.Abstractions;
 using Dorbit.Models;
 using Dorbit.Utils.Queries;
 
-namespace Dorbit.Repositories.Abstractions
+namespace Dorbit.Repositories.Abstractions;
+
+public interface IReaderRepository<T> where T : class, IEntity
 {
-    public interface IReaderRepository<T> where T : class, IEntity
-    {
-        T GetById(Guid id);
-        IQueryable<T> Set(bool excludeDeleted = true);
-        IEnumerable<T> GetAll();
-        PagedListResult<T> Select(QueryOptions queryOptions);
-        T First();
-        T Last();
-        int Count();
-    }
+    IQueryable<T> Set(bool excludeDeleted = true);
+    Task<T> GetByIdAsync(Guid id);
+    Task<List<T>> GetAll();
+    Task<PagedListResult<T>> Select(QueryOptions queryOptions);
+    Task<T> First();
+    Task<T> Last();
+    Task<int> CountAsync();
 }

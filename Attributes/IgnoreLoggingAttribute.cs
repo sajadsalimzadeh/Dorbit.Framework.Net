@@ -1,7 +1,6 @@
-﻿namespace Dorbit.Attributes
+﻿namespace Dorbit.Attributes;
+
+[AttributeUsage(AttributeTargets.Property)]
+public class IgnoreLoggingAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    public class IgnoreLoggingAttribute : Attribute
-    {
-    }
 }

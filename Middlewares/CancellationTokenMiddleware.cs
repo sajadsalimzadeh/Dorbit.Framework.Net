@@ -1,26 +1,21 @@
+using Dorbit.Attributes;
 using Dorbit.Services.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Middlewares
+namespace Dorbit.Middlewares;
+
+[ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
+public class CancellationTokenMiddleware : IMiddleware
 {
-    public class CancellationTokenMiddleware
+    public Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
-
-        public CancellationTokenMiddleware(RequestDelegate next)
+        var cancellationTokenService = context.RequestServices.GetService<ICancellationTokenService>();
+        if (cancellationTokenService is not null)
         {
-            _next = next;
+            cancellationTokenService.CancellationToken = context.RequestAborted;
         }
 
-        public async Task Invoke(HttpContext httpContext)
-        {
-            var cancellationTokenService = httpContext.RequestServices.GetService<ICancellationTokenService>();
-            if (cancellationTokenService is not null)
-            {
-                cancellationTokenService.CancellationToken = httpContext.RequestAborted;
-            }
-            await _next(httpContext);
-        }
+        return next(context);
     }
 }

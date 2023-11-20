@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Programming\\Ehsaa\\ehsaa\\Dependencies\\Dorbit\\Dorbit.Framework.csproj": {}
+    "D:\\Programming\\Ehsaa\\Ehsaa\\Dependencies\\Dorbit\\Dorbit.Framework.csproj": {}
   },
   "projects": {
-    "D:\\Programming\\Ehsaa\\ehsaa\\Dependencies\\Dorbit\\Dorbit.Framework.csproj": {
+    "D:\\Programming\\Ehsaa\\Ehsaa\\Dependencies\\Dorbit\\Dorbit.Framework.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Programming\\Ehsaa\\ehsaa\\Dependencies\\Dorbit\\Dorbit.Framework.csproj",
+        "projectUniqueName": "D:\\Programming\\Ehsaa\\Ehsaa\\Dependencies\\Dorbit\\Dorbit.Framework.csproj",
         "projectName": "Dorbit.Framework",
-        "projectPath": "D:\\Programming\\Ehsaa\\ehsaa\\Dependencies\\Dorbit\\Dorbit.Framework.csproj",
+        "projectPath": "D:\\Programming\\Ehsaa\\Ehsaa\\Dependencies\\Dorbit\\Dorbit.Framework.csproj",
         "packagesPath": "C:\\Users\\sajad\\.nuget\\packages\\",
-        "outputPath": "D:\\Programming\\Ehsaa\\ehsaa\\Dependencies\\Dorbit\\obj\\",
+        "outputPath": "D:\\Programming\\Ehsaa\\Ehsaa\\Dependencies\\Dorbit\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\sajad\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -65,6 +65,10 @@
             "MailKit": {
               "target": "Package",
               "version": "[4.2.0, )"
+            },
+            "Microsoft.AspNetCore.OData": {
+              "target": "Package",
+              "version": "[8.2.3, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
@@ -125,6 +129,26 @@
             "Serilog.Sinks.Seq": {
               "target": "Package",
               "version": "[5.2.3, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            },
+            "Swashbuckle.AspNetCore.Annotations": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            },
+            "Swashbuckle.AspNetCore.Swagger": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            },
+            "Swashbuckle.AspNetCore.SwaggerGen": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            },
+            "Swashbuckle.AspNetCore.SwaggerUI": {
+              "target": "Package",
+              "version": "[6.5.0, )"
             },
             "System.Drawing.Common": {
               "target": "Package",

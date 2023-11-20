@@ -1,9 +1,8 @@
 ﻿using Dorbit.Models.Abstractions;
 
-namespace Dorbit.Services.Abstractions
+namespace Dorbit.Services.Abstractions;
+
+public interface ISoftwareResolver
 {
-    public interface ISoftwareResolver
-    {
-        ISoftwareDto GetSoftware();
-    }
+    ISoftwareDto GetSoftware();
 }

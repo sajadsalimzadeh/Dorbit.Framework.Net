@@ -1,9 +1,8 @@
 ﻿using Dorbit.Exceptions;
 
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface IDeletationValidator
 {
-    public interface IDeletationValidator
-    {
-        void ValidateOnDelete(ModelValidationException e, IServiceProvider sp);
-    }
+    void ValidateOnDelete(ModelValidationException e, IServiceProvider sp);
 }

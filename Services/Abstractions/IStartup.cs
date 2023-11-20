@@ -1,7 +1,6 @@
-namespace Dorbit.Services.Abstractions
+namespace Dorbit.Services.Abstractions;
+
+public interface IStartup
 {
-    public interface IStartup
-    {
-        void Run();
-    }
+    void Run();
 }

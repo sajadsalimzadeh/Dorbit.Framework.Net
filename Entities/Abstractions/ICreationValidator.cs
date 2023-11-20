@@ -1,9 +1,8 @@
 ﻿using Dorbit.Exceptions;
 
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface ICreationValidator
 {
-    public interface ICreationValidator
-    {
-        void ValidateOnCreate(ModelValidationException e, IServiceProvider sp);
-    }
+    void ValidateOnCreate(ModelValidationException e, IServiceProvider sp);
 }

@@ -1,7 +1,6 @@
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface ICreationTime : IEntity
 {
-    public interface ICreationTime : IEntity
-    {
-        DateTime CreationTime { get; set; }
-    }
+    DateTime CreationTime { get; set; }
 }

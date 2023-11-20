@@ -1,8 +1,7 @@
-﻿namespace Dorbit.Models.Abstractions
+﻿namespace Dorbit.Models.Abstractions;
+
+public interface ITenantDto
 {
-    public interface ITenantDto
-    {
-        public long Id { get; set; }
-        public string Name { get; set; }
-    }
+    public long Id { get; set; }
+    public string Name { get; set; }
 }

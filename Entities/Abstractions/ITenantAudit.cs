@@ -1,8 +1,7 @@
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface ITenantAudit : IEntity
 {
-    public interface ITenantAudit : IEntity
-    {
-        long? TenantId { get; set; }
-        string TenantName { get; set; }
-    }
+    long? TenantId { get; set; }
+    string TenantName { get; set; }
 }

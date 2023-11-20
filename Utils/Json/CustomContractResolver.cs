@@ -2,25 +2,24 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Dorbit.Utils.Json
+namespace Dorbit.Utils.Json;
+
+public class CustomContractResolver : DefaultContractResolver
 {
-    public class CustomContractResolver : DefaultContractResolver
+    private readonly Func<bool> _includeProperty;
+
+    public CustomContractResolver(Func<bool> includeProperty)
     {
-        private readonly Func<bool> _includeProperty;
+        _includeProperty = includeProperty;
+    }
 
-        public CustomContractResolver(Func<bool> includeProperty)
-        {
-            _includeProperty = includeProperty;
-        }
-
-        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-        {
-            var property = base.CreateProperty(member, memberSerialization);
-            var shouldSerialize = property.ShouldSerialize;
-            property.ShouldSerialize = obj => _includeProperty() &&
-                                              (shouldSerialize == null ||
-                                               shouldSerialize(obj));
-            return property;
-        }
+    protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+    {
+        var property = base.CreateProperty(member, memberSerialization);
+        var shouldSerialize = property.ShouldSerialize;
+        property.ShouldSerialize = obj => _includeProperty() &&
+                                          (shouldSerialize == null ||
+                                           shouldSerialize(obj));
+        return property;
     }
 }

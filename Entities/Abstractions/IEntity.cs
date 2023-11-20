@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface IEntity
 {
-    public interface IEntity
-    {
-        [Key] public Guid Id { get; set; }
-    }
+    [Key] public Guid Id { get; set; }
 }

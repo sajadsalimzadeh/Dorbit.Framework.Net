@@ -1,8 +1,7 @@
-namespace Dorbit.Entities.Abstractions
+namespace Dorbit.Entities.Abstractions;
+
+public interface ICreationAudit : ICreationTime
 {
-    public interface ICreationAudit : ICreationTime
-    {
-        long? CreatorId { get; set; }
-        string CreatorName { get; set; }
-    }
+    Guid? CreatorId { get; set; }
+    string CreatorName { get; set; }
 }

@@ -1,10 +1,9 @@
 ﻿using Dorbit.Models.Abstractions;
 
-namespace Dorbit.Models.Users
+namespace Dorbit.Models.Users;
+
+public class TenantDto : ITenantDto
 {
-    public class TenantDto : ITenantDto
-    {
-        public long Id { get; set; }
-        public string Name { get; set; }
-    }
+    public long Id { get; set; }
+    public string Name { get; set; }
 }

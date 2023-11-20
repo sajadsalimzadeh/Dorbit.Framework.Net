@@ -1,22 +1,21 @@
-namespace Dorbit.Utils.Queries
+namespace Dorbit.Utils.Queries;
+
+public class OrderByQueryOption
 {
-    public class OrderByQueryOption
+    public List<KeyValuePair<string, bool>> Items { get; set; }
+
+    public string ToSql()
     {
-        public List<KeyValuePair<string, bool>> Items { get; set; }
+        if (Items is null) return null;
+        return string.Join(",",
+            Items.ConvertAll(x => $"{x.Key} {(x.Value ? "DESC" : "ASC")}"));
+    }
 
-        public string ToSql()
+    public OrderByQueryOption Clone()
+    {
+        return new OrderByQueryOption()
         {
-            if (Items is null) return null;
-            return string.Join(",",
-                Items.ConvertAll(x => $"{x.Key} {(x.Value ? "DESC" : "ASC")}"));
-        }
-
-        public OrderByQueryOption Clone()
-        {
-            return new OrderByQueryOption()
-            {
-                Items = Items?.ToList()
-            };
-        }
+            Items = Items?.ToList()
+        };
     }
 }

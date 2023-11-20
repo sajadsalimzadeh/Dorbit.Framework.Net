@@ -2,12 +2,21 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
+using System.Xml.Serialization;
 using Newtonsoft.Json;
 
 namespace Dorbit.Utils.Http;
 
 public class HttpHelper : IDisposable
 {
+    public enum ContentType
+    {
+        Json = 0,
+        Xml = 1,
+    }
+
+    private Dictionary<string, string> _headers = new();
+
     public string BaseUrl { get; set; }
     public string AuthorizationToken { get; set; }
     public string Username { get; set; }
@@ -15,14 +24,14 @@ public class HttpHelper : IDisposable
     public bool IgnoreUnTrustedCertificate { get; set; } = true;
     public int RemainRetryCount { get; set; } = 10;
     public bool IsRetryAfterUnAuthorized { get; set; } = true;
-
+    public ContentType RequestContentType { get; set; } = ContentType.Json;
+    public ContentType ResponseContentType { get; set; } = ContentType.Json;
     public HttpClient HttpClient { get; set; }
 
     public event Action OnUnAuthorizedHandler;
     public event Action OnForbiddenHandler;
     public event Action<Exception, HttpRequestMessage, HttpResponseMessage> OnException;
 
-    private Dictionary<string, string> _headers = new();
 
     public HttpHelper(string baseUrl, HttpMessageHandler handler = null)
     {
@@ -134,13 +143,26 @@ public class HttpHelper : IDisposable
 
         using var stream = await httpModel.Response.Content.ReadAsStreamAsync();
         using var reader = new StreamReader(stream);
-        using var jsonTextReader = new JsonTextReader(reader);
-        return new HttpModel<T>()
+
+
+        var serializer = new XmlSerializer(typeof(T));
+        var httpModelType = new HttpModel<T>()
         {
             Request = httpModel.Request,
             Response = httpModel.Response,
-            Result = new JsonSerializer().Deserialize<T>(jsonTextReader)
         };
+
+        if (ResponseContentType == ContentType.Json)
+        {
+            using var jsonTextReader = new JsonTextReader(reader);
+            httpModelType.Result = new JsonSerializer().Deserialize<T>(jsonTextReader);
+        }
+        else if (ResponseContentType == ContentType.Xml)
+        {
+            httpModelType.Result = (T)serializer.Deserialize(reader);
+        }
+
+        return httpModelType;
     }
 
     public Task<HttpModel<T>> GetAsync<T>(object parameter = null) => SendAsync<T>(HttpMethod.Get, parameter);
