@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Dorbit.Entities.Abstractions;
+namespace Dorbit.Framework.Entities.Abstractions;
 
 public interface IEntity
 {

@@ -1,8 +1,8 @@
-﻿using Dorbit.Services;
+﻿using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Extensions;
+namespace Dorbit.Framework.Extensions;
 
 public static class CommandExtensions
 {

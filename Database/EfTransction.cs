@@ -1,9 +1,9 @@
-using Dorbit.Database.Abstractions;
-using Dorbit.Exceptions;
+using Dorbit.Framework.Database.Abstractions;
+using Dorbit.Framework.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace Dorbit.Database;
+namespace Dorbit.Framework.Database;
 
 internal class EfPrimaryTransction : ITransaction
 {

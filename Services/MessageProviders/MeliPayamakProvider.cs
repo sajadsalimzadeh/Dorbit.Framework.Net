@@ -1,10 +1,10 @@
 ﻿using System.Net.Http.Json;
-using Dorbit.Models;
-using Dorbit.Models.Messages;
-using Dorbit.Services.Abstractions;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Models.Messages;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Configuration;
 
-namespace Dorbit.Services.SmsProviders;
+namespace Dorbit.Framework.Services.MessageProviders;
 
 public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
 {

@@ -5,7 +5,7 @@ using System.Web;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 
-namespace Dorbit.Utils.Http;
+namespace Dorbit.Framework.Utils.Http;
 
 public class HttpHelper : IDisposable
 {

@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using System.Reflection;
-using Dorbit.Attributes;
-using Dorbit.Database.Abstractions;
-using Dorbit.Entities;
-using Dorbit.Services.Abstractions;
+using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Database.Abstractions;
+using Dorbit.Framework.Entities;
+using Dorbit.Framework.Services.Abstractions;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
 internal class LookupService : ILookupService

@@ -1,8 +1,8 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Services.Abstractions;
-using Dorbit.Utils.Queries;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Services.Abstractions;
+using Dorbit.Framework.Utils.Queries;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
 internal class QueryOptionsService : IQueryOptionsService

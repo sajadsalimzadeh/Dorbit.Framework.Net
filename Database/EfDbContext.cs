@@ -1,19 +1,20 @@
 using System.ComponentModel;
 using System.Data;
 using System.Reflection;
-using Dorbit.Database.Abstractions;
-using Dorbit.Entities;
-using Dorbit.Entities.Abstractions;
-using Dorbit.Enums;
-using Dorbit.Exceptions;
-using Dorbit.Hosts;
-using Dorbit.Repositories;
-using Dorbit.Services.Abstractions;
+using Dorbit.Framework.Database.Abstractions;
+using Dorbit.Framework.Entities;
+using Dorbit.Framework.Entities.Abstractions;
+using Dorbit.Framework.Enums;
+using Dorbit.Framework.Exceptions;
+using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Hosts;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 // ReSharper disable SuspiciousTypeConversion.Global
 
-namespace Dorbit.Database;
+namespace Dorbit.Framework.Database;
 
 public abstract class EfDbContext : DbContext, IDbContext
 {
@@ -314,9 +315,9 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
     }
 
-    public void Migrate()
+    public Task MigrateAsync()
     {
-        Database.Migrate();
+        return Database.MigrateAsync();
     }
 
     public async Task<List<T>> QueryAsync<T>(string query, Dictionary<string, object> parameters)

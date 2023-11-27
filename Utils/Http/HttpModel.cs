@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Utils.Http;
+﻿namespace Dorbit.Framework.Utils.Http;
 
 public class HttpModel
 {

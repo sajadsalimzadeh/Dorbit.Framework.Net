@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Filters;
+namespace Dorbit.Framework.Filters;
 
 public class CacheAttribute : ActionFilterAttribute
 {

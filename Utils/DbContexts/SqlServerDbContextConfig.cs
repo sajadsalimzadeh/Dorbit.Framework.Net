@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Dorbit.Utils.DbContexts;
+namespace Dorbit.Framework.Utils.DbContexts;
 
 public class SqlServerDbContextConfig : DbContextConfig
 {

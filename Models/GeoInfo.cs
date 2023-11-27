@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Models;
+﻿namespace Dorbit.Framework.Models;
 
 public class GeoInfo
 {

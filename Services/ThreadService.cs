@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Services;
+﻿namespace Dorbit.Framework.Services;
 
 public static class ThreadService
 {

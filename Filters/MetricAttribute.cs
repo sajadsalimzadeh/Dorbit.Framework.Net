@@ -1,7 +1,7 @@
-﻿using Dorbit.Extensions;
+﻿using Dorbit.Framework.Extensions;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Dorbit.Filters;
+namespace Dorbit.Framework.Filters;
 
 public class MetricAttribute<T> : ActionFilterAttribute where T : class
 {

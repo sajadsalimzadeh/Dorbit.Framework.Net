@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Dorbit.Utils;
+namespace Dorbit.Framework.Utils;
 
 public static class ObjectExtension
 {

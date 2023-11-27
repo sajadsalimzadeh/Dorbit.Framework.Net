@@ -1,6 +1,6 @@
 ﻿using UAParser.Objects;
 
-namespace Dorbit.Models.Users;
+namespace Dorbit.Framework.Models.Users;
 
 public class UserState
 {

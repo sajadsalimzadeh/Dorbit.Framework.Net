@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Dorbit.Utils.Cryptography;
+namespace Dorbit.Framework.Utils.Cryptography;
 
 public static class Jwt
 {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Prometheus;
 
-namespace Dorbit.Filters;
+namespace Dorbit.Framework.Filters;
 
 public class MetricCounterAttribute : MetricAttribute<Summary>
 {

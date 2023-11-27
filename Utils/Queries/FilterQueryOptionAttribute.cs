@@ -1,4 +1,4 @@
-namespace Dorbit.Utils.Queries;
+namespace Dorbit.Framework.Utils.Queries;
 
 [AttributeUsage(AttributeTargets.All)]
 internal class FilterQueryOptionSqlAttribute : Attribute

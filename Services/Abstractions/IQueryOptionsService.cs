@@ -1,6 +1,6 @@
-﻿using Dorbit.Utils.Queries;
+﻿using Dorbit.Framework.Utils.Queries;
 
-namespace Dorbit.Services.Abstractions;
+namespace Dorbit.Framework.Services.Abstractions;
 
 public interface IQueryOptionsService
 {

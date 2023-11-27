@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace Dorbit.Utils.Reflections;
+namespace Dorbit.Framework.Utils.Reflections;
 
 public static class TypeExtensions
 {

@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Dorbit.Utils.Queries;
+namespace Dorbit.Framework.Utils.Queries;
 
 public enum FilterQueryOptionBinaryOperators
 {

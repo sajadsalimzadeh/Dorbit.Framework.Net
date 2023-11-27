@@ -1,14 +1,14 @@
-﻿using Dorbit.Enums;
-using Dorbit.Installers;
+﻿using Dorbit.Framework.Enums;
+using Dorbit.Framework.Installers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit;
+namespace Dorbit.Framework;
 
 internal class AppSetting
 {
     private static AppSetting _current;
-    public static AppSetting Current => _current ??= FrameworkInstaller.ServiceProvider.GetService<AppSetting>();
+    public static AppSetting Current => _current ??= App.ServiceProvider.GetService<AppSetting>();
         
     public AppSettingGeo Geo { get; set; } = new ();
     public AppSettingCaptcha Captcha { get; set; } = new ();

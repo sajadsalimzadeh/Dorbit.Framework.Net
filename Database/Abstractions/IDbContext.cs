@@ -1,6 +1,6 @@
-using Dorbit.Entities.Abstractions;
+using Dorbit.Framework.Entities.Abstractions;
 
-namespace Dorbit.Database.Abstractions;
+namespace Dorbit.Framework.Database.Abstractions;
 
 public interface IDbContext
 {
@@ -20,5 +20,5 @@ public interface IDbContext
     int SaveChanges();
     IEnumerable<Type> GetLookupEntities();
 
-    void Migrate();
+    Task MigrateAsync();
 }

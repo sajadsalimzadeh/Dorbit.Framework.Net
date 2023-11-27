@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Entities.Abstractions;
+﻿namespace Dorbit.Framework.Entities.Abstractions;
 
 public interface IReadonly : IUnDeletable
 {

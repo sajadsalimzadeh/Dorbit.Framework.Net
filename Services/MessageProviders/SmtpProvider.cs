@@ -1,13 +1,13 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Models;
-using Dorbit.Models.Messages;
-using Dorbit.Services.Abstractions;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Models.Messages;
+using Dorbit.Framework.Services.Abstractions;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 
-namespace Dorbit.Services.SmsProviders;
+namespace Dorbit.Framework.Services.MessageProviders;
 
 [ServiceRegister]
 public class SmtpProvider : IMessageProvider<MessageEmailRequest>

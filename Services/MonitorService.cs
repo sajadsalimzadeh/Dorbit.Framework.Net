@@ -1,8 +1,8 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Services.Abstractions;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 internal class MonitorService : IMonitorService

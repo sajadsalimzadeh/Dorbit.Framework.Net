@@ -1,7 +1,7 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Services.Abstractions;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Services.Abstractions;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
 internal class RequestService : IRequestService

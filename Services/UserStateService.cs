@@ -1,10 +1,10 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Models.Users;
-using Dorbit.Services.Abstractions;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Models.Users;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using UAParser;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 internal class UserStateService : IUserStateService

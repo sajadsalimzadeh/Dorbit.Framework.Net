@@ -1,6 +1,6 @@
-﻿using Dorbit.Commands.Abstractions;
+﻿using Dorbit.Framework.Commands.Abstractions;
 
-namespace Dorbit.Commands;
+namespace Dorbit.Framework.Commands;
 
 public abstract class CommandContextBase : ICommandContext
 {

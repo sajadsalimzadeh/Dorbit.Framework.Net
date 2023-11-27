@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Services.Abstractions;
+namespace Dorbit.Framework.Services.Abstractions;
 
 public interface IConfigurationLogger
 {

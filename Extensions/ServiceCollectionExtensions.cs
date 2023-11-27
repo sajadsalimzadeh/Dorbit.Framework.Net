@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
-using Dorbit.Attributes;
+using Dorbit.Framework.Attributes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Dorbit.Extensions;
+namespace Dorbit.Framework.Extensions;
 
 public static class ServiceCollectionExtensions
 {
@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
         var entryAssembly = Assembly.GetEntryAssembly();
         using var serviceProvider = services.BuildServiceProvider();
         using var scope = serviceProvider.CreateScope();
-        var assemblies = GetAssemblies(entryAssembly, namespaces);
+        var assemblies = entryAssembly.GetAssemblies(namespaces);
         var descriptors = new List<Descriptor>();
         foreach (var assembly in assemblies)
         {
@@ -42,40 +42,6 @@ public static class ServiceCollectionExtensions
         {
             services.Add(descriptor.ServiceDescriptor);
         }
-    }
-
-    private static List<Assembly> GetAssemblies(Assembly entryAssembly, string[] namespaces)
-    {
-        var returnAssemblies = new List<Assembly>();
-        var loadedAssemblies = new List<string>();
-        var assembliesToCheck = new Queue<Assembly>();
-        assembliesToCheck.Enqueue(entryAssembly);
-        while (assembliesToCheck.Any())
-        {
-            var assemblyToCheck = assembliesToCheck.Dequeue();
-            foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
-            {
-                if (loadedAssemblies.Contains(reference.FullName)) continue;
-                try
-                {
-                    var assembly = Assembly.Load(reference);
-                    assembliesToCheck.Enqueue(assembly);
-                }
-                catch
-                {
-                    // ignored
-                }
-
-                loadedAssemblies.Add(reference.FullName);
-            }
-
-            if (namespaces.Any(x => assemblyToCheck.FullName != null && assemblyToCheck.FullName.StartsWith(x)))
-            {
-                returnAssemblies.Add(assemblyToCheck);
-            }
-        }
-
-        return returnAssemblies;
     }
 
     private static IEnumerable<Type> GetInterfacesDirect(this Type type)

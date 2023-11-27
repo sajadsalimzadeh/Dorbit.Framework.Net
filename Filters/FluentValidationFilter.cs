@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Dorbit.Filters;
+namespace Dorbit.Framework.Filters;
 
 public class FluentValidationFilter : ActionFilterAttribute
 {

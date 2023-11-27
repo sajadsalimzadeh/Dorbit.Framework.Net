@@ -1,9 +1,9 @@
 ﻿using ConsoleTools;
-using Dorbit.Attributes;
-using Dorbit.Commands;
-using Dorbit.Commands.Abstractions;
+using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Commands;
+using Dorbit.Framework.Commands.Abstractions;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
 public class CliRunnerService

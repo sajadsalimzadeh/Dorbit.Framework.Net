@@ -1,6 +1,6 @@
-﻿using Dorbit.Enums;
+﻿using Dorbit.Framework.Enums;
 
-namespace Dorbit.Entities;
+namespace Dorbit.Framework.Entities;
 
 public class Message : Entity
 {

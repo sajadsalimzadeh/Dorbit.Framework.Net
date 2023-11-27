@@ -1,6 +1,6 @@
-﻿using Dorbit.Attributes;
+﻿using Dorbit.Framework.Attributes;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
 public class AuthenticatorManager

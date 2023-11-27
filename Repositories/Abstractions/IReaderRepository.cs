@@ -1,8 +1,8 @@
-using Dorbit.Entities.Abstractions;
-using Dorbit.Models;
-using Dorbit.Utils.Queries;
+using Dorbit.Framework.Entities.Abstractions;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Utils.Queries;
 
-namespace Dorbit.Repositories.Abstractions;
+namespace Dorbit.Framework.Repositories.Abstractions;
 
 public interface IReaderRepository<T> where T : class, IEntity
 {

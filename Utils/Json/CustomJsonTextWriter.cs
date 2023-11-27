@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Dorbit.Utils.Json;
+namespace Dorbit.Framework.Utils.Json;
 
 public class CustomJsonTextWriter : JsonTextWriter
 {

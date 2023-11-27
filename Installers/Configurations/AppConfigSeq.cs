@@ -1,9 +1,9 @@
-﻿using Dorbit.Services.Abstractions;
+﻿using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 
-namespace Dorbit.Installers.Configurations;
+namespace Dorbit.Framework.Installers.Configurations;
 
 public class AppConfigSeq : IConfigurationLogger
 {

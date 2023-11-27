@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-using Dorbit.Attributes;
-using Dorbit.Services.Abstractions;
+using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 internal class LoggerService : ILoggerService

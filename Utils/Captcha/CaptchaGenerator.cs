@@ -2,10 +2,10 @@
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
-using Dorbit.Enums;
+using Dorbit.Framework.Enums;
 using Fare;
 
-namespace Dorbit.Utils.Captcha;
+namespace Dorbit.Framework.Utils.Captcha;
 
 public class CaptchaGenerator
 {

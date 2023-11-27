@@ -1,9 +1,9 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Services.Abstractions;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Middlewares;
+namespace Dorbit.Framework.Middlewares;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 public class AuthMiddleware : IMiddleware

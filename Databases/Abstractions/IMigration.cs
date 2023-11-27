@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Databases.Abstractions;
+﻿namespace Dorbit.Framework.Databases.Abstractions;
 
 public interface IMigration
 {

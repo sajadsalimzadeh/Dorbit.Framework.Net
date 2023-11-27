@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Exceptions;
+﻿namespace Dorbit.Framework.Exceptions;
 
 public class ModelValidationException : Exception
 {

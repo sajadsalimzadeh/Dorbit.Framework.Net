@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
-using Dorbit.Filters;
-using Dorbit.Models;
-using Dorbit.Services.Abstractions;
-using Dorbit.Utils.Queries;
+using Dorbit.Framework.Filters;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Services.Abstractions;
+using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Controllers;
+namespace Dorbit.Framework.Controllers;
 
 [Monitor]
 [Route("[controller]"), ApiController]
@@ -15,7 +15,7 @@ public abstract class BaseController : ControllerBase
     private IServiceProvider serviceProvider;
     protected IServiceProvider ServiceProvider => serviceProvider ??= HttpContext.RequestServices;
 
-    protected IUserResolver userResolver;
+    private IUserResolver userResolver;
     protected IUserResolver UserResolver => userResolver ??= ServiceProvider.GetRequiredService<IUserResolver>();
 
     protected IMapper Mapper => ServiceProvider.GetService<IMapper>();

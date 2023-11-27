@@ -1,6 +1,6 @@
-﻿using Dorbit.Models.Commands;
+﻿using Dorbit.Framework.Models.Commands;
 
-namespace Dorbit.Commands.Abstractions;
+namespace Dorbit.Framework.Commands.Abstractions;
 
 public interface ICommand
 {
@@ -8,5 +8,5 @@ public interface ICommand
     string Message { get; }
     IEnumerable<CommandParameter> GetParameters(ICommandContext context);
     IEnumerable<ICommand> GetSubCommands(ICommandContext context);
-    void Invoke(ICommandContext context);
+    Task Invoke(ICommandContext context);
 }

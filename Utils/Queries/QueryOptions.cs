@@ -1,6 +1,6 @@
 using System.Linq.Dynamic.Core;
 
-namespace Dorbit.Utils.Queries;
+namespace Dorbit.Framework.Utils.Queries;
 
 public class QueryOptions
 {

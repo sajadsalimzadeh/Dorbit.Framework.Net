@@ -1,4 +1,4 @@
-namespace Dorbit.Database.Abstractions;
+namespace Dorbit.Framework.Database.Abstractions;
 
 public interface ITransaction : IDisposable
 {

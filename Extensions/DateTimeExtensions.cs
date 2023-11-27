@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Extensions;
+﻿namespace Dorbit.Framework.Extensions;
 
 public static class DateTimeExtensions
 {

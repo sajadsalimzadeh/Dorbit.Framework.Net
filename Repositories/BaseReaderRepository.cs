@@ -1,11 +1,11 @@
-using Dorbit.Database.Abstractions;
-using Dorbit.Entities.Abstractions;
-using Dorbit.Models;
-using Dorbit.Repositories.Abstractions;
-using Dorbit.Utils.Queries;
+using Dorbit.Framework.Database.Abstractions;
+using Dorbit.Framework.Entities.Abstractions;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Repositories.Abstractions;
+using Dorbit.Framework.Utils.Queries;
 using Microsoft.EntityFrameworkCore;
 
-namespace Dorbit.Repositories;
+namespace Dorbit.Framework.Repositories;
 
 public class BaseReaderRepository<T> : IReaderRepository<T> where T : class, IEntity
 {

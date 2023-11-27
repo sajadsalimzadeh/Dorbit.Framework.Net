@@ -1,8 +1,8 @@
-﻿using Dorbit.Services.Abstractions;
+﻿using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Dorbit.Hosts;
+namespace Dorbit.Framework.Hosts;
 
 public abstract class BaseHost : BackgroundService
 {

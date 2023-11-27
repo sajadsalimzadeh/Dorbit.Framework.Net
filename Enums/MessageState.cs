@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Enums;
+﻿namespace Dorbit.Framework.Enums;
 
 public enum MessageState
 {
