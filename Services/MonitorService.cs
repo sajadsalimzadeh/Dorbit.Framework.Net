@@ -13,7 +13,7 @@ internal class MonitorService : IMonitorService
     public int AvgResponseItemCount { get; set; } = 100;
     public double AvgResponseTimeMs => (responseDurations.Count > 0 ? responseDurations.Values.Average() : 0);
 
-    private DateTime requestTime = DateTime.Now;
+    private DateTime _requestTime = DateTime.UtcNow;
     public int RequestPerSecond { get; private set; }
 
     public void AddResponseDuration(int milliseconds)
@@ -27,10 +27,10 @@ internal class MonitorService : IMonitorService
 
     public void AddRequest()
     {
-        if((DateTime.Now - requestTime).Seconds > 0)
+        if((DateTime.UtcNow - _requestTime).Seconds > 0)
         {
             RequestPerSecond = 0;
-            requestTime = DateTime.Now;
+            _requestTime = DateTime.UtcNow;
         }
         RequestPerSecond++;
     }

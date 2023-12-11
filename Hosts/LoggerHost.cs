@@ -64,7 +64,7 @@ internal class LoggerHost : BaseHost
                     ReferenceId = request.NewObj.Id.ToString(),
                     Data = JsonConverterWrapper.SerializeObject(diff, 1),
                     Action = request.Action,
-                    CreationTime = DateTime.Now,
+                    CreationTime = DateTime.UtcNow,
                     CreatorId = request.User?.Id,
                     CreatorName = request.User?.Name,
                 };

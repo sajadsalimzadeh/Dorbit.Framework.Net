@@ -59,7 +59,7 @@ public class AuthAttribute : Attribute, IAsyncAuthorizationFilter
             var userStateService = context.HttpContext.RequestServices.GetService<IUserStateService>();
             var state = userStateService.GetUserState(user.Id);
             state.Url = context.HttpContext.Request.GetDisplayUrl();
-            state.LastRequestTime = DateTime.Now;
+            state.LastRequestTime = DateTime.UtcNow;
             if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var agent))
             {
                 userStateService.LoadClientInfo(state, agent);

@@ -8,13 +8,13 @@ public class MonitorAttribute : ActionFilterAttribute
 {
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        context.HttpContext.Items["Monitoring-StartTime"] = DateTime.Now;
+        context.HttpContext.Items["Monitoring-StartTime"] = DateTime.UtcNow;
     }
 
     public override void OnActionExecuted(ActionExecutedContext context)
     {
         var startTime = (DateTime)context.HttpContext.Items["Monitoring-StartTime"];
-        var endTime = DateTime.Now;
+        var endTime = DateTime.UtcNow;
         var diffTime = endTime - startTime;
         var monitorService = context.HttpContext.RequestServices.GetService<IMonitorService>();
         monitorService.AddResponseDuration(diffTime.Milliseconds);

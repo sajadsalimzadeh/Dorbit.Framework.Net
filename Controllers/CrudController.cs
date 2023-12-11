@@ -41,7 +41,7 @@ public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudControlle
 
     [HttpPatch("{id}")]
     [Auth("[entity]-Save")]
-    public virtual Task<QueryResult<TGet>> Update(Guid id, [FromBody] TEdit dto)
+    public virtual Task<QueryResult<TGet>> Edit(Guid id, [FromBody] TEdit dto)
     {
         dto.Id = id;
         return Repository.UpdateAsync(id, dto).MapAsync<TEntity, TGet>().ToQueryResultAsync();

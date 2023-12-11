@@ -144,7 +144,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         if (model is IValidator validator) validator.Validate(e, ServiceProvider);
         if (model is ICreationValidator creationValidator) creationValidator.ValidateOnCreate(e, ServiceProvider);
         e.ThrowIfHasError();
-        if (model is ICreationTime creationTime) creationTime.CreationTime = DateTime.Now;
+        if (model is ICreationTime creationTime) creationTime.CreationTime = DateTime.UtcNow;
         if (model is ICreationAudit creationAudit)
         {
             var user = UserResolver?.User;
@@ -192,7 +192,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         e.ThrowIfHasError();
 
         if (model is IVersionAudit versionAudit) versionAudit.Version++;
-        if (model is IModificationTime modificationTime) modificationTime.ModificationTime = DateTime.Now;
+        if (model is IModificationTime modificationTime) modificationTime.ModificationTime = DateTime.UtcNow;
         if (model is IModificationAudit modificationAudit)
         {
             var user = UserResolver?.User;
@@ -257,7 +257,7 @@ public abstract class EfDbContext : DbContext, IDbContext
             {
                 softDelete.IsDeleted = true;
 
-                if (softDelete is IDeletationTime deletionTime) deletionTime.DeletionTime = DateTime.Now;
+                if (softDelete is IDeletationTime deletionTime) deletionTime.DeletionTime = DateTime.UtcNow;
                 if (softDelete is IDeletationAudit deletionAudit)
                 {
                     var user = UserResolver?.User;

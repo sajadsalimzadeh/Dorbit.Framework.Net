@@ -37,7 +37,7 @@ public class AntiDosAttribute : ActionFilterAttribute
             key = user.Id.GetHashCode();
         }
 
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         if (!AllUserRequests.TryGetValue(key, out var requests))
         {
             AllUserRequests.TryAdd(key, requests = new List<RequestModel>());

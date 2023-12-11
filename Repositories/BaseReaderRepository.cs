@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Dorbit.Framework.Database.Abstractions;
 using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Models;
@@ -38,17 +39,27 @@ public class BaseReaderRepository<T> : IReaderRepository<T> where T : class, IEn
         return Set().FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public virtual Task<T> First()
+    public Task<T> FirstOrDefaultAsync()
     {
         return Set().FirstOrDefaultAsync();
     }
 
-    public virtual Task<T> Last()
+    public Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+    {
+        return Set().FirstOrDefaultAsync(predicate);
+    }
+
+    public Task<T> LastOrDefaultAsync()
     {
         return Set().OrderByDescending(x => x.Id).FirstOrDefaultAsync();
     }
 
-    public virtual Task<PagedListResult<T>> Select(QueryOptions queryOptions)
+    public Task<T> LastOrDefaultAsync(Expression<Func<T, bool>> predicate)
+    {
+        return Set().OrderByDescending(x => x.Id).FirstOrDefaultAsync(predicate);
+    }
+
+    public virtual Task<PagedListResult<T>> SelectAsync(QueryOptions queryOptions)
     {
         return Set().ApplyToPagedListAsync(queryOptions);
     }
