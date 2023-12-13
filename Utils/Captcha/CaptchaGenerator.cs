@@ -32,7 +32,7 @@ public class CaptchaGenerator
         FontStyle.Strikeout,
     };
 
-    private int GetRotation(System.Random rnd)
+    private int GetRotation(Random rnd)
     {
         return Difficulty switch
         {
@@ -44,7 +44,7 @@ public class CaptchaGenerator
         };
     }
 
-    private int GetFontSize(System.Random rnd)
+    private int GetFontSize(Random rnd)
     {
         return Difficulty switch
         {
@@ -56,7 +56,7 @@ public class CaptchaGenerator
         };
     }
 
-    private FontStyle GetFontStyle(System.Random rnd)
+    private FontStyle GetFontStyle(Random rnd)
     {
         return Difficulty switch
         {
@@ -68,7 +68,7 @@ public class CaptchaGenerator
         };
     }
 
-    private string GetFontName(System.Random rnd)
+    private string GetFontName(Random rnd)
     {
         switch (Difficulty)
         {
@@ -83,7 +83,7 @@ public class CaptchaGenerator
         }
     }
 
-    private int[] GetColor(System.Random rnd)
+    private int[] GetColor(Random rnd)
     {
         switch (Difficulty)
         {
@@ -99,7 +99,7 @@ public class CaptchaGenerator
 
     public Image Generate(string text)
     {
-        System.Random rnd = new System.Random();
+        Random rnd = new Random();
 
         //Creates an output Bitmap
         var bitmap = new Bitmap(Width, Height, PixelFormat.Format24bppRgb);

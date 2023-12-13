@@ -5,48 +5,49 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Dorbit.Framework.Database;
 
-internal class EfPrimaryTransction : ITransaction
+internal class EfPrimaryTransaction : ITransaction
 {
-    private readonly IDbContextTransaction transaction;
-    private readonly DbContext dbContext;
-    private readonly EfTransactionContext transactionContext;
+    private readonly IDbContextTransaction _transaction;
+    private readonly DbContext _dbContext;
+    private readonly EfTransactionContext _transactionContext;
 
-    internal EfPrimaryTransction(DbContext dbContext, EfTransactionContext transactionContext)
+    internal EfPrimaryTransaction(DbContext dbContext, EfTransactionContext transactionContext)
     {
-        this.dbContext = dbContext;
-        this.transactionContext = transactionContext;
-        transaction = dbContext.Database.BeginTransaction();
+        _dbContext = dbContext;
+        _transactionContext = transactionContext;
+        _transaction = dbContext.Database.BeginTransaction();
     }
 
     public void Commit()
     {
-        dbContext.SaveChanges();
-        transaction.Commit();
+        _dbContext.SaveChanges();
+        _transaction.Commit();
     }
 
     public void Rollback()
     {
-        transaction.Rollback();
+        _transaction.Rollback();
     }
 
     public void Dispose()
     {
-        transactionContext.Transactions.Remove(this);
-        transaction.Dispose();
+        _transactionContext.Transactions.Remove(this);
+        _transaction.Dispose();
     }
 }
-internal class EfSecondaryTransction : ITransaction
-{
-    private readonly EfTransactionContext transactionContext;
 
-    internal EfSecondaryTransction(EfTransactionContext transactionContext)
+internal class EfSecondaryTransaction : ITransaction
+{
+    private readonly EfTransactionContext _transactionContext;
+
+    internal EfSecondaryTransaction(EfTransactionContext transactionContext)
     {
-        this.transactionContext = transactionContext;
+        _transactionContext = transactionContext;
     }
 
     public void Commit()
     {
-        transactionContext.dbContext.SaveChanges();
+        _transactionContext.dbContext.SaveChanges();
     }
 
     public void Rollback()
@@ -56,6 +57,21 @@ internal class EfSecondaryTransction : ITransaction
 
     public void Dispose()
     {
-        transactionContext.Transactions.Remove(this);
+        _transactionContext.Transactions.Remove(this);
+    }
+}
+
+internal class InMemoryTransaction : ITransaction
+{
+    public void Commit()
+    {
+    }
+
+    public void Rollback()
+    {
+    }
+
+    public void Dispose()
+    {
     }
 }

@@ -20,6 +20,12 @@ public class CommandResult
         Message = message;
     }
 
+    public CommandResult(bool success, string message)
+    {
+        Success = success;
+        Message = message;
+    }
+
     public static CommandResult Succeed()
     {
         return new CommandResult()

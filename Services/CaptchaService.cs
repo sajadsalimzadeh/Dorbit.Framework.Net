@@ -14,7 +14,7 @@ public class CaptchaService
 
     public CaptchaService(IServiceProvider serviceProvider)
     {
-        this.appSetting = serviceProvider.GetService<AppSetting>();
+        appSetting = serviceProvider.GetService<AppSetting>();
     }
 
     public KeyValuePair<string, string> Generate(CaptchaGenerateModel dto)

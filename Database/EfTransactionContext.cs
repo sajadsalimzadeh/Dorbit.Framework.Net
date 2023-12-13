@@ -25,12 +25,12 @@ internal class EfTransactionContext
         ITransaction transaction;
         if (Transactions.Count > 0)
         {
-            transaction = new EfSecondaryTransction(this);
+            transaction = new EfSecondaryTransaction(this);
             Transactions.Add(transaction);
         }
         else
         {
-            transaction = new EfPrimaryTransction(dbContext, this);
+            transaction = new EfPrimaryTransaction(dbContext, this);
             Transactions.Add(transaction);
         }
         return transaction;
