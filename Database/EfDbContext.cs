@@ -117,7 +117,7 @@ public abstract class EfDbContext : DbContext, IDbContext
     public ITransaction BeginTransaction()
     {
         if (GetProvider() == DatabaseProviderType.InMemory) return new InMemoryTransaction();
-        return efTransactionContext.BeginTransaction();
+        return _efTransactionContext.BeginTransaction();
     }
 
     public IDbContext AutoExcludeDeletedEnable()
