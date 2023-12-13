@@ -1,7 +1,7 @@
-﻿using Dorbit.Models;
-using Dorbit.Utils.Http;
+﻿using Dorbit.Framework.Models;
+using Dorbit.Framework.Utils.Http;
 
-namespace Dorbit.Services.Abstractions;
+namespace Dorbit.Framework.Services.Abstractions;
 
 public interface IGeoService
 {

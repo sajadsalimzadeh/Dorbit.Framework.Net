@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Models.Commands;
+﻿namespace Dorbit.Framework.Models.Commands;
 
 public class CommandParameter<T>
 {
@@ -22,6 +22,10 @@ public class CommandParameter<T>
 
 public class CommandParameter : CommandParameter<object>
 {
+    public CommandParameter(string key) : base(key, key)
+    {
+    }
+    
     public CommandParameter(string key, string message) : base(key, message)
     {
     }

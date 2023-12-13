@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace Dorbit.Utils.Queries;
+namespace Dorbit.Framework.Utils.Queries;
 
 public class ODataQueryOptions : QueryOptions
 {

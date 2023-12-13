@@ -1,6 +1,6 @@
-﻿using Dorbit.Models.Abstractions;
+﻿using Dorbit.Framework.Models.Abstractions;
 
-namespace Dorbit.Models.Users;
+namespace Dorbit.Framework.Models.Users;
 
 public class TenantDto : ITenantDto
 {

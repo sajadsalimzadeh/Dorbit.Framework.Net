@@ -1,2 +1,2 @@
-namespace Dorbit.Models;
+namespace Dorbit.Framework.Models;
 

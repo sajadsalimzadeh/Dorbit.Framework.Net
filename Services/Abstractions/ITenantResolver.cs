@@ -1,6 +1,6 @@
-using Dorbit.Models.Abstractions;
+using Dorbit.Framework.Models.Abstractions;
 
-namespace Dorbit.Services.Abstractions;
+namespace Dorbit.Framework.Services.Abstractions;
 
 public interface ITenantResolver
 {

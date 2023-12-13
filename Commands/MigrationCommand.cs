@@ -1,15 +1,17 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Commands.Abstractions;
-using Dorbit.Database.Abstractions;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Commands.Abstractions;
+using Dorbit.Framework.Database.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
-using ICommand = Dorbit.Commands.Abstractions.ICommand;
+using ICommand = Dorbit.Framework.Commands.Abstractions.ICommand;
 
-namespace Dorbit.Commands;
+namespace Dorbit.Framework.Commands;
 
 [ServiceRegister]
 public class MigrationCommand : Command
 {
     private readonly IServiceProvider _serviceProvider;
+
+    public override string Message => "Migrate";
 
     public MigrationCommand(IServiceProvider serviceProvider)
     {
@@ -25,9 +27,8 @@ public class MigrationCommand : Command
             yield return new MigrationCommandItem(dbContext);
         }
     }
-
-    public override string Message { get; }
-    public override void Invoke(ICommandContext context)
+    
+    public override Task Invoke(ICommandContext context)
     {
         throw new NotImplementedException();
     }
@@ -44,13 +45,13 @@ public class MigrationCommandAll : Command
         _dbContexts = dbContexts;
     }
 
-    public override void Invoke(ICommandContext context)
+    public override async Task Invoke(ICommandContext context)
     {
         foreach (var dbContext in _dbContexts)
         {
             try
             {
-                dbContext.Migrate();
+                await dbContext.MigrateAsync();
                 context.Log($"{dbContext.GetType().Name} Migrate");
             }
             catch (Exception ex)
@@ -71,9 +72,9 @@ internal class MigrationCommandItem : Command
         _dbContext = dbContext;
     }
 
-    public override void Invoke(ICommandContext context)
+    public override async Task Invoke(ICommandContext context)
     {
-        _dbContext.Migrate();
+        await _dbContext.MigrateAsync();
         context.Log($"{_dbContext.GetType().Name} Migrate");
     }
 }

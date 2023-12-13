@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Dorbit.Installers;
+namespace Dorbit.Framework.Installers;
 
 public static class KestrelInstaller
 {

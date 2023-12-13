@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Attributes;
+namespace Dorbit.Framework.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class ServiceRegisterAttribute : Attribute

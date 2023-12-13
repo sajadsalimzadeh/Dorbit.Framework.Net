@@ -1,6 +1,6 @@
 ﻿using UAParser.Objects;
 
-namespace Dorbit.Models.Users;
+namespace Dorbit.Framework.Models.Users;
 
 public class UserState
 {
@@ -8,15 +8,11 @@ public class UserState
     public string Url { get; internal set; }
     public GeoInfo GeoInfo { get; internal set; }
     public ClientInfo ClientInfo { get; internal set; }
-    public DateTime LastRequestTime { get; internal set; }
+    public DateTime LastRequestTime { get; internal set; } = DateTime.UtcNow;
     public bool IsGeoInfoInquiry { get; internal set; }
 
-    internal UserState()
-    {
-        LastRequestTime = DateTime.Now;
-    }
 
-    internal UserState(Guid userId) : this()
+    internal UserState(Guid userId)
     {
         UserId = userId;
 

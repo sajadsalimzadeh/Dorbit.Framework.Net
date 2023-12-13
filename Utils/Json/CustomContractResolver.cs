@@ -2,7 +2,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Dorbit.Utils.Json;
+namespace Dorbit.Framework.Utils.Json;
 
 public class CustomContractResolver : DefaultContractResolver
 {

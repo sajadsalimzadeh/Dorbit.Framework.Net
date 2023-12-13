@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Models.Messages;
+﻿namespace Dorbit.Framework.Models.Messages;
 
 public class MessageEmailRequest : MessageRequest
 {

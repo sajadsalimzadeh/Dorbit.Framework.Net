@@ -1,8 +1,8 @@
-using Dorbit.Database.Abstractions;
-using Dorbit.Entities.Abstractions;
-using Dorbit.Repositories.Abstractions;
+using Dorbit.Framework.Database.Abstractions;
+using Dorbit.Framework.Entities.Abstractions;
+using Dorbit.Framework.Repositories.Abstractions;
 
-namespace Dorbit.Repositories;
+namespace Dorbit.Framework.Repositories;
 
 public class BaseRepository<T> : BaseWriterRepository<T>, IBaseRepository<T> where T : class, IEntity
 {

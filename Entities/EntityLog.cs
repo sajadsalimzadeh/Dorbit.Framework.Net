@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using Dorbit.Entities.Abstractions;
-using Dorbit.Enums;
+using Dorbit.Framework.Entities.Abstractions;
+using Dorbit.Framework.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace Dorbit.Entities;
+namespace Dorbit.Framework.Entities;
 
 [Index(nameof(EntityType)), Index(nameof(EntityType), nameof(ReferenceId))]
 public class EntityLog : CreateEntity, ICreationAudit

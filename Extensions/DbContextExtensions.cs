@@ -1,8 +1,8 @@
-﻿using Dorbit.Databases.Abstractions;
+﻿using Dorbit.Framework.Databases.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Extensions;
+namespace Dorbit.Framework.Extensions;
 
 public static class DbContextExtensions
 {

@@ -1,10 +1,10 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Models.Users;
-using Dorbit.Services.Abstractions;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Models.Users;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using UAParser;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 internal class UserStateService : IUserStateService
@@ -28,7 +28,7 @@ internal class UserStateService : IUserStateService
                 result = new UserState(userId);
                 _states[userId] = result;
             }
-            else if (result.LastRequestTime < DateTime.Now.AddMinutes(-5))
+            else if (result.LastRequestTime < DateTime.UtcNow.AddMinutes(-5))
             {
                 _states.Remove(userId);
                 return GetUserState(userId);
@@ -40,7 +40,7 @@ internal class UserStateService : IUserStateService
 
     public IEnumerable<UserState> GetOnlineUsers()
     {
-        var time = DateTime.Now.AddMinutes(-1);
+        var time = DateTime.UtcNow.AddMinutes(-1);
         lock (_states)
         {
             return _states.Values.Where(x => x?.LastRequestTime > time);

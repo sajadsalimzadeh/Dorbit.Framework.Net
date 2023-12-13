@@ -1,23 +1,22 @@
 using System.Security.Principal;
-using Dorbit.Database;
-using Dorbit.Extensions;
-using Dorbit.Services.Abstractions;
+using System.Text.Json;
+using Dorbit.Framework.Database;
+using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Dorbit.Installers;
+namespace Dorbit.Framework.Installers;
 
 public static class FrameworkInstaller
 {
-    public static IServiceProvider ServiceProvider { get; private set; }
-
     public static IServiceCollection AddDorbitFramework(this IServiceCollection services, Configuration configuration)
     {
-         services.BindConfiguration<AppSetting>();
-        
+        services.BindConfiguration<AppSetting>();
+
         services.TryAddSingleton(services);
         services.AddMemoryCache();
         services.AddHttpContextAccessor();
@@ -27,13 +26,16 @@ public static class FrameworkInstaller
         {
             configuration.DependencyRegisterNamespaces.Add("Dorbit");
         }
+
         services.RegisterServicesByAssembly(configuration.DependencyRegisterNamespaces.ToArray());
 
         services.AddScoped<IPrincipal>((sp) => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
-        
+
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
-        services.AddControllers(typeof(FrameworkInstaller).Assembly);
-        
+        services.AddControllers(typeof(FrameworkInstaller).Assembly)
+            .AddODataDefault()
+            .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
+
         configuration.Logger?.Configure(services);
         services.AddDbContext<LogDbContext>(configuration.LogDbContextConfiguration);
 
@@ -42,7 +44,7 @@ public static class FrameworkInstaller
 
     public static IApplicationBuilder UseDorbitFramework(this IApplicationBuilder app)
     {
-        ServiceProvider = app.ApplicationServices;
+        App.ServiceProvider = app.ApplicationServices;
 
         return app;
     }

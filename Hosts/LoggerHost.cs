@@ -1,15 +1,15 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
-using Dorbit.Attributes;
-using Dorbit.Database;
-using Dorbit.Entities;
-using Dorbit.Entities.Abstractions;
-using Dorbit.Enums;
-using Dorbit.Models.Loggers;
-using Dorbit.Utils.Json;
+using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Database;
+using Dorbit.Framework.Entities;
+using Dorbit.Framework.Entities.Abstractions;
+using Dorbit.Framework.Enums;
+using Dorbit.Framework.Models.Loggers;
+using Dorbit.Framework.Utils.Json;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Hosts;
+namespace Dorbit.Framework.Hosts;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 internal class LoggerHost : BaseHost
@@ -64,7 +64,7 @@ internal class LoggerHost : BaseHost
                     ReferenceId = request.NewObj.Id.ToString(),
                     Data = JsonConverterWrapper.SerializeObject(diff, 1),
                     Action = request.Action,
-                    CreationTime = DateTime.Now,
+                    CreationTime = DateTime.UtcNow,
                     CreatorId = request.User?.Id,
                     CreatorName = request.User?.Name,
                 };

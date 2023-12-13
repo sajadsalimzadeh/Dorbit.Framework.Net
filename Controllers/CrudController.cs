@@ -1,62 +1,68 @@
-﻿using Dorbit.Entities.Abstractions;
-using Dorbit.Extensions;
-using Dorbit.Filters;
-using Dorbit.Models;
-using Dorbit.Repositories.Abstractions;
-using Dorbit.Utils.Queries;
+﻿using Dorbit.Framework.Entities.Abstractions;
+using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Filters;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Repositories.Abstractions;
+using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Controllers;
+namespace Dorbit.Framework.Controllers;
 
 public abstract class CrudController : BaseController
 {
-
 }
 
-public abstract class CrudController<TEntity, TGetDto, TAddDto, TUpdateDto> :
-    CrudController where TEntity : class, IEntity where TUpdateDto : IEntity
+public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudController where TEntity : class, IEntity where TEdit : IEntity
 {
     protected IBaseRepository<TEntity> Repository => ServiceProvider.GetService<IBaseRepository<TEntity>>();
 
     [HttpGet]
     [Auth("[entity]-Select")]
-    public virtual async Task<PagedListResult<TGetDto>> Select()
+    public virtual async Task<PagedListResult<TGet>> Select(ODataQueryOptions<TEntity> queryOptions)
     {
-        return (await Repository.Set().ApplyToPagedListAsync(QueryOptions)).Select(x => Mapper.Map<TGetDto>(x));
+        return (await Repository.Set().ApplyToPagedListAsync(queryOptions)).Select(x => Mapper.Map<TGet>(x));
     }
 
     [HttpGet("{id}")]
-    [Auth("[entity]-Select")]
-    public virtual Task<QueryResult<TGetDto>> GetById(Guid id)
+    [Auth("[entity]-Get")]
+    public virtual Task<QueryResult<TGet>> GetById(Guid id)
     {
-        return Repository.GetByIdAsync(id).MapTo<TGetDto>().ToQueryResultAsync();
+        return Repository.GetByIdAsync(id).MapAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
     [HttpPost]
     [Auth("[entity]-Save")]
-    public virtual Task<QueryResult<TGetDto>> Add([FromBody] TAddDto dto)
+    public virtual Task<QueryResult<TGet>> Add([FromBody] TAdd dto)
     {
-        return Repository.InsertAsync(dto.MapTo<TEntity>()).MapTo<TGetDto>().ToQueryResultAsync();
+        return Repository.InsertAsync(dto.MapTo<TEntity>()).MapAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
     [HttpPatch("{id}")]
     [Auth("[entity]-Save")]
-    public virtual Task<QueryResult<TGetDto>> Update(Guid id, [FromBody] TUpdateDto dto)
+    public virtual Task<QueryResult<TGet>> Edit(Guid id, [FromBody] TEdit dto)
     {
         dto.Id = id;
-        return Repository.UpdateAsync(id, dto).MapTo<TGetDto>().ToQueryResultAsync();
+        return Repository.UpdateAsync(id, dto).MapAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
     [HttpDelete("{id}")]
     [Auth("[entity]-Remove")]
-    public virtual Task<QueryResult<TGetDto>> Remove(Guid id)
+    public virtual Task<QueryResult<TGet>> Remove(Guid id)
     {
-        return Repository.RemoveAsync(id).MapTo<TGetDto>().ToQueryResultAsync();
+        return Repository.RemoveAsync(id).MapAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 }
 
 public abstract class CrudController<TEntity> : CrudController<TEntity, TEntity, TEntity, TEntity> where TEntity : class, IEntity
 {
+}
 
+public abstract class CrudController<TEntity, TGet> : CrudController<TEntity, TGet, TEntity, TEntity> where TEntity : class, IEntity
+{
+}
+
+public abstract class CrudController<TEntity, TGet, TAdd> : CrudController<TEntity, TGet, TAdd, TEntity> where TEntity : class, IEntity
+{
 }

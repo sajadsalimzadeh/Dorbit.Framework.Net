@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace Dorbit.Entities;
+namespace Dorbit.Framework.Entities;
 
 [Index("Entity", "Key", IsUnique = true, Name = "UN_Lookup_Entity_Key")]
 public class Lookup : Entity

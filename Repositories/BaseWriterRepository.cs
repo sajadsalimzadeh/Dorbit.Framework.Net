@@ -1,10 +1,11 @@
 using AutoMapper;
-using Dorbit.Database.Abstractions;
-using Dorbit.Entities.Abstractions;
-using Dorbit.Repositories.Abstractions;
+using Dorbit.Framework.Database.Abstractions;
+using Dorbit.Framework.Entities.Abstractions;
+using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Repositories.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Repositories;
+namespace Dorbit.Framework.Repositories;
 
 public class BaseWriterRepository<T> : BaseReaderRepository<T>, IWriterRepository<T> where T : class, IEntity
 {
@@ -29,6 +30,12 @@ public class BaseWriterRepository<T> : BaseReaderRepository<T>, IWriterRepositor
     {
         return _dbContext.UpdateEntityAsync(model);
     }
+
+    public virtual Task<T> SaveAsync(T model)
+    {
+        if(model.Id != Guid.Empty) return dbContext.UpdateEntityAsync(model);
+        return dbContext.InsertEntityAsync(model);
+    }
     //================== Extended Methods ==================\\
     public Task<T> InsertAsync<TR>(TR dto)
     {
@@ -43,7 +50,16 @@ public class BaseWriterRepository<T> : BaseReaderRepository<T>, IWriterRepositor
 
     public async Task<T> UpdateAsync<TR>(Guid id, TR dto)
     {
-        var mapper = _dbContext.ServiceProvider.GetService<IMapper>();
-        return await UpdateAsync(mapper.Map(dto, await GetByIdAsync(id)));
+        return await UpdateAsync(dto.MapTo(await GetByIdAsync(id)));
+    }
+
+    public async Task<T> SaveAsync<TR>(Guid id, TR dto)
+    {
+        return await SaveAsync(dto.MapTo(await GetByIdAsync(id) ?? Activator.CreateInstance<T>()));
+    }
+
+    public async Task<T> SaveAsync<TR>(T model, TR dto)
+    {
+        return await SaveAsync(dto.MapTo(model ?? Activator.CreateInstance<T>()));
     }
 }

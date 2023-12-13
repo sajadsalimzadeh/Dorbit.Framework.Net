@@ -1,6 +1,6 @@
-﻿using Dorbit.Models.Users;
+﻿using Dorbit.Framework.Models.Users;
 
-namespace Dorbit.Services.Abstractions;
+namespace Dorbit.Framework.Services.Abstractions;
 
 public interface IUserStateService
 {

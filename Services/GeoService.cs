@@ -1,10 +1,10 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Models;
-using Dorbit.Services.Abstractions;
-using Dorbit.Utils.Http;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Services.Abstractions;
+using Dorbit.Framework.Utils.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 internal class GeoService : IGeoService

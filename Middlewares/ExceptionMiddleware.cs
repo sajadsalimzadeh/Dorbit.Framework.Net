@@ -1,14 +1,14 @@
 ﻿using System.Net;
-using Dorbit.Attributes;
-using Dorbit.Exceptions;
-using Dorbit.Models;
-using Dorbit.Services.Abstractions;
+using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Exceptions;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Dorbit.Middlewares;
+namespace Dorbit.Framework.Middlewares;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 public class ExceptionMiddleware : IMiddleware
@@ -38,6 +38,7 @@ public class ExceptionMiddleware : IMiddleware
                     op.Data = ex.StackTrace;
                 }
             }
+            op.Data = ex.StackTrace;
 
             switch (ex)
             {

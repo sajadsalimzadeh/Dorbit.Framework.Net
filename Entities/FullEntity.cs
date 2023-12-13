@@ -1,6 +1,6 @@
-﻿using Dorbit.Entities.Abstractions;
+﻿using Dorbit.Framework.Entities.Abstractions;
 
-namespace Dorbit.Entities;
+namespace Dorbit.Framework.Entities;
 
 public class FullEntity : CreateEntity, IFullAudit
 {

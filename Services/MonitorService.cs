@@ -1,8 +1,8 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Services.Abstractions;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 internal class MonitorService : IMonitorService
@@ -13,7 +13,7 @@ internal class MonitorService : IMonitorService
     public int AvgResponseItemCount { get; set; } = 100;
     public double AvgResponseTimeMs => (_responseDurations.Count > 0 ? _responseDurations.Values.Average() : 0);
 
-    private DateTime _requestTime = DateTime.Now;
+    private DateTime _requestTime = DateTime.UtcNow;
     public int RequestPerSecond { get; private set; }
 
     public void AddResponseDuration(int milliseconds)
@@ -27,10 +27,10 @@ internal class MonitorService : IMonitorService
 
     public void AddRequest()
     {
-        if((DateTime.Now - _requestTime).Seconds > 0)
+        if((DateTime.UtcNow - _requestTime).Seconds > 0)
         {
             RequestPerSecond = 0;
-            _requestTime = DateTime.Now;
+            _requestTime = DateTime.UtcNow;
         }
         RequestPerSecond++;
     }

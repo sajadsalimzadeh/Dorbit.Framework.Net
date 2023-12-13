@@ -1,8 +1,8 @@
-﻿using Dorbit.Models;
+﻿using Dorbit.Framework.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Prometheus;
 
-namespace Dorbit.Installers;
+namespace Dorbit.Framework.Installers;
 
 public static class PrometheusInstaller
 {

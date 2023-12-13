@@ -1,11 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
-using Dorbit.Exceptions;
-using Dorbit.Services.Abstractions;
+using Dorbit.Framework.Exceptions;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Filters;
+namespace Dorbit.Framework.Filters;
 
 public class AntiDosAttribute : ActionFilterAttribute
 {
@@ -37,7 +37,7 @@ public class AntiDosAttribute : ActionFilterAttribute
             key = user.Id.GetHashCode();
         }
 
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         if (!AllUserRequests.TryGetValue(key, out var requests))
         {
             AllUserRequests.TryAdd(key, requests = new List<RequestModel>());

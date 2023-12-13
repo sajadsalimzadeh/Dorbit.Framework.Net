@@ -1,10 +1,10 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Exceptions;
-using Dorbit.Models;
-using Dorbit.Utils.Captcha;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Exceptions;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Utils.Captcha;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
 public class CaptchaService

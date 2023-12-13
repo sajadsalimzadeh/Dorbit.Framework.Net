@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 
-namespace Dorbit.Utils.Reflections;
+namespace Dorbit.Framework.Utils.Reflections;
 
 public static class MemberInfoExtensions
 {

@@ -1,6 +1,6 @@
-﻿using Dorbit.Enums;
+﻿using Dorbit.Framework.Enums;
 
-namespace Dorbit.Models;
+namespace Dorbit.Framework.Models;
 
 public class CaptchaGenerateModel
 {

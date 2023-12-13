@@ -1,9 +1,9 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Commands.Abstractions;
-using Dorbit.Models.Commands;
-using Dorbit.Utils.Cryptography;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Commands.Abstractions;
+using Dorbit.Framework.Models.Commands;
+using Dorbit.Framework.Utils.Cryptography;
 
-namespace Dorbit.Commands;
+namespace Dorbit.Framework.Commands;
 
 [ServiceRegister]
 public class EncryptCommand : Command
@@ -16,9 +16,10 @@ public class EncryptCommand : Command
         yield return new CommandParameter("Key", "Key");
     }
 
-    public override void Invoke(ICommandContext context)
+    public override Task Invoke(ICommandContext context)
     {
         var cypherText = Aes.Encrypt(context.Arguments["Input"].ToString(), context.Arguments["Key"].ToString());
         context.Log($"{cypherText}\n");
+        return Task.CompletedTask;
     }
 }

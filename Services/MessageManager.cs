@@ -1,11 +1,11 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Models;
-using Dorbit.Models.Messages;
-using Dorbit.Services.Abstractions;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Models.Messages;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Services;
+namespace Dorbit.Framework.Services;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 public class MessageManager

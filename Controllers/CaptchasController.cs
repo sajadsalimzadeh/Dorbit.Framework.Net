@@ -1,10 +1,10 @@
-﻿using Dorbit.Filters;
-using Dorbit.Models;
-using Dorbit.Models.Captchas;
-using Dorbit.Services;
+﻿using Dorbit.Framework.Filters;
+using Dorbit.Framework.Models;
+using Dorbit.Framework.Models.Captchas;
+using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Dorbit.Controllers;
+namespace Dorbit.Framework.Controllers;
 
 public class CaptchasController : BaseController
 {

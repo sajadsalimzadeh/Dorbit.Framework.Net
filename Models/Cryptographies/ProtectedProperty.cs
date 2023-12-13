@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Models.Cryptographies;
+﻿namespace Dorbit.Framework.Models.Cryptographies;
 
 public class ProtectedProperty
 {

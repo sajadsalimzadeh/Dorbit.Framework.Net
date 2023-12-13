@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Models.Abstractions;
+﻿namespace Dorbit.Framework.Models.Abstractions;
 
 public interface IUserDto
 {

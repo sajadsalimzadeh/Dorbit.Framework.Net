@@ -1,7 +1,7 @@
-﻿using Dorbit.Database.Abstractions;
+﻿using Dorbit.Framework.Database.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
-namespace Dorbit.Database;
+namespace Dorbit.Framework.Database;
 
 public enum TransactionState
 {

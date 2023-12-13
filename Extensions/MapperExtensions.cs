@@ -1,26 +1,24 @@
 ﻿using AutoMapper;
-using Dorbit.Installers;
+using Dorbit.Framework.Installers;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Extensions;
+namespace Dorbit.Framework.Extensions;
 
 public static class MapperExtensions
 {
-    private static IMapper _mapper;
-    private static IMapper Mapper => _mapper ??= FrameworkInstaller.ServiceProvider.GetService<IMapper>();
 
     public static T MapTo<T>(this object obj)
     {
-        return Mapper.Map<T>(obj);
+        return App.Mapper.Map<T>(obj);
     }
     
     public static T MapTo<T>(this object obj, T model)
     {
-        return Mapper.Map(obj, model);
+        return App.Mapper.Map(obj, model);
     }
     
-    public static async Task<T> MapToAsync<T>(this Task<object> task)
+    public static async Task<TResult> MapAsync<TSource, TResult>(this Task<TSource> task)
     {
-        return Mapper.Map<T>(await task);
+        return App.Mapper.Map<TResult>(await task);
     }
 }

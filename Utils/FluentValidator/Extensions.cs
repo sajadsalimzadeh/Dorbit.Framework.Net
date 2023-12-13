@@ -1,6 +1,6 @@
 using FluentValidation.Results;
 
-namespace Dorbit.Utils.FluentValidator;
+namespace Dorbit.Framework.Utils.FluentValidator;
 
 public static class Extensions
 {

@@ -1,4 +1,4 @@
-namespace Dorbit.Utils.Identity;
+namespace Dorbit.Framework.Utils.Identity;
 
 public class Extensions
 {

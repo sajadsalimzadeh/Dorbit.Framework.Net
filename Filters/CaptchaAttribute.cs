@@ -1,10 +1,10 @@
-﻿using Dorbit.Exceptions;
-using Dorbit.Services;
+﻿using Dorbit.Framework.Exceptions;
+using Dorbit.Framework.Services;
 using GoogleReCaptcha.V3.Interface;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Filters;
+namespace Dorbit.Framework.Filters;
 
 public class CaptchaAttribute : ActionFilterAttribute
 {

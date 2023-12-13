@@ -1,7 +1,7 @@
-﻿using Dorbit.Commands.Abstractions;
-using Dorbit.Models.Commands;
+﻿using Dorbit.Framework.Commands.Abstractions;
+using Dorbit.Framework.Models.Commands;
 
-namespace Dorbit.Commands;
+namespace Dorbit.Framework.Commands;
 
 public abstract class Command : ICommand
 {
@@ -18,5 +18,5 @@ public abstract class Command : ICommand
         return new List<ICommand>();
     }
 
-    public abstract void Invoke(ICommandContext context);
+    public abstract Task Invoke(ICommandContext context);
 }

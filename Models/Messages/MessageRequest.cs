@@ -1,5 +1,5 @@
 ﻿
-namespace Dorbit.Models.Messages;
+namespace Dorbit.Framework.Models.Messages;
 
 public abstract class MessageRequest
 {

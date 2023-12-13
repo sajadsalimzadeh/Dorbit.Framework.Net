@@ -2,7 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 
-namespace Dorbit.Utils.Queries;
+namespace Dorbit.Framework.Utils.Queries;
 
 public static class ODataQueryOptionExtensions
 {

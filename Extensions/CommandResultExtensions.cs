@@ -1,6 +1,6 @@
-﻿using Dorbit.Models;
+﻿using Dorbit.Framework.Models;
 
-namespace Dorbit.Extensions;
+namespace Dorbit.Framework.Extensions;
 
 public static class CommandResultExtensions
 {
@@ -14,8 +14,8 @@ public static class CommandResultExtensions
         return new QueryResult<T>(data) { Success = true };
     }
 
-    public static Task<QueryResult<T>> ToQueryResultAsync<T>(this T data)
+    public static async Task<QueryResult<T>> ToQueryResultAsync<T>(this Task<T> dataTask)
     {
-        return Task.FromResult(new QueryResult<T>(data) { Success = true });
+        return new QueryResult<T>(await dataTask) { Success = true };
     }
 }

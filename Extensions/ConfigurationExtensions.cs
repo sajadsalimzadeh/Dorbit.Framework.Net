@@ -1,7 +1,7 @@
-﻿using Dorbit.Models.Cryptographies;
+﻿using Dorbit.Framework.Models.Cryptographies;
 using Microsoft.Extensions.Configuration;
 
-namespace Dorbit.Extensions;
+namespace Dorbit.Framework.Extensions;
 
 public static class ConfigurationExtensions
 {

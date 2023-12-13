@@ -1,4 +1,4 @@
-﻿namespace Dorbit;
+﻿namespace Dorbit.Framework;
 
 internal enum Errors
 {

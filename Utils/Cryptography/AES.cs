@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace Dorbit.Utils.Cryptography;
+namespace Dorbit.Framework.Utils.Cryptography;
 
 public class Aes
 {

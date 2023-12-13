@@ -1,16 +1,25 @@
-using Dorbit.Models;
+using Dorbit.Framework.Models;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 
-namespace Dorbit.Utils.Queries;
+namespace Dorbit.Framework.Utils.Queries;
 
 public static class QueryOptionsExtensions
 {
     public static IQueryable<T> Apply<T>(this IQueryable<T> query, ODataQueryOptions<T> queryOptions)
     {
-        return queryOptions.ApplyTo(query).Cast<T>();
+        if (queryOptions.SelectExpand is not null)
+        {
+            var tempQuery = queryOptions.ApplyTo(query);
+            query = query.Select(x => tempQuery.Expression) as IQueryable<T>;
+        }
+        if (queryOptions.Filter is not null) query = queryOptions.Filter.ApplyTo(query, new ODataQuerySettings()) as IQueryable<T> ?? query;
+        if (queryOptions.OrderBy is not null) query = queryOptions.OrderBy.ApplyTo(query, new ODataQuerySettings()) ?? query;
+        if (queryOptions.Skip is not null) query = queryOptions.Skip.ApplyTo(query, new ODataQuerySettings()) ?? query;
+        if (queryOptions.Top is not null) query = queryOptions.Top.ApplyTo(query, new ODataQuerySettings()) ?? query;
+        return query;
     }
-    
+
     public static IQueryable<T> Apply<T>(this IQueryable<T> query, QueryOptions queryOptions)
     {
         return queryOptions.ApplyTo(query);
@@ -61,7 +70,6 @@ public static class QueryOptionsExtensions
 
     public static async Task<PagedListResult<T>> ApplyToPagedListAsync<T>(this IQueryable<T> query, ODataQueryOptions<T> queryOptions)
     {
-        
         var itemsQuery = query.AsQueryable();
         var countQuery = query.AsQueryable();
         var result = new PagedListResult<T>();
@@ -70,6 +78,7 @@ public static class QueryOptionsExtensions
         {
             countQuery = queryOptions.Filter.ApplyTo(countQuery, new ODataQuerySettings()).Cast<T>();
         }
+
         result.TotalCount = await countQuery.CountAsync();
         return result;
     }

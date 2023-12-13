@@ -1,4 +1,4 @@
-namespace Dorbit.Utils.Collections;
+namespace Dorbit.Framework.Utils.Collections;
 
 public static class DictionaryExtension
 {

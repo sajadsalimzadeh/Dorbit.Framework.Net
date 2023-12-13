@@ -1,8 +1,8 @@
-﻿using Dorbit.Attributes;
-using Dorbit.Entities;
+﻿using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Dorbit.Database;
+namespace Dorbit.Framework.Database;
 
 [ServiceRegister]
 public class LogDbContext : EfDbContext

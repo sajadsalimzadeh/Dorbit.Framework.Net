@@ -1,7 +1,7 @@
-﻿using Dorbit.Models.Cryptographies;
-using Dorbit.Utils.Cryptography;
+﻿using Dorbit.Framework.Models.Cryptographies;
+using Dorbit.Framework.Utils.Cryptography;
 
-namespace Dorbit.Extensions;
+namespace Dorbit.Framework.Extensions;
 
 public static class CryptographyExtensions
 {
