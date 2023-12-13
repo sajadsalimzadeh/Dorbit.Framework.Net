@@ -47,7 +47,7 @@ internal class EfSecondaryTransaction : ITransaction
 
     public void Commit()
     {
-        _transactionContext.dbContext.SaveChanges();
+        _transactionContext.DbContext.SaveChanges();
     }
 
     public void Rollback()

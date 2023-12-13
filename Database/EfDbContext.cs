@@ -18,9 +18,9 @@ namespace Dorbit.Framework.Database;
 
 public abstract class EfDbContext : DbContext, IDbContext
 {
-    private bool autoExcludeDeleted = true;
-    private EfTransactionContext efTransactionContext;
-    private readonly List<Type> lookupEntities;
+    private bool _autoExcludeDeleted = true;
+    private EfTransactionContext _efTransactionContext;
+    private readonly List<Type> _lookupEntities;
 
     private IUserResolver _userResolver;
     private IUserResolver UserResolver => _userResolver ??= ServiceProvider.GetService<IUserResolver>();
@@ -46,8 +46,8 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public EfDbContext(DbContextOptions options, IServiceProvider serviceProvider) : base(options)
     {
-        lookupEntities = new List<Type>();
-        efTransactionContext = new EfTransactionContext(this);
+        _lookupEntities = new List<Type>();
+        _efTransactionContext = new EfTransactionContext(this);
         ServiceProvider = serviceProvider;
     }
 
@@ -82,7 +82,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     protected void AddLookupEntity<T>() where T : struct, Enum
     {
-        lookupEntities.Add(typeof(T));
+        _lookupEntities.Add(typeof(T));
     }
 
     private void RegisterAuditProperties(ModelBuilder modelBuilder)
@@ -111,7 +111,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public IEnumerable<Type> GetLookupEntities()
     {
-        return lookupEntities.ToList();
+        return _lookupEntities.ToList();
     }
 
     public ITransaction BeginTransaction()
@@ -122,19 +122,19 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public IDbContext AutoExcludeDeletedEnable()
     {
-        autoExcludeDeleted = true;
+        _autoExcludeDeleted = true;
         return this;
     }
 
     public IDbContext AutoExcludeDeletedDisable()
     {
-        autoExcludeDeleted = false;
+        _autoExcludeDeleted = false;
         return this;
     }
 
     public IQueryable<T> DbSet<T>() where T : class, IEntity
     {
-        return DbSet<T>(autoExcludeDeleted);
+        return DbSet<T>(_autoExcludeDeleted);
     }
 
     public IQueryable<T> DbSet<T>(bool excludeDeleted) where T : class, IEntity
@@ -296,7 +296,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     private async Task SaveIfNotInTransactionAsync()
     {
-        if (efTransactionContext.Transactions.Count == 0)
+        if (_efTransactionContext.Transactions.Count == 0)
         {
             await SaveChangesAsync();
         }

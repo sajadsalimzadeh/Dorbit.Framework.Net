@@ -36,18 +36,18 @@ public class MigrationCommand : Command
 [ServiceRegister]
 public class MigrationCommandAll : Command
 {
-    private readonly IEnumerable<IDbContext> dbContexts;
+    private readonly IEnumerable<IDbContext> _dbContexts;
 
     public override string Message => "All";
 
     public MigrationCommandAll(IEnumerable<IDbContext> dbContexts)
     {
-        this.dbContexts = dbContexts;
+        _dbContexts = dbContexts;
     }
 
     public override async Task Invoke(ICommandContext context)
     {
-        foreach (var dbContext in dbContexts)
+        foreach (var dbContext in _dbContexts)
         {
             try
             {

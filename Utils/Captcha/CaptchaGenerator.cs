@@ -24,7 +24,7 @@ public class CaptchaGenerator
         "Geneva"
     };
 
-    FontStyle[] fontStyles = {
+    FontStyle[] _fontStyles = {
         FontStyle.Regular,
         FontStyle.Bold,
         FontStyle.Italic,
@@ -61,10 +61,10 @@ public class CaptchaGenerator
         return Difficulty switch
         {
             CaptchaDificulty.VeryEasy => FontStyle.Regular,
-            CaptchaDificulty.Easy => fontStyles[rnd.Next(0, 1)],
-            CaptchaDificulty.Normal => fontStyles[rnd.Next(0, 2)],
-            CaptchaDificulty.Hard => fontStyles[rnd.Next(0, 3)],
-            _ => fontStyles[rnd.Next(0, 4)],
+            CaptchaDificulty.Easy => _fontStyles[rnd.Next(0, 1)],
+            CaptchaDificulty.Normal => _fontStyles[rnd.Next(0, 2)],
+            CaptchaDificulty.Hard => _fontStyles[rnd.Next(0, 3)],
+            _ => _fontStyles[rnd.Next(0, 4)],
         };
     }
 
@@ -129,7 +129,7 @@ public class CaptchaGenerator
             graphics.Transform = matrix;
 
             //Draw the letters with Random Font Type, Size and Color
-            var color = GetColor(rnd);
+            GetColor(rnd);
             graphics.DrawString
             (
                 //Text

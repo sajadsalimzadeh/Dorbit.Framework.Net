@@ -8,11 +8,11 @@ namespace Dorbit.Framework.Controllers;
 
 public class CaptchasController : BaseController
 {
-    private readonly CaptchaService captchaService;
+    private readonly CaptchaService _captchaService;
 
     public CaptchasController(CaptchaService captchaService)
     {
-        this.captchaService = captchaService;
+        _captchaService = captchaService;
     }
 
     [HttpGet, Delay(Request = 300)]
@@ -23,6 +23,6 @@ public class CaptchasController : BaseController
             Width = viewModel.Width,
             Height = viewModel.Height,
         };
-        return new QueryResult<KeyValuePair<string, string>>(captchaService.Generate(dto));
+        return new QueryResult<KeyValuePair<string, string>>(_captchaService.Generate(dto));
     }
 }

@@ -11,7 +11,7 @@ public class GeoInfo
     public decimal? Lat { get; set; }
     public decimal? Lon { get; set; }
     public string Timezone { get; set; }
-    public string ISP { get; set; }
-    public string ORG { get; set; }
-    public string AS { get; set; }
+    public string Isp { get; set; }
+    public string Org { get; set; }
+    public string As { get; set; }
 }

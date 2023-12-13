@@ -27,7 +27,7 @@ public class CacheAttribute : ActionFilterAttribute
     {
         var memoryCache = context.HttpContext.RequestServices.GetService<IMemoryCache>();
         var key = context.HttpContext.Request.GetDisplayUrl();
-        if (!memoryCache.TryGetValue(key, out var value))
+        if (!memoryCache.TryGetValue(key, out _))
         {
             if (context.Result is ObjectResult obj)
             {

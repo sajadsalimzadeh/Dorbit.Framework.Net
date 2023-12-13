@@ -7,16 +7,16 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 public class SoftwareManager : ISoftwareManager
 {
-    private readonly IServiceProvider serviceProvider;
+    private readonly IServiceProvider _serviceProvider;
 
     public SoftwareManager(IServiceProvider serviceProvider)
     {
-        this.serviceProvider = serviceProvider;
+        _serviceProvider = serviceProvider;
     }
 
     public IEnumerable<ISoftwareService> GetAllSoftwares()
     {
-        return serviceProvider.GetServices<ISoftwareService>();
+        return _serviceProvider.GetServices<ISoftwareService>();
     }
 
     public ISoftwareService GetSoftwares(string identifier)

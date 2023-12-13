@@ -33,11 +33,10 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
                 to = request.To,
                 args = request.Args
             }).Result;
-            var response = result.Content.ReadAsStringAsync().Result;
+            _ = result.Content.ReadAsStringAsync().Result;
         }
         else
         {
-            
             var result = client.PostAsJsonAsync($"api/send/simple/{ApiKey}", new
             {
                 from = From,
@@ -45,7 +44,7 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
                 to = request.To,
                 args = request.Args
             }).Result;
-            var response = result.Content.ReadAsStringAsync().Result;
+            _ = result.Content.ReadAsStringAsync().Result;
         }
 
         return Task.FromResult(new OperationResult());
