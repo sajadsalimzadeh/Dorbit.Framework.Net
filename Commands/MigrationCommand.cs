@@ -13,10 +13,10 @@ public class MigrationCommand : Command
 
     public MigrationCommand(IServiceProvider serviceProvider)
     {
-        this._serviceProvider = serviceProvider;
+        _serviceProvider = serviceProvider;
     }
 
-    public override IEnumerable<ICommand> GetSubCommands(Abstractions.ICommandContext context)
+    public override IEnumerable<ICommand> GetSubCommands(ICommandContext context)
     {
         var dbContexts = _serviceProvider.GetServices<IDbContext>();
         yield return new MigrationCommandAll(dbContexts);
@@ -35,18 +35,18 @@ public class MigrationCommand : Command
 [ServiceRegister]
 public class MigrationCommandAll : Command
 {
-    private readonly IEnumerable<IDbContext> dbContexts;
+    private readonly IEnumerable<IDbContext> _dbContexts;
 
     public override string Message => "All";
 
     public MigrationCommandAll(IEnumerable<IDbContext> dbContexts)
     {
-        this.dbContexts = dbContexts;
+        _dbContexts = dbContexts;
     }
 
     public override void Invoke(ICommandContext context)
     {
-        foreach (var dbContext in dbContexts)
+        foreach (var dbContext in _dbContexts)
         {
             try
             {
@@ -68,7 +68,7 @@ internal class MigrationCommandItem : Command
 
     public MigrationCommandItem(IDbContext dbContext)
     {
-        this._dbContext = dbContext;
+        _dbContext = dbContext;
     }
 
     public override void Invoke(ICommandContext context)

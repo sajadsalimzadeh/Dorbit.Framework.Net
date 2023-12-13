@@ -10,19 +10,19 @@ namespace Dorbit.Services;
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 internal class LoggerService : ILoggerService
 {
-    private readonly ILogger logger;
-    private readonly IServiceProvider serviceProvider;
+    private readonly ILogger _logger;
+    private readonly IServiceProvider _serviceProvider;
 
     private IUserResolver _userResolver;
-    private IUserResolver UserResolver => _userResolver ??= serviceProvider.GetService<IUserResolver>();
+    private IUserResolver UserResolver => _userResolver ??= _serviceProvider.GetService<IUserResolver>();
 
     private IRequestService _requestService;
-    private IRequestService RequestService => _requestService ??= serviceProvider.GetService<IRequestService>();
+    private IRequestService RequestService => _requestService ??= _serviceProvider.GetService<IRequestService>();
 
     public LoggerService(IServiceProvider serviceProvider, ILogger logger = null)
     {
-        this.logger = logger;
-        this.serviceProvider = serviceProvider;
+        _logger = logger;
+        _serviceProvider = serviceProvider;
     }
 
     private object[] GetExtraInfoValues(object[] args)
@@ -57,17 +57,17 @@ internal class LoggerService : ILoggerService
 
     public void LogError(Exception ex, params object[] args)
     {
-        logger?.Error(ex, ex.Message + ex.InnerException?.Message, GetExtraInfoValues(args));
+        _logger?.Error(ex, ex.Message + ex.InnerException?.Message, GetExtraInfoValues(args));
     }
 
     public void LogError(string message, params object[] args)
     {
-        logger?.Error(message, GetExtraInfoValues(args));
+        _logger?.Error(message, GetExtraInfoValues(args));
     }
 
     public void LogInformation(string message, params object[] args)
     {
-        logger?.Information(message, GetExtraInfoValues(args));
+        _logger?.Information(message, GetExtraInfoValues(args));
     }
 
     public void LogTrace()
@@ -80,7 +80,7 @@ internal class LoggerService : ILoggerService
             Column = x.GetFileColumnNumber(),
             Method = x.GetMethod()?.Name,
         });
-        logger?.Information("{@Frames}", GetExtraInfoValues(new object[] { frames }));
+        _logger?.Information("{@Frames}", GetExtraInfoValues(new object[] { frames }));
     }
 
     public void ClearBefore(DateTime dateTime)

@@ -9,21 +9,21 @@ namespace Dorbit.Services;
 [ServiceRegister]
 public class CaptchaService
 {
-    private static Dictionary<string, string> Captchas = new();
-    private readonly AppSetting appSetting;
+    private static Dictionary<string, string> _captchas = new();
+    private readonly AppSetting _appSetting;
 
     public CaptchaService(IServiceProvider serviceProvider)
     {
-        this.appSetting = serviceProvider.GetService<AppSetting>();
+        _appSetting = serviceProvider.GetService<AppSetting>();
     }
 
     public KeyValuePair<string, string> Generate(CaptchaGenerateModel dto)
     {
         if (dto.Width > 500 || dto.Height > 500) throw new OperationException(Errors.CaptchaSizeIsTooLarg);
 
-        if (dto.Dificulty == Enums.CaptchaDificulty.None) dto.Dificulty = appSetting.Captcha.Difficulty;
-        if (dto.Length == 0) dto.Length = appSetting.Captcha.Length;
-        if (string.IsNullOrEmpty(dto.Pattern)) dto.Pattern = appSetting.Captcha.Pattern;
+        if (dto.Dificulty == Enums.CaptchaDificulty.None) dto.Dificulty = _appSetting.Captcha.Difficulty;
+        if (dto.Length == 0) dto.Length = _appSetting.Captcha.Length;
+        if (string.IsNullOrEmpty(dto.Pattern)) dto.Pattern = _appSetting.Captcha.Pattern;
 
         var generator = new CaptchaGenerator
         {
@@ -36,20 +36,20 @@ public class CaptchaService
 
         var key = Guid.NewGuid().ToString();
         var value = generator.NewText();
-        lock (Captchas)
+        lock (_captchas)
         {
-            if (Captchas.Count > 1000) Captchas = Captchas.Skip(500).ToDictionary(x => x.Key, x => x.Value);
-            Captchas.Add(key, value);
+            if (_captchas.Count > 1000) _captchas = _captchas.Skip(500).ToDictionary(x => x.Key, x => x.Value);
+            _captchas.Add(key, value);
         }
         return new KeyValuePair<string, string>(key, generator.GenerateBase64(value));
     }
 
     public bool Verify(string key, string value)
     {
-        if (Captchas.ContainsKey(key))
+        if (_captchas.ContainsKey(key))
         {
-            var result = value.ToLower() == Captchas[key].ToLower();
-            lock (Captchas) Captchas.Remove(key);
+            var result = value.ToLower() == _captchas[key].ToLower();
+            lock (_captchas) _captchas.Remove(key);
             return result;
         }
         return false;

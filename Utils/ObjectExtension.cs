@@ -32,7 +32,7 @@ public static class ObjectExtension
         }
         return obj1;
     }
-    public static T Overwrite<T, R>(this T obj1, R obj2, bool ignoreDefaults = false) where T : R
+    public static T Overwrite<T, TR>(this T obj1, TR obj2, bool ignoreDefaults = false) where T : TR
     {
         foreach (var property in obj2.GetType().GetProperties()) property.SetValue(obj1, property.GetValue(obj2));
         return obj1;

@@ -12,11 +12,11 @@ namespace Dorbit.Controllers;
 [Route("[controller]"), ApiController]
 public abstract class BaseController : ControllerBase
 {
-    private IServiceProvider serviceProvider;
-    protected IServiceProvider ServiceProvider => serviceProvider ??= HttpContext.RequestServices;
+    private IServiceProvider _serviceProvider;
+    protected IServiceProvider ServiceProvider => _serviceProvider ??= HttpContext.RequestServices;
 
-    protected IUserResolver userResolver;
-    protected IUserResolver UserResolver => userResolver ??= ServiceProvider.GetRequiredService<IUserResolver>();
+    private IUserResolver _userResolver;
+    protected IUserResolver UserResolver => _userResolver ??= ServiceProvider.GetRequiredService<IUserResolver>();
 
     protected IMapper Mapper => ServiceProvider.GetService<IMapper>();
 

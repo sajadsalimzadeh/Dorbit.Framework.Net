@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
                 {
                     var registerAttr = type.GetCustomAttribute<ServiceRegisterAttribute>();
                     if (registerAttr is null) continue;
-                    services.RegisterServicesByAttribute(type, type, registerAttr, descriptors);
+                    services.RegisterServicesByAttribute(type, type, registerAttr, descriptors, registerAttr.RecursiveLevelCount);
                 }
             }
             catch
@@ -95,7 +95,7 @@ public static class ServiceCollectionExtensions
     private static void RegisterServicesByAttribute(this IServiceCollection services,
         Type serviceType, Type implementationType,
         ServiceRegisterAttribute registerAttr,
-        List<Descriptor> descriptors)
+        List<Descriptor> descriptors, int level)
     {
         if (implementationType.IsInterface)
         {
@@ -114,9 +114,12 @@ public static class ServiceCollectionExtensions
             });
         }
 
-        foreach (var type in serviceType.GetInterfacesDirect())
+        if (registerAttr.Recursive && level >= 0)
         {
-            services.RegisterServicesByAttribute(type, implementationType, registerAttr, descriptors);
+            foreach (var type in serviceType.GetInterfacesDirect())
+            {
+                services.RegisterServicesByAttribute(type, implementationType, registerAttr, descriptors, level - 1);
+            }
         }
     }
     

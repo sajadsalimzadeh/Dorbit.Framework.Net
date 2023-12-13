@@ -1,6 +1,4 @@
-﻿using Dorbit.Enums;
-
-namespace Dorbit.Models.Messages;
+﻿namespace Dorbit.Models.Messages;
 
 public class MessageSmsRequest : MessageRequest
 {

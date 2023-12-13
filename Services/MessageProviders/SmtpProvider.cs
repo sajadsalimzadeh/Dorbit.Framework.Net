@@ -7,7 +7,7 @@ using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 
-namespace Dorbit.Services.SmsProviders;
+namespace Dorbit.Services.MessageProviders;
 
 [ServiceRegister]
 public class SmtpProvider : IMessageProvider<MessageEmailRequest>

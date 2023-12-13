@@ -10,16 +10,16 @@ namespace Dorbit.Services;
 [ServiceRegister]
 internal class LookupService : ILookupService
 {
-    private readonly IEnumerable<IDbContext> dbContexts;
+    private readonly IEnumerable<IDbContext> _dbContexts;
 
     public LookupService(IEnumerable<IDbContext> dbContexts)
     {
-        this.dbContexts = dbContexts;
+        _dbContexts = dbContexts;
     }
 
     public void Initiate()
     {
-        foreach (var dbContext in dbContexts)
+        foreach (var dbContext in _dbContexts)
         {
             using var transaction = dbContext.BeginTransaction();
             foreach (var type in dbContext.GetLookupEntities())

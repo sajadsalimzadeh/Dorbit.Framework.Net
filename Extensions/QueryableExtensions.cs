@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dorbit.Repositories;
+namespace Dorbit.Extensions;
 
 public static class QueryableExtensions
 {

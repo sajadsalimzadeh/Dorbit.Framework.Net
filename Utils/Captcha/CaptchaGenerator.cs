@@ -24,7 +24,7 @@ public class CaptchaGenerator
         "Geneva"
     };
 
-    FontStyle[] fontStyles = {
+    FontStyle[] _fontStyles = {
         FontStyle.Regular,
         FontStyle.Bold,
         FontStyle.Italic,
@@ -32,7 +32,7 @@ public class CaptchaGenerator
         FontStyle.Strikeout,
     };
 
-    private int GetRotation(System.Random rnd)
+    private int GetRotation(Random rnd)
     {
         return Difficulty switch
         {
@@ -44,7 +44,7 @@ public class CaptchaGenerator
         };
     }
 
-    private int GetFontSize(System.Random rnd)
+    private int GetFontSize(Random rnd)
     {
         return Difficulty switch
         {
@@ -56,19 +56,19 @@ public class CaptchaGenerator
         };
     }
 
-    private FontStyle GetFontStyle(System.Random rnd)
+    private FontStyle GetFontStyle(Random rnd)
     {
         return Difficulty switch
         {
             CaptchaDificulty.VeryEasy => FontStyle.Regular,
-            CaptchaDificulty.Easy => fontStyles[rnd.Next(0, 1)],
-            CaptchaDificulty.Normal => fontStyles[rnd.Next(0, 2)],
-            CaptchaDificulty.Hard => fontStyles[rnd.Next(0, 3)],
-            _ => fontStyles[rnd.Next(0, 4)],
+            CaptchaDificulty.Easy => _fontStyles[rnd.Next(0, 1)],
+            CaptchaDificulty.Normal => _fontStyles[rnd.Next(0, 2)],
+            CaptchaDificulty.Hard => _fontStyles[rnd.Next(0, 3)],
+            _ => _fontStyles[rnd.Next(0, 4)],
         };
     }
 
-    private string GetFontName(System.Random rnd)
+    private string GetFontName(Random rnd)
     {
         switch (Difficulty)
         {
@@ -83,7 +83,7 @@ public class CaptchaGenerator
         }
     }
 
-    private int[] GetColor(System.Random rnd)
+    private int[] GetColor(Random rnd)
     {
         switch (Difficulty)
         {
@@ -99,7 +99,7 @@ public class CaptchaGenerator
 
     public Image Generate(string text)
     {
-        System.Random rnd = new System.Random();
+        Random rnd = new Random();
 
         //Creates an output Bitmap
         var bitmap = new Bitmap(Width, Height, PixelFormat.Format24bppRgb);
@@ -129,7 +129,7 @@ public class CaptchaGenerator
             graphics.Transform = matrix;
 
             //Draw the letters with Random Font Type, Size and Color
-            var color = GetColor(rnd);
+            GetColor(rnd);
             graphics.DrawString
             (
                 //Text

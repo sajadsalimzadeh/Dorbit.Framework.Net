@@ -9,18 +9,18 @@ namespace Dorbit.Repositories;
 
 public class BaseReaderRepository<T> : IReaderRepository<T> where T : class, IEntity
 {
-    private readonly IDbContext dbContext;
+    private readonly IDbContext _dbContext;
 
-    protected IServiceProvider ServiceProvider => dbContext.ServiceProvider;
+    protected IServiceProvider ServiceProvider => _dbContext.ServiceProvider;
 
     public BaseReaderRepository(IDbContext dbContext)
     {
-        this.dbContext = dbContext;
+        _dbContext = dbContext;
     }
 
     public virtual IQueryable<T> Set(bool excludeDeleted = true)
     {
-        return dbContext.DbSet<T>(excludeDeleted);
+        return _dbContext.DbSet<T>(excludeDeleted);
     }
 
     public virtual Task<int> CountAsync()

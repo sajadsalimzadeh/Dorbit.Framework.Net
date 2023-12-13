@@ -3,7 +3,6 @@ using Dorbit.Attributes;
 using Dorbit.Exceptions;
 using Dorbit.Models;
 using Dorbit.Services.Abstractions;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;

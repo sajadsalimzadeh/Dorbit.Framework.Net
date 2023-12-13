@@ -4,7 +4,7 @@ using Dorbit.Models.Messages;
 using Dorbit.Services.Abstractions;
 using Microsoft.Extensions.Configuration;
 
-namespace Dorbit.Services.SmsProviders;
+namespace Dorbit.Services.MessageProviders;
 
 public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
 {
@@ -33,11 +33,10 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
                 to = request.To,
                 args = request.Args
             }).Result;
-            var response = result.Content.ReadAsStringAsync().Result;
+            _ = result.Content.ReadAsStringAsync().Result;
         }
         else
         {
-            
             var result = client.PostAsJsonAsync($"api/send/simple/{ApiKey}", new
             {
                 from = From,
@@ -45,7 +44,7 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
                 to = request.To,
                 args = request.Args
             }).Result;
-            var response = result.Content.ReadAsStringAsync().Result;
+            _ = result.Content.ReadAsStringAsync().Result;
         }
 
         return Task.FromResult(new OperationResult());
