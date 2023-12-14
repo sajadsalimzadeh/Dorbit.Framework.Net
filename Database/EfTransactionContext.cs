@@ -12,7 +12,7 @@ public enum TransactionState
 internal class EfTransactionContext
 {
     internal readonly DbContext DbContext;
-    internal List<ITransaction> Transactions = new List<ITransaction>();
+    internal List<ITransaction> Transactions = new();
     internal TransactionState State = TransactionState.NotSet;
 
     public EfTransactionContext(DbContext dbContext)
@@ -30,7 +30,7 @@ internal class EfTransactionContext
         }
         else
         {
-            transaction = new EfPrimaryTransction(DbContext, this);
+            transaction = new EfPrimaryTransaction(DbContext, this);
             Transactions.Add(transaction);
         }
         return transaction;

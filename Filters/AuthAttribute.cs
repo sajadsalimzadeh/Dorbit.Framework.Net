@@ -47,6 +47,13 @@ public class AuthAttribute : Attribute, IAsyncAuthorizationFilter
     {
         if (context.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
         {
+            var controllerAuthAttributes = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<AuthAttribute>();
+            var methodAttributes = actionDescriptor.MethodInfo.GetCustomAttributes<AuthAttribute>();
+            if (controllerAuthAttributes.Any(x => Equals(x, this)))
+            {
+                if (methodAttributes.Count() > 0) return;
+            }
+
             if (actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null) return;
         }
 

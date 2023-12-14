@@ -316,9 +316,14 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public override int SaveChanges()
     {
+        return SaveChangesAsync().Result;
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
         try
         {
-            return base.SaveChanges();
+            return base.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {

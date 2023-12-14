@@ -4,7 +4,7 @@ using Dorbit.Framework.Repositories.Abstractions;
 
 namespace Dorbit.Framework.Repositories;
 
-public class BaseRepository<T> : BaseWriterRepository<T>, IBaseRepository<T> where T : class, IEntity
+public class BaseRepository<T> : BaseWriteRepository<T>, IBaseRepository<T> where T : class, IEntity
 {
     public BaseRepository(IDbContext dbContext) : base(dbContext)
     {

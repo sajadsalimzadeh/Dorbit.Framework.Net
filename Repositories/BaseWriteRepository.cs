@@ -7,11 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Repositories;
 
-public class BaseWriterRepository<T> : BaseReaderRepository<T>, IWriterRepository<T> where T : class, IEntity
+public class BaseWriteRepository<T> : BaseReadRepository<T>, IWriterRepository<T> where T : class, IEntity
 {
     private readonly IDbContext _dbContext;
 
-    public BaseWriterRepository(IDbContext dbContext) : base(dbContext)
+    public BaseWriteRepository(IDbContext dbContext) : base(dbContext)
     {
         _dbContext = dbContext;
     }
@@ -33,8 +33,8 @@ public class BaseWriterRepository<T> : BaseReaderRepository<T>, IWriterRepositor
 
     public virtual Task<T> SaveAsync(T model)
     {
-        if(model.Id != Guid.Empty) return dbContext.UpdateEntityAsync(model);
-        return dbContext.InsertEntityAsync(model);
+        if(model.Id != Guid.Empty) return _dbContext.UpdateEntityAsync(model);
+        return _dbContext.InsertEntityAsync(model);
     }
     //================== Extended Methods ==================\\
     public Task<T> InsertAsync<TR>(TR dto)

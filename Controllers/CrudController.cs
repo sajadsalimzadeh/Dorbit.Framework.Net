@@ -19,28 +19,24 @@ public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudControlle
     protected IBaseRepository<TEntity> Repository => ServiceProvider.GetService<IBaseRepository<TEntity>>();
 
     [HttpGet]
-    [Auth("[entity]-Select")]
     public virtual async Task<PagedListResult<TGet>> Select(ODataQueryOptions<TEntity> queryOptions)
     {
         return (await Repository.Set().ApplyToPagedListAsync(queryOptions)).Select(x => Mapper.Map<TGet>(x));
     }
 
     [HttpGet("{id}")]
-    [Auth("[entity]-Get")]
     public virtual Task<QueryResult<TGet>> GetById(Guid id)
     {
         return Repository.GetByIdAsync(id).MapAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
     [HttpPost]
-    [Auth("[entity]-Save")]
     public virtual Task<QueryResult<TGet>> Add([FromBody] TAdd dto)
     {
         return Repository.InsertAsync(dto.MapTo<TEntity>()).MapAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
     [HttpPatch("{id}")]
-    [Auth("[entity]-Save")]
     public virtual Task<QueryResult<TGet>> Edit(Guid id, [FromBody] TEdit dto)
     {
         dto.Id = id;
@@ -48,7 +44,6 @@ public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudControlle
     }
 
     [HttpDelete("{id}")]
-    [Auth("[entity]-Remove")]
     public virtual Task<QueryResult<TGet>> Remove(Guid id)
     {
         return Repository.RemoveAsync(id).MapAsync<TEntity, TGet>().ToQueryResultAsync();
