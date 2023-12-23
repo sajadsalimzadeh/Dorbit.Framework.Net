@@ -4,6 +4,6 @@ namespace Dorbit.Framework.Services.Abstractions;
 
 public interface IAuthService
 {
-    Task<IUserDto> GetUserByTokenAsync(string key);
+    Task<IUserDto> GetUserByTokenAsync(string token);
     Task<bool> HasAccessAsync(Guid userId, params string[] accesses);
 }

@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Dorbit.Framework
-build_property.ProjectDir = c:\Users\mobiCar2\Home\Programming\Mobicar\Core.Refactor\Dorbit\Dorbit.Framework\
+build_property.ProjectDir = c:\Users\mobiCar2\Home\Programming\Mobicar\Core\Dorbit\Dorbit.Framework\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 

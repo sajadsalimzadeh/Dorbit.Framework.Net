@@ -1,9 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Dorbit.Framework.Entities.Abstractions;
-using Dorbit.Framework.Installers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Extensions;
 

@@ -33,12 +33,12 @@ public class MigrationCommand : Command
         throw new NotImplementedException();
     }
 }
-[ServiceRegister]
+
 public class MigrationCommandAll : Command
 {
     private readonly IEnumerable<IDbContext> _dbContexts;
 
-    public override string Message => "All";
+    public override string Message => "Migrate All";
 
     public MigrationCommandAll(IEnumerable<IDbContext> dbContexts)
     {

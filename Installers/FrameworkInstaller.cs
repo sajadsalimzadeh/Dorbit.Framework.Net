@@ -33,7 +33,6 @@ public static class FrameworkInstaller
 
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
         services.AddControllers(typeof(FrameworkInstaller).Assembly)
-            .AddODataDefault()
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
         configuration.Logger?.Configure(services);
@@ -42,10 +41,26 @@ public static class FrameworkInstaller
         return services;
     }
 
-    public static IApplicationBuilder UseDorbitFramework(this IApplicationBuilder app)
+    public static IServiceCollection AddOData(IServiceCollection services)
     {
-        App.ServiceProvider = app.ApplicationServices;
+        services.AddControllers(typeof(FrameworkInstaller).Assembly)
+            .AddODataDefault();
+        
+        return services;
+    }
 
+    public static WebApplication Run(this WebApplication app, string[] args)
+    {
+        App.ServiceProvider = app.Services;
+        
+        if (args.Contains("cli"))
+        {
+            app.RunCli();
+        }
+        else
+        {
+            app.Run();
+        }
         return app;
     }
 

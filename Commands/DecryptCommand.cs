@@ -6,9 +6,9 @@ using Dorbit.Framework.Utils.Cryptography;
 namespace Dorbit.Framework.Commands;
 
 [ServiceRegister]
-public class EncryptCommand : Command
+public class DecryptCommand : Command
 {
-    public override string Message => "Encrypt String";
+    public override string Message => "Decrypt String";
 
     public override IEnumerable<CommandParameter> GetParameters(ICommandContext context)
     {
@@ -18,7 +18,7 @@ public class EncryptCommand : Command
 
     public override Task Invoke(ICommandContext context)
     {
-        var cypherText = new Aes().Encrypt(context.Arguments["Input"].ToString(), context.Arguments["Key"].ToString());
+        var cypherText = new Aes().Decrypt(context.Arguments["Input"].ToString(), context.Arguments["Key"].ToString());
         context.Log($"{cypherText}\n");
         return Task.CompletedTask;
     }
