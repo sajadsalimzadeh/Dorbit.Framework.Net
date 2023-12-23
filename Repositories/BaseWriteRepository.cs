@@ -7,11 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Repositories;
 
-public class BaseWriterRepository<T> : BaseReaderRepository<T>, IWriterRepository<T> where T : class, IEntity
+public class BaseWriteRepository<T> : BaseReadRepository<T>, IWriterRepository<T> where T : class, IEntity
 {
     private readonly IDbContext _dbContext;
 
-    public BaseWriterRepository(IDbContext dbContext) : base(dbContext)
+    public BaseWriteRepository(IDbContext dbContext) : base(dbContext)
     {
         _dbContext = dbContext;
     }

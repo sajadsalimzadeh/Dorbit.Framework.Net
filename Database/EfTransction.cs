@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Dorbit.Framework.Database;
 
-internal class EfPrimaryTransction : ITransaction
+internal class EfPrimaryTransaction : ITransaction
 {
     private readonly IDbContextTransaction _transaction;
     private readonly DbContext _dbContext;
     private readonly EfTransactionContext _transactionContext;
 
-    internal EfPrimaryTransction(DbContext dbContext, EfTransactionContext transactionContext)
+    internal EfPrimaryTransaction(DbContext dbContext, EfTransactionContext transactionContext)
     {
         _dbContext = dbContext;
         _transactionContext = transactionContext;
@@ -35,11 +35,12 @@ internal class EfPrimaryTransction : ITransaction
         _transaction.Dispose();
     }
 }
-internal class EfSecondaryTransction : ITransaction
+
+internal class EfSecondaryTransaction : ITransaction
 {
     private readonly EfTransactionContext _transactionContext;
 
-    internal EfSecondaryTransction(EfTransactionContext transactionContext)
+    internal EfSecondaryTransaction(EfTransactionContext transactionContext)
     {
         _transactionContext = transactionContext;
     }
@@ -57,5 +58,20 @@ internal class EfSecondaryTransction : ITransaction
     public void Dispose()
     {
         _transactionContext.Transactions.Remove(this);
+    }
+}
+
+internal class InMemoryTransaction : ITransaction
+{
+    public void Commit()
+    {
+    }
+
+    public void Rollback()
+    {
+    }
+
+    public void Dispose()
+    {
     }
 }

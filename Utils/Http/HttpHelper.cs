@@ -106,8 +106,19 @@ public class HttpHelper : IDisposable
                 }
                 else
                 {
-                    var json = JsonConvert.SerializeObject(parameter);
-                    request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                    if (RequestContentType == ContentType.Json)
+                    {
+                        request.Content = new StringContent(JsonConvert.SerializeObject(parameter), Encoding.UTF8, "application/json");
+                    }
+                    else if (RequestContentType == ContentType.Xml)
+                    {
+                        using (var writer = new StringWriter())
+                        {
+                            var serializer = new XmlSerializer(parameter.GetType());
+                            serializer.Serialize(writer, parameter);
+                            request.Content = new StringContent(writer.ToString(), Encoding.UTF8, "application/xml");
+                        }
+                    }
                 }
 
                 break;
@@ -145,7 +156,6 @@ public class HttpHelper : IDisposable
         using var reader = new StreamReader(stream);
 
 
-        var serializer = new XmlSerializer(typeof(T));
         var httpModelType = new HttpModel<T>()
         {
             Request = httpModel.Request,
@@ -159,6 +169,7 @@ public class HttpHelper : IDisposable
         }
         else if (ResponseContentType == ContentType.Xml)
         {
+            var serializer = new XmlSerializer(typeof(T));
             httpModelType.Result = (T)serializer.Deserialize(reader);
         }
 
@@ -172,13 +183,12 @@ public class HttpHelper : IDisposable
     public Task<HttpModel<T>> DeleteAsync<T>(object parameter = null) => SendAsync<T>(HttpMethod.Delete, parameter);
     public Task<HttpModel<T>> OptionsAsync<T>(object parameter = null) => SendAsync<T>(HttpMethod.Options, parameter);
 
-    public HttpModel<T> Send<T>(HttpMethod method, object parameter = null) => SendAsync<T>(method, parameter).Result;
-    public HttpModel<T> Get<T>(object parameter = null) => Send<T>(HttpMethod.Get, parameter);
-    public HttpModel<T> Post<T>(object parameter = null) => Send<T>(HttpMethod.Post, parameter);
-    public HttpModel<T> Put<T>(object parameter = null) => Send<T>(HttpMethod.Put, parameter);
-    public HttpModel<T> Patch<T>(object parameter = null) => Send<T>(new HttpMethod("Patch"), parameter);
-    public HttpModel<T> Delete<T>(object parameter = null) => Send<T>(HttpMethod.Delete, parameter);
-    public HttpModel<T> Options<T>(object parameter = null) => Send<T>(HttpMethod.Options, parameter);
+    public Task<HttpModel> GetAsync(object parameter = null) => SendAsync(HttpMethod.Get, parameter);
+    public Task<HttpModel> PostAsync(object parameter = null) => SendAsync(HttpMethod.Post, parameter);
+    public Task<HttpModel> PutAsync(object parameter = null) => SendAsync(HttpMethod.Put, parameter);
+    public Task<HttpModel> PatchAsync(object parameter = null) => SendAsync(new HttpMethod("Patch"), parameter);
+    public Task<HttpModel> DeleteAsync(object parameter = null) => SendAsync(HttpMethod.Delete, parameter);
+    public Task<HttpModel> OptionsAsync(object parameter = null) => SendAsync(HttpMethod.Options, parameter);
 
     public void Dispose()
     {

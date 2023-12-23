@@ -14,13 +14,13 @@ public static class CacheableExtensions
         var monitor = _monitors.GetOrAdd(key, (_) => new { });
         lock (monitor)
         {
-            if (!App.MemoryCache.TryGetValue(key, out TR _))
+            if (!App.MemoryCache.TryGetValue(key, out TR cacheResult))
             {
-                result = action(obj).Result;
-                App.MemoryCache.Set(key, result, duration);
+                cacheResult = action(obj).Result;
+                App.MemoryCache.Set(key, cacheResult, duration);
             }
 
-            return Task.FromResult(result);
+            return Task.FromResult(cacheResult);
         }
     }
 }

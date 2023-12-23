@@ -23,9 +23,9 @@ public abstract class BaseController : ControllerBase
     protected Guid? UserId => UserResolver.User?.Id;
     protected QueryOptions QueryOptions => new ODataQueryOptions().Parse(Request);
 
-    protected OperationResult Succeed()
+    protected CommandResult Succeed()
     {
-        return new OperationResult(true);
+        return new CommandResult(true);
     }
 
     protected OperationResult Failed(string message)

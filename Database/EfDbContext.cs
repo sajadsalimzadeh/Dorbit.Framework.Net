@@ -70,6 +70,17 @@ public abstract class EfDbContext : DbContext, IDbContext
         AddLookupEntity<LogAction>();
     }
 
+    protected DatabaseProviderType GetProvider()
+    {
+        var providerName = Database.ProviderName?.ToLower();
+        if (providerName == null) return DatabaseProviderType.Unknown;
+        if (providerName.Contains("inmemory")) return DatabaseProviderType.InMemory;
+        if (providerName.Contains("mysql")) return DatabaseProviderType.MySql;
+        if (providerName.Contains("sqlserver")) return DatabaseProviderType.SqlServer;
+        if (providerName.Contains("postgressql")) return DatabaseProviderType.Postgres;
+        return DatabaseProviderType.Unknown;
+    }
+
     protected void AddLookupEntity<T>() where T : struct, Enum
     {
         _lookupEntities.Add(typeof(T));
@@ -106,6 +117,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public ITransaction BeginTransaction()
     {
+        if (GetProvider() == DatabaseProviderType.InMemory) return new InMemoryTransaction();
         return _efTransactionContext.BeginTransaction();
     }
 
@@ -305,9 +317,14 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public override int SaveChanges()
     {
+        return SaveChangesAsync().Result;
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
         try
         {
-            return base.SaveChanges();
+            return base.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {

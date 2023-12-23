@@ -91,11 +91,12 @@ public static class ServiceCollectionExtensions
     
     public static T BindConfiguration<T>(this IServiceCollection services, string filename = null) where T : class
     {
+        var environment = AppDomain.CurrentDomain.GetEnvironment();
         var basePath = Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "./";
         var settings = new ConfigurationBuilder()
             .SetBasePath(basePath)
             .AddJsonFile("appsettings.json", false)
-            .AddJsonFile($"appsettings.{AppDomain.CurrentDomain.GetEnvironment()?.ToLower()}.json", true)
+            .AddJsonFile($"appsettings.{(environment?.ToLower() ?? "development")}.json", true)
             .Build();
 
         var appSettings = Activator.CreateInstance<T>();
