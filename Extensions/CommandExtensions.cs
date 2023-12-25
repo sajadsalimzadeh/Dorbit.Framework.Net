@@ -10,6 +10,6 @@ public static class CommandExtensions
     {
         var serviceProvider = app.Services.CreateScope().ServiceProvider;
         var cliRunnerService = serviceProvider.GetService<CliRunnerService>();
-        cliRunnerService.Run();
+        cliRunnerService.Run(app);
     }
 }

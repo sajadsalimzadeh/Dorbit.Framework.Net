@@ -1,47 +1,41 @@
 ﻿using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace Dorbit.Framework.Hosts;
 
 public abstract class BaseHost : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
-    
-    protected readonly ILoggerService LoggerService;
 
-    protected abstract int IntervalInSec { get; }
+    protected readonly ILogger Logger;
+
+    protected abstract TimeSpan Interval { get; }
 
     public BaseHost(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        LoggerService = serviceProvider.GetService<ILoggerService>();
+        Logger = serviceProvider.GetService<ILogger>();
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         return Task.Run(async () =>
         {
-            for (var i = 0; !stoppingToken.IsCancellationRequested; i ++)
+            using var timer = new PeriodicTimer(Interval);
+            while (await timer.WaitForNextTickAsync(stoppingToken))
             {
                 try
                 {
-                    if (i % IntervalInSec != 0) continue;
-                    try
-                    {
-                        await InvokeAsync(_serviceProvider.CreateScope().ServiceProvider, stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        LoggerService?.LogError(ex.Message);
-                    }
+                    await InvokeAsync(_serviceProvider.CreateScope().ServiceProvider, stoppingToken);
                 }
-                finally
+                catch (Exception ex)
                 {
-                    await Task.Delay(100);
+                    Logger?.Error(ex, ex.Message);
                 }
             }
-        });
+        }, stoppingToken);
     }
 
     protected abstract Task InvokeAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken);

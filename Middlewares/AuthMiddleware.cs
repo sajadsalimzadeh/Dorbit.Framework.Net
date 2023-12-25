@@ -2,6 +2,7 @@
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace Dorbit.Framework.Middlewares;
 
@@ -34,17 +35,16 @@ public class AuthMiddleware : IMiddleware
 
         if (!string.IsNullOrEmpty(token))
         {
-            var logger = context.RequestServices.GetService<ILoggerService>();
+            var logger = context.RequestServices.GetService<ILogger>();
             try
             {
-                var authService = context.RequestServices.GetService<IAuthService>();
                 if (token.Contains("Bearer ")) token = token.Replace("Bearer ", "");
                 var userResolver = context.RequestServices.GetService<IUserResolver>();
-                userResolver.User = await authService.GetUserByTokenAsync(token);
+                userResolver.User = await userResolver.GetUserByTokenAsync(token);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex);
+                logger.Error(ex, ex.Message);
             }
         }
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Serilog;
 
 namespace Dorbit.Framework.Middlewares;
 
@@ -22,7 +23,7 @@ public class ExceptionMiddleware : IMiddleware
         catch (Exception ex)
         {
             var authenticationService = context.RequestServices.GetService<IAuthService>();
-            var logger = context.RequestServices.GetService<ILoggerService>();
+            var logger = context.RequestServices.GetService<ILogger>();
             var op = new QueryResult<object>
             {
                 Code = 500,
@@ -30,7 +31,7 @@ public class ExceptionMiddleware : IMiddleware
             };
 
             op.Message = ex.Message;
-            logger.LogError(ex);
+            logger.Error(ex, ex.Message);
             if (context.Items.TryGetValue("UserId", out var userId) && userId is Guid userGuid)
             {
                 if (await authenticationService.HasAccessAsync(userGuid, "Developer"))

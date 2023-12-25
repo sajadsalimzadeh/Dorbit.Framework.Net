@@ -93,6 +93,7 @@ public static class ServiceCollectionExtensions
 
     public static T BindConfiguration<T>(this IServiceCollection services, string filename = null) where T : class
     {
+        var environment = AppDomain.CurrentDomain.GetEnvironment();
         var basePath = Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "./";
         var environment = AppDomain.CurrentDomain.GetEnvironment()?.ToLower() ?? "development";
         var settings = new ConfigurationBuilder()
