@@ -8,6 +8,8 @@ namespace Dorbit.Framework.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    private static IMvcBuilder _mvcBuilder;
+
     private class Descriptor
     {
         public int Order { get; set; }
@@ -88,14 +90,15 @@ public static class ServiceCollectionExtensions
             }
         }
     }
-    
+
     public static T BindConfiguration<T>(this IServiceCollection services, string filename = null) where T : class
     {
         var basePath = Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "./";
+        var environment = AppDomain.CurrentDomain.GetEnvironment()?.ToLower() ?? "development";
         var settings = new ConfigurationBuilder()
             .SetBasePath(basePath)
             .AddJsonFile("appsettings.json", false)
-            .AddJsonFile($"appsettings.{AppDomain.CurrentDomain.GetEnvironment()?.ToLower()}.json", true)
+            .AddJsonFile($"appsettings.{environment}.json", true)
             .Build();
 
         var appSettings = Activator.CreateInstance<T>();
@@ -106,9 +109,14 @@ public static class ServiceCollectionExtensions
 
     public static IMvcBuilder AddControllers(this IServiceCollection services, Assembly assembly)
     {
-        var mvcBuilder = services.AddControllers().AddApplicationPart(assembly);
-        services.TryAddSingleton(mvcBuilder);
-        return mvcBuilder;
+        if (_mvcBuilder is null)
+        {
+            _mvcBuilder = services.AddControllers();
+            services.TryAddSingleton(_mvcBuilder);
+        }
+
+        _mvcBuilder.AddApplicationPart(assembly);
+        return _mvcBuilder;
     }
 
     public static IMvcBuilder AddControllers<T>(this IServiceCollection services)

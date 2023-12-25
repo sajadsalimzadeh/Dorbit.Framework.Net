@@ -1,5 +1,4 @@
 ﻿using Dorbit.Framework.Enums;
-using Dorbit.Framework.Installers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
