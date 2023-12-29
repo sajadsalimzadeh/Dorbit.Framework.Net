@@ -11,6 +11,7 @@ namespace Dorbit.Framework.Repositories;
 public class BaseReadRepository<T> : IReaderRepository<T> where T : class, IEntity
 {
     private readonly IDbContext _dbContext;
+    public IDbContext DbContext => _dbContext;
 
     protected IServiceProvider ServiceProvider => _dbContext.ServiceProvider;
 
@@ -29,7 +30,7 @@ public class BaseReadRepository<T> : IReaderRepository<T> where T : class, IEnti
         return Set().CountAsync();
     }
 
-    public virtual Task<List<T>> GetAll()
+    public virtual Task<List<T>> GetAllAsync()
     {
         return Set().ToListAsync();
     }

@@ -11,6 +11,7 @@ using Dorbit.Framework.Hosts;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 // ReSharper disable SuspiciousTypeConversion.Global
 
@@ -34,8 +35,8 @@ public abstract class EfDbContext : DbContext, IDbContext
     private ISoftwareResolver _softwareResolver;
     private ISoftwareResolver SoftwareResolver => _softwareResolver ??= ServiceProvider.GetService<ISoftwareResolver>();
 
-    private ILoggerService _loggerService;
-    private ILoggerService LoggerService => _loggerService ??= ServiceProvider.GetService<ILoggerService>();
+    private ILogger _logger;
+    private ILogger Logger => _logger ??= ServiceProvider.GetService<ILogger>();
 
     private LoggerHost _loggerHost;
     private LoggerHost LoggerHost => _loggerHost ??= ServiceProvider.GetService<LoggerHost>();
@@ -327,7 +328,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
         catch (Exception ex)
         {
-            LoggerService.LogError(ex);
+            Logger.Error(ex, ex.Message);
             throw;
         }
     }

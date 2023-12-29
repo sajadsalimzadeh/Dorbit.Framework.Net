@@ -1,18 +1,15 @@
 ﻿using Dorbit.Framework.Enums;
-using Dorbit.Framework.Installers;
+using Dorbit.Framework.Models.Cryptograpy;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework;
 
 internal class AppSetting
 {
-    private static AppSetting _current;
-    public static AppSetting Current => _current ??= App.ServiceProvider.GetService<AppSetting>();
-        
     public AppSettingGeo Geo { get; set; } = new ();
     public AppSettingCaptcha Captcha { get; set; } = new ();
     public AppSettingMessage Message { get; set; } = new ();
+    public AppSettingSecurity Security { get; set; } = new ();
 }
 
 internal class AppSettingGeo
@@ -40,6 +37,7 @@ internal class AppSettingMessageSmsProvider
     public string Password { get; set; }
 }
 
-internal class AppSettingMessageEmailProvider
+internal class AppSettingSecurity
 {
+    public ProtectedProperty Secret { get; set; }
 }

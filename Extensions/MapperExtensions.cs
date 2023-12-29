@@ -1,8 +1,4 @@
-﻿using AutoMapper;
-using Dorbit.Framework.Installers;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Dorbit.Framework.Extensions;
+﻿namespace Dorbit.Framework.Extensions;
 
 public static class MapperExtensions
 {

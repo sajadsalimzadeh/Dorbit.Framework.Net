@@ -2,6 +2,7 @@
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands;
 using Dorbit.Framework.Commands.Abstractions;
+using Microsoft.AspNetCore.Builder;
 
 namespace Dorbit.Framework.Services;
 
@@ -15,12 +16,12 @@ public class CliRunnerService
         _commands = commands;
     }
 
-    public void Run()
+    public void Run(WebApplication app)
     {
-        CreateMenus(_commands.Where(x => x.IsRoot));
+        CreateMenus(app, _commands.Where(x => x.IsRoot));
     }
 
-    private static void CreateMenus(IEnumerable<ICommand> commands, bool isRoot = true)
+    private static void CreateMenus(WebApplication app, IEnumerable<ICommand> commands, bool isRoot = true)
     {
         var menu = new ConsoleMenu(Array.Empty<string>(), level: 0);
         foreach (var command in commands)
@@ -45,7 +46,7 @@ public class CliRunnerService
                 var subCommands = command.GetSubCommands(context);
                 if (subCommands.Count() > 0)
                 {
-                    CreateMenus(subCommands.ToList(), false);
+                    CreateMenus(app, subCommands.ToList(), false);
                 }
 
                 try
@@ -60,6 +61,11 @@ public class CliRunnerService
                 Console.Write("\nEnter any key to continue ...");
                 Console.ReadLine();
             });
+        }
+
+        if (isRoot)
+        {
+            menu.Add("Run Webserver", () => app.Run());
         }
 
         menu.Add(isRoot ? "Exit" : "Back", () => Environment.Exit(0))

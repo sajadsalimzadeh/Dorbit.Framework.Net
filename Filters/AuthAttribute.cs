@@ -61,33 +61,30 @@ public class AuthAttribute : Attribute, IAsyncAuthorizationFilter
                            throw new Exception($"{nameof(IUserResolver)} not implemented");
         var user = userResolver.User;
         if (user is null) throw new UnauthorizedAccessException("UnAuthorized");
-        else
+        var userStateService = context.HttpContext.RequestServices.GetService<IUserStateService>();
+        var state = userStateService.GetUserState(user.Id);
+        state.Url = context.HttpContext.Request.GetDisplayUrl();
+        state.LastRequestTime = DateTime.UtcNow;
+        if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var agent))
         {
-            var userStateService = context.HttpContext.RequestServices.GetService<IUserStateService>();
-            var state = userStateService.GetUserState(user.Id);
-            state.Url = context.HttpContext.Request.GetDisplayUrl();
-            state.LastRequestTime = DateTime.UtcNow;
-            if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var agent))
+            userStateService.LoadClientInfo(state, agent);
+        }
+
+        userStateService.LoadGeoInfo(state, context.HttpContext.Connection.RemoteIpAddress?.ToString());
+        if (_accesses?.Count() > 0)
+        {
+            IEnumerable<string> policies;
+            if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
             {
-                userStateService.LoadClientInfo(state, agent);
+                policies = GetAccesses(controllerActionDescriptor.ControllerTypeInfo);
             }
+            else throw new Exception("ActionDescription is Not ControllerActionDescriptor");
 
-            userStateService.LoadGeoInfo(state, context.HttpContext.Connection.RemoteIpAddress?.ToString());
-            if (_accesses?.Count() > 0)
+            var authenticationService = context.HttpContext.RequestServices.GetService<IAuthService>();
+            if (user.Name == "admin") return;
+            if (!await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
             {
-                IEnumerable<string> policies;
-                if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
-                {
-                    policies = GetAccesses(controllerActionDescriptor.ControllerTypeInfo);
-                }
-                else throw new Exception("ActionDescription is Not ControllerActionDescriptor");
-
-                var authenticationService = context.HttpContext.RequestServices.GetService<IAuthService>();
-                if (user.Name == "admin") return;
-                if (!await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
-                {
-                    throw new UnauthorizedAccessException("AccessDenied");
-                }
+                throw new UnauthorizedAccessException("AccessDenied");
             }
         }
     }

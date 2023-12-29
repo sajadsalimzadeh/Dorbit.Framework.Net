@@ -29,7 +29,7 @@ internal class LoggerHost : BaseHost
         return this;
     }
 
-    protected override int IntervalInSec { get; } = 3;
+    protected override TimeSpan Interval { get; } = TimeSpan.FromSeconds(30);
 
     protected override async Task InvokeAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken)
     {
@@ -49,7 +49,7 @@ internal class LoggerHost : BaseHost
                     {
                         var oldValue = property.GetValue(request.OldObj);
                         if (oldValue is null && newValue is null) continue;
-                        else if (oldValue?.Equals(newValue) == true) continue;
+                        if (oldValue?.Equals(newValue) == true) continue;
                     }
 
                     if (request.NewObj is IModificationTime && property.Name == nameof(IModificationTime.ModificationTime)) continue;
@@ -76,13 +76,13 @@ internal class LoggerHost : BaseHost
                 using var scope = _serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetService<LogDbContext>();
                 var set = dbContext.Set<EntityLog>();
-                await set.AddRangeAsync(logs);
-                await dbContext.SaveChangesAsync();
+                await set.AddRangeAsync(logs, cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
         catch (Exception ex)
         {
-            LoggerService.LogError(ex);
+            Logger.Error(ex, ex.Message);
         }
     }
 }
