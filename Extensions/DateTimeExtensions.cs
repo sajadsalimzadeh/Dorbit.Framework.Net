@@ -16,4 +16,9 @@ public static class DateTimeExtensions
 
         return dateTime;
     }
+
+    public static long GetUnixTime(this DateTime dateTime)
+    {
+        return Math.Abs((long)dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds);
+    }
 }
