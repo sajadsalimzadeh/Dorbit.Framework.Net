@@ -11,15 +11,17 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 public class JwtService
 {
-    public Task<AuthCreateTokenResponse> CreateToken(AuthCreateTokenRequest request)
+    public Task<AuthCreateTokenResponse> CreateTokenAsync(AuthCreateTokenRequest request)
     {
         var secret = App.Setting.Security.Secret.GetDecryptedValue();
         var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
-            Expires = request.Expires,
             Claims = new Dictionary<string, object>(),
+            Issuer = App.Setting.Security.Issuer,
+            Audience = App.Setting.Security.Audience,
+            Expires = request.Expires,
             SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
         };
         if (request.Claims is not null)

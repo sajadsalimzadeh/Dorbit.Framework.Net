@@ -1,10 +1,14 @@
 ﻿using System.Reflection;
+using System.Security.Authentication;
 using Dorbit.Framework.Controllers;
+using Dorbit.Framework.Models.Users;
+using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace Dorbit.Framework.Filters;
 
@@ -57,11 +61,45 @@ public class AuthAttribute : Attribute, IAsyncAuthorizationFilter
             if (actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null) return;
         }
 
-        var userResolver = context.HttpContext.RequestServices.GetService<IUserResolver>() ??
-                           throw new Exception($"{nameof(IUserResolver)} not implemented");
+        var request = context.HttpContext.Request;
+        var sp = context.HttpContext.RequestServices;
+        var token = string.Empty;
+        var keyNames = new[]
+        {
+            "Token",
+            "ApiKey",
+            "Api_Key",
+            "Authorization",
+        };
+        foreach (var key in keyNames)
+        {
+            if (request.Query.Keys.Contains(key)) token = request.Query[key];
+            else if (request.Query.Keys.Contains(key.ToLower())) token = request.Query[key.ToLower()];
+            else if (request.Headers.Keys.Contains(key)) token = request.Headers[key].FirstOrDefault();
+            else if (request.Headers.Keys.Contains(key.ToLower())) token = request.Headers[key.ToLower()].FirstOrDefault();
+            else if (request.Cookies.Keys.Contains(key)) token = request.Cookies[key];
+            else if (request.Cookies.Keys.Contains(key.ToLower())) token = request.Cookies[key.ToLower()];
+            if (!string.IsNullOrEmpty(token)) break;
+        }
+
+        if (string.IsNullOrEmpty(token)) throw new AuthenticationException();
+
+        if (token.Contains("Bearer ")) token = token.Replace("Bearer ", "");
+        var userResolver = sp.GetService<IUserResolver>();
+        var jwtService = sp.GetService<JwtService>();
+        if (await jwtService.TryValidateTokenAsync(token, out _, out var claims))
+        {
+            var id = claims.FindFirst("UserId")?.Value ?? claims.FindFirst("Id")?.Value;
+            userResolver.User = new UserDto()
+            {
+                Id = Guid.Parse(id ?? ""),
+                Name = claims.FindFirst("Name")?.Value
+            };
+        }
+
         var user = userResolver.User;
-        if (user is null) throw new UnauthorizedAccessException("UnAuthorized");
-        var userStateService = context.HttpContext.RequestServices.GetService<IUserStateService>();
+        if (user is null) throw new AuthenticationException();
+        var userStateService = sp.GetService<IUserStateService>();
         var state = userStateService.GetUserState(user.Id);
         state.Url = context.HttpContext.Request.GetDisplayUrl();
         state.LastRequestTime = DateTime.UtcNow;
@@ -80,11 +118,19 @@ public class AuthAttribute : Attribute, IAsyncAuthorizationFilter
             }
             else throw new Exception("ActionDescription is Not ControllerActionDescriptor");
 
-            var authenticationService = context.HttpContext.RequestServices.GetService<IAuthService>();
+            var authenticationService = sp.GetService<IAuthService>();
             if (user.Name == "admin") return;
             if (!await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
             {
                 throw new UnauthorizedAccessException("AccessDenied");
+            }
+        }
+
+        foreach (var authService in sp.GetServices<IAuthService>())
+        {
+            if (!await authService.IsTokenValid(claims))
+            {
+                throw new UnauthorizedAccessException("InvalidToken");
             }
         }
     }

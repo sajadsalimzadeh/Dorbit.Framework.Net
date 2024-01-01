@@ -1,9 +1,9 @@
-﻿using Dorbit.Framework.Models.Abstractions;
+﻿using System.Security.Claims;
 
 namespace Dorbit.Framework.Services.Abstractions;
 
 public interface IAuthService
 {
-    Task<IUserDto> GetUserByTokenAsync(string token);
+    Task<bool> IsTokenValid(ClaimsPrincipal claimsPrincipal);
     Task<bool> HasAccessAsync(Guid userId, params string[] accesses);
 }

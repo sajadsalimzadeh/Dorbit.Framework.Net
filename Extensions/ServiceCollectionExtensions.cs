@@ -97,12 +97,13 @@ public static class ServiceCollectionExtensions
         var environment = AppDomain.CurrentDomain.GetEnvironment()?.ToLower() ?? "development";
         var settings = new ConfigurationBuilder()
             .SetBasePath(basePath)
-            .AddJsonFile("appsettings.json", false)
-            .AddJsonFile($"appsettings.{environment}.json", true)
+            .AddJsonFile("appsettings.json", false, true)
+            .AddJsonFile($"appsettings.{environment}.json", true, true)
             .Build();
 
         var appSettings = Activator.CreateInstance<T>();
         settings.Bind(appSettings);
+        services.Configure<T>(settings);
         services.AddSingleton(appSettings);
         return appSettings;
     }

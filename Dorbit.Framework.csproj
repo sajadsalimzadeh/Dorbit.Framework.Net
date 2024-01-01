@@ -45,8 +45,4 @@
 		<PackageReference Include="UAParser.Core" Version="4.0.3" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Formatters\" />
-	</ItemGroup>
-
 </Project>
