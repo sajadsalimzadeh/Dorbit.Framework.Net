@@ -42,14 +42,14 @@ public class CreateTokenCommand : Command
         else if (lifetime.EndsWith("M")) expires = expires.AddMonths(lifetimeValue);
         else if (lifetime.EndsWith("y")) expires = expires.AddYears(lifetimeValue);
 
-        var request = new AuthCreateTokenRequest()
+        var request = new JwtCreateTokenRequest()
         {
             Expires = expires,
             Claims = accesses.ToDictionary(x => "access", x => x)
         };
         request.Claims.Add("Id", context.GetArgAsString("Id"));
         request.Claims.Add("Name", context.GetArgAsString("Name"));
-        var createTokenResponse = await _jwtService.CreateToken(request);
+        var createTokenResponse = await _jwtService.CreateTokenAsync(request);
         context.Log($"Token: {createTokenResponse.Key}\n");
     }
 }

@@ -11,7 +11,7 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 public class JwtService
 {
-    public Task<AuthCreateTokenResponse> CreateToken(AuthCreateTokenRequest request)
+    public Task<JwtCreateTokenResponse> CreateTokenAsync(JwtCreateTokenRequest request)
     {
         var secret = App.Setting.Security.Secret.GetDecryptedValue();
         var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
@@ -30,12 +30,16 @@ public class JwtService
             }
         }
 
+        var csrf = Guid.NewGuid().ToString();
+        tokenDescriptor.Claims.Add("csrf", csrf);
+
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var key = tokenHandler.WriteToken(token);
 
-        return Task.FromResult(new AuthCreateTokenResponse()
+        return Task.FromResult(new JwtCreateTokenResponse()
         {
-            Key = key
+            Key = key,
+            Csrf = csrf
         });
     }
 

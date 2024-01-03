@@ -16,19 +16,4 @@ internal class UserResolver : IUserResolver
     {
         _jwtService = jwtService;
     }
-
-    public async Task<IUserDto> GetUserByTokenAsync(string token)
-    {
-        if (await _jwtService.TryValidateTokenAsync(token, out var securityToken, out var claims))
-        {
-            var id = claims.FindFirst("Id")?.Value;
-            return new UserDto()
-            {
-                Id = Guid.Parse(id ?? ""),
-                Name = claims.FindFirst("Name")?.Value
-            };
-        }
-
-        return default;
-    }
 }

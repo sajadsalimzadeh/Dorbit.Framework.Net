@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Models.Abstractions;
+﻿using System.Security.Claims;
+using Dorbit.Framework.Models.Abstractions;
 
 namespace Dorbit.Framework.Models.Users;
 

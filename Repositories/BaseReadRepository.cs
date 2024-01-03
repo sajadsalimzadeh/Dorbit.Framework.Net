@@ -11,6 +11,7 @@ namespace Dorbit.Framework.Repositories;
 public class BaseReadRepository<T> : IReaderRepository<T> where T : class, IEntity
 {
     private readonly IDbContext _dbContext;
+    public IDbContext DbContext => _dbContext;
 
     protected IServiceProvider ServiceProvider => _dbContext.ServiceProvider;
 
@@ -18,6 +19,7 @@ public class BaseReadRepository<T> : IReaderRepository<T> where T : class, IEnti
     {
         _dbContext = dbContext;
     }
+
 
     public virtual IQueryable<T> Set(bool excludeDeleted = true)
     {
