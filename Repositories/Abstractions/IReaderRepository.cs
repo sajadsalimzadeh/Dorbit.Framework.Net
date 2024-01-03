@@ -11,7 +11,7 @@ public interface IReaderRepository<T> where T : class, IEntity
     
     IQueryable<T> Set(bool excludeDeleted = true);
     Task<T> GetByIdAsync(Guid id);
-    Task<List<T>> GetAll();
+    Task<List<T>> GetAllAsync();
     Task<PagedListResult<T>> SelectAsync(QueryOptions queryOptions);
     Task<T> FirstOrDefaultAsync();
     Task<T> LastOrDefaultAsync();

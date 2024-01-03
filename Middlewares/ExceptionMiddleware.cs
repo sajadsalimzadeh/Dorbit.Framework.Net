@@ -31,7 +31,7 @@ public class ExceptionMiddleware : IMiddleware
             };
 
             op.Message = ex.Message;
-            logger.Error(ex, ex.Message);
+            logger?.Error(ex, ex.Message);
             if (context.Items.TryGetValue("UserId", out var userId) && userId is Guid userGuid)
             {
                 if (await authenticationService.HasAccessAsync(userGuid, "Developer"))

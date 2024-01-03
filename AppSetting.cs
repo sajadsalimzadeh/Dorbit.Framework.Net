@@ -40,4 +40,7 @@ internal class AppSettingMessageSmsProvider
 internal class AppSettingSecurity
 {
     public ProtectedProperty Secret { get; set; }
+    public string Issuer { get; set; }
+    public string Audience { get; set; }
+    public short TimeoutInSecond { get; set; }
 }

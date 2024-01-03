@@ -31,7 +31,7 @@ public class BaseReadRepository<T> : IReaderRepository<T> where T : class, IEnti
         return Set().CountAsync();
     }
 
-    public virtual Task<List<T>> GetAll()
+    public virtual Task<List<T>> GetAllAsync()
     {
         return Set().ToListAsync();
     }

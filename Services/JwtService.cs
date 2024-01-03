@@ -18,8 +18,10 @@ public class JwtService
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
-            Expires = request.Expires,
             Claims = new Dictionary<string, object>(),
+            Issuer = App.Setting.Security.Issuer,
+            Audience = App.Setting.Security.Audience,
+            Expires = request.Expires,
             SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
         };
         if (request.Claims is not null)

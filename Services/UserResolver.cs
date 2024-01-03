@@ -8,12 +8,5 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 internal class UserResolver : IUserResolver
 {
-    private readonly JwtService _jwtService;
-    
     public IUserDto User { get; set; }
-
-    public UserResolver(JwtService jwtService)
-    {
-        _jwtService = jwtService;
-    }
 }
