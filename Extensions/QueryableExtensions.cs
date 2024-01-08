@@ -9,30 +9,23 @@ public static class QueryableExtensions
 {
     public static T GetById<T>(this IQueryable<T> query, Guid id) where T : IEntity
     {
-            
         return query.FirstOrDefault(x => x.Id == id);
     }
     
     public static async Task<List<T>> ToListAsyncWithCache<T>(this IQueryable<T> query, string key, TimeSpan duration)
     {
-        key = $"{nameof(ToListAsyncWithCache)}-{nameof(T)}-{key}";
-        if (!App.MemoryCache.TryGetValue(key, out List<T> result))
-        {
-            result = await query.ToListAsync();
-            App.MemoryCache.Set(key, result, duration);
-        }
+        if (App.MemoryCache.TryGetValue(key, out List<T> result)) return result;
+        result = await query.ToListAsync();
+        App.MemoryCache.Set(key, result, duration);
 
         return result;
     }
 
     public static async Task<T> FirstOrDefaultAsyncWithCache<T>(this IQueryable<T> query, Expression<Func<T, bool>> predicate, string key, TimeSpan duration)
     {
-        key = $"{nameof(FirstOrDefaultAsyncWithCache)}-{nameof(T)}-{key}";
-        if (!App.MemoryCache.TryGetValue(key, out T result))
-        {
-            result = await query.FirstOrDefaultAsync(predicate);
-            if(result is not null) App.MemoryCache.Set(key, result, duration);
-        }
+        if (App.MemoryCache.TryGetValue(key, out T result)) return result;
+        result = await query.FirstOrDefaultAsync(predicate);
+        if(result is not null) App.MemoryCache.Set(key, result, duration);
 
         return result;
     }

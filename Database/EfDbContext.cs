@@ -20,8 +20,9 @@ namespace Dorbit.Framework.Database;
 public abstract class EfDbContext : DbContext, IDbContext
 {
     private bool _autoExcludeDeleted = true;
-    private EfTransactionContext _efTransactionContext;
-    private readonly List<Type> _lookupEntities;
+    private readonly List<Type> _lookupEntities = [];
+    private readonly CancellationToken _cancellationToken;
+    private readonly EfTransactionContext _efTransactionContext;
 
     private IUserResolver _userResolver;
     private IUserResolver UserResolver => _userResolver ??= ServiceProvider.GetService<IUserResolver>();
@@ -47,9 +48,9 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public EfDbContext(DbContextOptions options, IServiceProvider serviceProvider) : base(options)
     {
-        _lookupEntities = new List<Type>();
-        _efTransactionContext = new EfTransactionContext(this);
         ServiceProvider = serviceProvider;
+        _efTransactionContext = new EfTransactionContext(this);
+        _cancellationToken = serviceProvider.GetService<ICancellationTokenService>()?.CancellationToken ?? default;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -70,7 +71,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         AddLookupEntity<LogAction>();
     }
 
-    protected DatabaseProviderType GetProvider()
+    private DatabaseProviderType GetProvider()
     {
         var providerName = Database.ProviderName?.ToLower();
         if (providerName == null) return DatabaseProviderType.Unknown;
@@ -189,7 +190,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
 
         if(model.Id == Guid.Empty) model.Id = Guid.NewGuid();
-        await AddAsync(model);
+        await AddAsync(model, _cancellationToken);
         await SaveIfNotInTransactionAsync();
         if (model is ICreationLogging logging) Log(logging, LogAction.Insert);
         return model;
@@ -299,7 +300,7 @@ public abstract class EfDbContext : DbContext, IDbContext
     {
         if (_efTransactionContext.Transactions.Count == 0)
         {
-            await SaveChangesAsync();
+            await SaveChangesAsync(_cancellationToken);
         }
     }
 
@@ -317,7 +318,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public override int SaveChanges()
     {
-        return SaveChangesAsync().Result;
+        return SaveChangesAsync(_cancellationToken).Result;
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -335,13 +336,13 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public Task MigrateAsync()
     {
-        return Database.MigrateAsync();
+        return Database.MigrateAsync(_cancellationToken);
     }
 
     public async Task<List<T>> QueryAsync<T>(string query, Dictionary<string, object> parameters)
     {
         var result = new List<T>();
-        using var command = Database.GetDbConnection().CreateCommand();
+        await using var command = Database.GetDbConnection().CreateCommand();
         command.CommandText = query;
         foreach (var item in parameters)
         {
@@ -355,10 +356,10 @@ public abstract class EfDbContext : DbContext, IDbContext
             command.Parameters.Add(parameter);
         }
         command.CommandType = CommandType.Text;
-        Database.OpenConnection();
-        using var reader = await command.ExecuteReaderAsync();
+        await Database.OpenConnectionAsync(_cancellationToken);
+        await using var reader = await command.ExecuteReaderAsync(_cancellationToken);
         var properties = typeof(T).GetProperties();
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(_cancellationToken))
         {
             var columns = new List<string>();
             for (var i = 0; i < reader.FieldCount; i++) columns.Add(reader.GetName(i));

@@ -8,22 +8,20 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 
 namespace Dorbit.Framework.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthAttribute : Attribute, IAsyncAuthorizationFilter
 {
-    private IEnumerable<string> _accesses;
-    public string Tenant { get; set; }
+    private readonly IEnumerable<string> _accesses;
 
     public AuthAttribute(params string[] accesses)
     {
         _accesses = accesses;
     }
 
-    public IEnumerable<string> GetAccesses(Type type)
+    private IEnumerable<string> GetAccesses(Type type)
     {
         var accesses = _accesses.ToList();
         var preType = type;
