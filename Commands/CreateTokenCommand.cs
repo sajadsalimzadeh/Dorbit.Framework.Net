@@ -12,6 +12,8 @@ namespace Dorbit.Framework.Commands;
 public class CreateTokenCommand : Command
 {
     private readonly JwtService _jwtService;
+    
+    public override bool IsRoot { get; } = false;
     public override string Message => "Create Token";
 
     public CreateTokenCommand(JwtService jwtService)

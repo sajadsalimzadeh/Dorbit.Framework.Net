@@ -10,7 +10,8 @@ namespace Mobicar.Gateway.Commands;
 public class ValidateTokenCommand : Command
 {
     private readonly JwtService _jwtService;
-    
+ 
+    public override bool IsRoot { get; } = false;
     public override string Message => "Validate Token";
 
     public ValidateTokenCommand(JwtService jwtService)

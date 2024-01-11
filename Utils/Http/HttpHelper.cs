@@ -37,7 +37,7 @@ public class HttpHelper : IDisposable
     {
         BaseUrl = baseUrl;
 
-        HttpClient = (handler is null ? new HttpClient() : new HttpClient(handler));
+        HttpClient = new HttpClient(handler ?? new HttpClientHandler());
         HttpClient.BaseAddress = new Uri(BaseUrl);
         HttpClient.DefaultRequestHeaders.Add("Accept", "*/*");
         HttpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
@@ -125,10 +125,11 @@ public class HttpHelper : IDisposable
         }
 
         foreach (var item in _headers) request.Headers.Add(item.Key, item.Value);
+        var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         return new HttpModel()
         {
             Request = request,
-            Response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+            Response = response
         };
     }
 

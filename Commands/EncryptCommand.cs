@@ -8,6 +8,7 @@ namespace Dorbit.Framework.Commands;
 [ServiceRegister]
 public class EncryptCommand : Command
 {
+    public override bool IsRoot { get; } = false;
     public override string Message => "Encrypt String";
 
     public override IEnumerable<CommandParameter> GetParameters(ICommandContext context)

@@ -6,6 +6,7 @@ public interface ICommand
 {
     bool IsRoot { get; }
     string Message { get; }
+    int Order { get; }
     IEnumerable<CommandParameter> GetParameters(ICommandContext context);
     IEnumerable<ICommand> GetSubCommands(ICommandContext context);
     Task Invoke(ICommandContext context);
