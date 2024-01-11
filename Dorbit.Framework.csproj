@@ -44,5 +44,4 @@
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
 		<PackageReference Include="UAParser.Core" Version="4.0.3" />
 	</ItemGroup>
-
 </Project>

@@ -62,27 +62,26 @@ internal class UserStateService : IUserStateService
 
     public void LoadGeoInfo(UserState state, string ip)
     {
-        if (_appSetting.Geo.Enable)
+        if (!_appSetting.Geo.Enable) return;
+        lock (state)
         {
-            lock (state)
-            {
-                if (state.IsGeoInfoInquiry) return;
-                state.IsGeoInfoInquiry = true;
-            }
+            if (state.IsGeoInfoInquiry) return;
+            state.IsGeoInfoInquiry = true;
+        }
 
-            async void Start()
-            {
-                try
-                {
-                    state.GeoInfo = (await _geoService.GetGeoInfoAsync(ip)).Result;
-                }
-                catch
-                {
-                    // ignored
-                }
-            }
+        new Thread(Start).Start();
+        return;
 
-            new Thread(Start).Start();
+        async void Start()
+        {
+            try
+            {
+                state.GeoInfo = (await _geoService.GetGeoInfoAsync(ip)).Result;
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
 }

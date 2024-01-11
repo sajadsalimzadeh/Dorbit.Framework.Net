@@ -12,6 +12,8 @@ namespace Dorbit.Framework.Commands;
 public class CreateTokenCommand : Command
 {
     private readonly JwtService _jwtService;
+    
+    public override bool IsRoot { get; } = false;
     public override string Message => "Create Token";
 
     public CreateTokenCommand(JwtService jwtService)
@@ -42,7 +44,7 @@ public class CreateTokenCommand : Command
         else if (lifetime.EndsWith("M")) expires = expires.AddMonths(lifetimeValue);
         else if (lifetime.EndsWith("y")) expires = expires.AddYears(lifetimeValue);
 
-        var request = new AuthCreateTokenRequest()
+        var request = new JwtCreateTokenRequest()
         {
             Expires = expires,
             Claims = accesses.ToDictionary(x => "access", x => x)
