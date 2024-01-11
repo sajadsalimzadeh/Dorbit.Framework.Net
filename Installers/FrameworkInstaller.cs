@@ -2,6 +2,7 @@ using System.Security.Principal;
 using System.Text.Json;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Middlewares;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -57,6 +58,19 @@ public static class FrameworkInstaller
             .AddODataDefault();
         
         return services;
+    }
+
+    public static WebApplication UseDorbit(this WebApplication app)
+    {
+        var df = new DefaultFilesOptions();
+        df.DefaultFileNames.Add("index.html");
+        app.UseDefaultFiles(df);
+        app.UseStaticFiles();
+        app.UseRouting();
+        app.UseMiddleware<AuthMiddleware>();
+        app.UseMiddleware<ExceptionMiddleware>();
+        app.UseMiddleware<CancellationTokenMiddleware>();
+        return app;
     }
 
     public static WebApplication RunDorbit(this WebApplication app, string[] args)
