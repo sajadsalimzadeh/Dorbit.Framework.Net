@@ -1,8 +1,9 @@
 ﻿namespace Dorbit.Framework.Models.Jwts
 {
 
-    public class AuthCreateTokenResponse
+    public class JwtCreateTokenResponse
     {
         public string Key { get; set; }
+        public string Csrf { get; set; }
     }
 }

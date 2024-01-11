@@ -20,6 +20,7 @@ public class BaseReadRepository<T> : IReaderRepository<T> where T : class, IEnti
         _dbContext = dbContext;
     }
 
+
     public virtual IQueryable<T> Set(bool excludeDeleted = true)
     {
         return _dbContext.DbSet<T>(excludeDeleted);

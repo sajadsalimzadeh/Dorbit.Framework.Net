@@ -1,4 +1,6 @@
-﻿namespace Dorbit.Framework.Models.Abstractions;
+﻿using System.Security.Claims;
+
+namespace Dorbit.Framework.Models.Abstractions;
 
 public interface IUserDto
 {

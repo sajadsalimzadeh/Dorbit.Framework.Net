@@ -44,7 +44,7 @@ public class CreateTokenCommand : Command
         else if (lifetime.EndsWith("M")) expires = expires.AddMonths(lifetimeValue);
         else if (lifetime.EndsWith("y")) expires = expires.AddYears(lifetimeValue);
 
-        var request = new AuthCreateTokenRequest()
+        var request = new JwtCreateTokenRequest()
         {
             Expires = expires,
             Claims = accesses.ToDictionary(x => "access", x => x)

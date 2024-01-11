@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Controllers;
 
-[Monitor]
 [Route("[controller]"), ApiController]
 public abstract class BaseController : ControllerBase
 {

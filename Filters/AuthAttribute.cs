@@ -4,6 +4,7 @@ using Dorbit.Framework.Controllers;
 using Dorbit.Framework.Models.Users;
 using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
+using MailKit.Security;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -13,10 +14,9 @@ using Serilog;
 namespace Dorbit.Framework.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthAttribute : Attribute, IAsyncAuthorizationFilter
+public class AuthAttribute : Attribute, IAsyncActionFilter
 {
-    private IEnumerable<string> _accesses;
-    public string Tenant { get; set; }
+    private readonly IEnumerable<string> _accesses;
 
     public AuthAttribute(params string[] accesses)
     {
@@ -47,18 +47,95 @@ public class AuthAttribute : Attribute, IAsyncAuthorizationFilter
         return accesses.Select(x => x.ToLower());
     }
 
-    public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (context.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
+        try
         {
-            var controllerAuthAttributes = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<AuthAttribute>();
-            var methodAttributes = actionDescriptor.MethodInfo.GetCustomAttributes<AuthAttribute>();
-            if (controllerAuthAttributes.Any(x => Equals(x, this)))
+            if (context.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
             {
-                if (methodAttributes.Count() > 0) return;
+                var controllerAuthAttributes = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<AuthAttribute>();
+                var methodAttributes = actionDescriptor.MethodInfo.GetCustomAttributes<AuthAttribute>();
+                if (controllerAuthAttributes.Any(x => Equals(x, this)))
+                {
+                    if (methodAttributes.Any()) return;
+                }
+
+                if (actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null) return;
             }
 
-            if (actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null) return;
+            var request = context.HttpContext.Request;
+            var services = context.HttpContext.RequestServices;
+
+            //Find Token
+            var token = string.Empty;
+            var keyNames = new[]
+            {
+                "Authorization",
+                "Token",
+                "ApiKey",
+                "Api_Key",
+            };
+
+            foreach (var key in keyNames)
+            {
+                if (request.Headers.Keys.Contains(key.ToLower())) token = request.Headers[key.ToLower()].FirstOrDefault();
+                else if (request.Headers.Keys.Contains(key)) token = request.Headers[key].FirstOrDefault();
+                else if (request.Cookies.Keys.Contains(key)) token = request.Cookies[key];
+                else if (request.Cookies.Keys.Contains(key.ToLower())) token = request.Cookies[key.ToLower()];
+                else if (request.Query.Keys.Contains(key)) token = request.Query[key];
+                else if (request.Query.Keys.Contains(key.ToLower())) token = request.Query[key.ToLower()];
+
+                if (!string.IsNullOrEmpty(token)) break;
+            }
+
+            if (string.IsNullOrEmpty(token)) throw new AuthenticationException();
+
+            //Find User
+            if (token.Contains("Bearer ")) token = token.Replace("Bearer ", "");
+            var jwtService = services.GetService<JwtService>();
+            var userResolver = services.GetService<IUserResolver>() ?? throw new Exception($"{nameof(IUserResolver)} not implemented");
+
+            if (!await jwtService.TryValidateTokenAsync(token, out _, out var claims))
+            {
+                throw new AuthenticationException();
+            }
+
+            var user = userResolver.User = new UserDto()
+            {
+                Id = Guid.Parse(claims.FindFirst("Id")?.Value ?? ""),
+                Name = claims.FindFirst("Name")?.Value
+            };
+
+            //Add Extra info of client
+            var userStateService = services.GetService<IUserStateService>();
+            var state = userStateService.GetUserState(user.Id);
+            state.Url = context.HttpContext.Request.GetDisplayUrl();
+            state.LastRequestTime = DateTime.UtcNow;
+            if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var agent))
+            {
+                userStateService.LoadClientInfo(state, agent);
+            }
+
+            userStateService.LoadGeoInfo(state, context.HttpContext.Connection.RemoteIpAddress?.ToString());
+            if (_accesses?.Count() > 0)
+            {
+                IEnumerable<string> policies;
+                if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
+                {
+                    policies = GetAccesses(controllerActionDescriptor.ControllerTypeInfo);
+                }
+                else throw new Exception("ActionDescription is Not ControllerActionDescriptor");
+
+                var authenticationService = services.GetService<IAuthService>();
+                if (user.Name == "admin") return;
+                if (!await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
+                {
+                    throw new UnauthorizedAccessException("AccessDenied");
+                }
+            }
+
+            await OnActionExecutionAsync(context, claims);
         }
 
         var request = context.HttpContext.Request;
@@ -133,5 +210,10 @@ public class AuthAttribute : Attribute, IAsyncAuthorizationFilter
                 throw new UnauthorizedAccessException("InvalidToken");
             }
         }
+    }
+
+    protected virtual Task OnActionExecutionAsync(ActionExecutingContext context, ClaimsPrincipal claims)
+    {
+        return Task.CompletedTask;
     }
 }
