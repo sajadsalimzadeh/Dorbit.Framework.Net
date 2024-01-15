@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Models;
+﻿using System.Threading.Tasks;
+using Dorbit.Framework.Models;
 using Dorbit.Framework.Models.Messages;
 using Microsoft.Extensions.Configuration;
 

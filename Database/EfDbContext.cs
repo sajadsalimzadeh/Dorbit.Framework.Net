@@ -1,6 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Dorbit.Framework.Database.Abstractions;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Entities.Abstractions;
@@ -39,8 +44,8 @@ public abstract class EfDbContext : DbContext, IDbContext
     private ILogger _logger;
     private ILogger Logger => _logger ??= ServiceProvider.GetService<ILogger>();
 
-    private LoggerHost _loggerHost;
-    private LoggerHost LoggerHost => _loggerHost ??= ServiceProvider.GetService<LoggerHost>();
+    private LoggerHostInterval _loggerHostInterval;
+    private LoggerHostInterval LoggerHostInterval => _loggerHostInterval ??= ServiceProvider.GetService<LoggerHostInterval>();
 
     public IServiceProvider ServiceProvider { get; }
 
@@ -306,7 +311,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     private void Log(IEntity newObj, LogAction action, IEntity oldObj = null)
     {
-        LoggerHost.Add(new Models.Loggers.LogRequest()
+        LoggerHostInterval.Add(new Models.Loggers.LogRequest()
         {
             NewObj = newObj,
             OldObj = oldObj,

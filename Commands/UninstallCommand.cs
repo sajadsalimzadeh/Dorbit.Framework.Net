@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
 

@@ -1,4 +1,7 @@
-﻿namespace Dorbit.Framework.Exceptions;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Dorbit.Framework.Exceptions;
 
 public class ModelValidationException : Exception
 {

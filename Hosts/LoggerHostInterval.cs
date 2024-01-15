@@ -1,5 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Entities;
@@ -12,17 +16,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Hosts;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-internal class LoggerHost : BaseHost
+internal class LoggerHostInterval : BaseHostInterval
 {
     private readonly IServiceProvider _serviceProvider;
     private static readonly ConcurrentQueue<LogRequest> Requests = new();
 
-    public LoggerHost(IServiceProvider serviceProvider) : base(serviceProvider)
+    public LoggerHostInterval(IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
-    public LoggerHost Add(LogRequest request)
+    public LoggerHostInterval Add(LogRequest request)
     {
         Requests.Enqueue(request);
 

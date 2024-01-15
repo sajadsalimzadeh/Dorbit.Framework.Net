@@ -1,4 +1,7 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
+using System.Security.Authentication;
+using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Models;
@@ -39,22 +42,18 @@ public class ExceptionMiddleware : IMiddleware
                     op.Data = ex.StackTrace;
                 }
             }
+
             op.Data = ex.StackTrace;
 
             switch (ex)
             {
                 case UnauthorizedAccessException unauthorizedAccessException:
-                    if (unauthorizedAccessException.Message == "AccessDenied")
-                    {
-                        op.Code = StatusCodes.Status403Forbidden;
-                        op.Message = Errors.AccessDenied.ToString();
-                    }
-                    else
-                    {
-                        op.Code = StatusCodes.Status401Unauthorized;
-                        op.Message = Errors.UnAuthorized.ToString();
-                    }
-
+                    op.Code = StatusCodes.Status403Forbidden;
+                    op.Message = Errors.AccessDenied.ToString();
+                    break;
+                case AuthenticationException authenticationException:
+                    op.Code = StatusCodes.Status401Unauthorized;
+                    op.Message = Errors.UnAuthorized.ToString();
                     break;
                 case OperationException operationException:
                     op.Code = (int)HttpStatusCode.BadRequest;

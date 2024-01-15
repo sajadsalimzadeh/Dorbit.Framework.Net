@@ -1,4 +1,7 @@
-﻿using System.Security.Authentication;
+﻿using System;
+using System.Linq;
+using System.Security.Authentication;
+using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Models.Users;
 using Dorbit.Framework.Services;
@@ -49,6 +52,6 @@ public class AuthMiddleware : IMiddleware
             }
         }
 
-        await next(context);
+        await next.Invoke(context);
     }
 }

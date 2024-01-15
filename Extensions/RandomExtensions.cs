@@ -1,4 +1,7 @@
-﻿namespace Dorbit.Framework.Extensions;
+﻿using System;
+using System.Linq;
+
+namespace Dorbit.Framework.Extensions;
 
 public static class RandomExtensions
 {

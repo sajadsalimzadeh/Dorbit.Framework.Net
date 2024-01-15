@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Exceptions;
+﻿using System;
+using Dorbit.Framework.Exceptions;
 
 namespace Dorbit.Framework.Entities.Abstractions;
 

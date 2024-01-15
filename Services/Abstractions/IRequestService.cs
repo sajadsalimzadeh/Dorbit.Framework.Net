@@ -1,4 +1,6 @@
-﻿namespace Dorbit.Framework.Services.Abstractions;
+﻿using System;
+
+namespace Dorbit.Framework.Services.Abstractions;
 
 public interface IRequestService
 {

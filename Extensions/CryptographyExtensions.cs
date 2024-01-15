@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Models.Cryptograpy;
+﻿using System;
+using Dorbit.Framework.Models.Cryptograpy;
 using Dorbit.Framework.Utils.Cryptography;
 
 namespace Dorbit.Framework.Extensions;
@@ -22,6 +23,22 @@ public static class CryptographyExtensions
         {
             Iterations = property.Iterations,
             HashAlgorithm = algorithmName
-        }.Decrypt(property.Value, key).ToStringUtf8();
+        }.Decrypt(Convert.FromBase64String(property.Value), key).ToStringUtf8();
+    }
+
+    public static ProtectedProperty GetEncryptedValue(this string value, Aes aes = null)
+    {
+        return GetEncryptedValue(value, App.Key, aes);
+    }
+    
+    public static ProtectedProperty GetEncryptedValue(this string value, byte[] key, Aes aes = null)
+    {
+        aes ??= new Aes();
+        return new ProtectedProperty()
+        {
+            Iterations = aes.Iterations,
+            Algorithm = aes.HashAlgorithm.ToString(),
+            Value = Convert.ToBase64String(aes.Encrypt(value, key))
+        };
     }
 }

@@ -1,4 +1,7 @@
-﻿using System.Net.Http.Json;
+﻿using System;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using Dorbit.Framework.Models;
 using Dorbit.Framework.Models.Messages;
 using Dorbit.Framework.Services.Abstractions;

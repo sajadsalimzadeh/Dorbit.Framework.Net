@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Dorbit.Framework.Utils.Collections;
 
 public static class DictionaryExtension

@@ -1,5 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Principal;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Middlewares;
@@ -61,13 +65,15 @@ public static class FrameworkInstaller
         return services;
     }
 
-<<<<<<< HEAD
-    public static WebApplication UseDorbit(this WebApplication app)
+    public static WebApplication BuildWithDorbit(this WebApplicationBuilder builder)
     {
+        var app = builder.Build();
+        App.ServiceProvider = app.Services;
         var df = new DefaultFilesOptions();
         df.DefaultFileNames.Add("index.html");
         app.UseDefaultFiles(df);
         app.UseStaticFiles();
+        app.UseCors();
         app.UseRouting();
         app.UseMiddleware<AuthMiddleware>();
         app.UseMiddleware<ExceptionMiddleware>();
@@ -75,20 +81,26 @@ public static class FrameworkInstaller
         return app;
     }
 
-    public static WebApplication RunDorbit(this WebApplication app, string[] args)
-=======
-    public static async Task<WebApplication> RunDorbit(this WebApplication app, string[] args)
->>>>>>> f03bf58c1079ab033b0f9a9ad3ec046653d789d6
+    public static async Task RunWithStartupsAsync(this WebApplication app)
     {
-        App.ServiceProvider = app.Services;
+        var startups = app.Services.GetServices<IStartup>();
+        foreach (var startup in startups)
+        {
+            await startup.RunAsync();
+        }
+        await app.RunAsync();
+    }
+    
+    public static async Task<WebApplication> RunDorbit(this WebApplication app, string[] args)
+    {
         if (app.Environment.IsDevelopment())
         {
             if (args.Contains("cli")) await app.RunCliAsync();
-            else await app.RunAsync();
+            else await app.RunWithStartupsAsync();
         }
         else if(args.Contains("run"))
         {
-            await app.RunAsync();
+            await app.RunWithStartupsAsync();
         }
         else
         {

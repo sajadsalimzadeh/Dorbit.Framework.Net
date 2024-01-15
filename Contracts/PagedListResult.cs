@@ -1,4 +1,8 @@
-﻿namespace Dorbit.Framework.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Dorbit.Framework.Models;
 
 public class PagedListResult<T> : QueryResult<IEnumerable<T>>
 {

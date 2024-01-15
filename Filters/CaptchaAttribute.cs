@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Exceptions;
+﻿using System.Linq;
+using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Services;
 using GoogleReCaptcha.V3.Interface;
 using Microsoft.AspNetCore.Mvc.Filters;

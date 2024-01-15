@@ -1,3 +1,5 @@
+using System;
+
 namespace Dorbit.Framework.Exceptions;
 
 public class OperationException : Exception

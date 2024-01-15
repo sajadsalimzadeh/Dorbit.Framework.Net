@@ -1,4 +1,7 @@
-﻿namespace Dorbit.Framework.Models.Messages;
+﻿using System.Collections.Generic;
+using System.IO;
+
+namespace Dorbit.Framework.Models.Messages;
 
 public class MessageEmailRequest : MessageRequest
 {

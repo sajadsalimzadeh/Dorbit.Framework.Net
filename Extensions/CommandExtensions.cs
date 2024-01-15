@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Services;
+﻿using System.Threading.Tasks;
+using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 

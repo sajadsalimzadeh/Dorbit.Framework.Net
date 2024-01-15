@@ -1,4 +1,6 @@
-﻿namespace Dorbit.Framework.Commands;
+﻿using System;
+
+namespace Dorbit.Framework.Commands;
 
 public class CommandContextCli : CommandContextBase
 {

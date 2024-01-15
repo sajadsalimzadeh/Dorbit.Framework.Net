@@ -1,4 +1,7 @@
-﻿namespace Dorbit.Framework.Models.Jwts
+﻿using System;
+using System.Collections.Generic;
+
+namespace Dorbit.Framework.Models.Jwts
 {
     public class JwtCreateTokenRequest
     {

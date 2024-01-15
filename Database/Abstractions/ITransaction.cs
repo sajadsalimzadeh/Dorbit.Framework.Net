@@ -1,3 +1,5 @@
+using System;
+
 namespace Dorbit.Framework.Database.Abstractions;
 
 public interface ITransaction : IDisposable

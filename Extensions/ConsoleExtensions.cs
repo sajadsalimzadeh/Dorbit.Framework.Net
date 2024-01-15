@@ -1,4 +1,6 @@
-﻿namespace Dorbit.Framework.Extensions;
+﻿using System;
+
+namespace Dorbit.Framework.Extensions;
 
 public class ConsoleExtensions
 {

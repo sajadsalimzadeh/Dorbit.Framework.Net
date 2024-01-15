@@ -1,4 +1,6 @@
-﻿namespace Dorbit.Framework.Extensions;
+﻿using System.Threading.Tasks;
+
+namespace Dorbit.Framework.Extensions;
 
 public static class MapperExtensions
 {

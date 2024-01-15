@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Enums;
+﻿using System.Collections.Generic;
+using Dorbit.Framework.Enums;
 using Dorbit.Framework.Models.Cryptograpy;
 using Microsoft.Extensions.Configuration;
 

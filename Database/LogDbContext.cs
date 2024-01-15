@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Attributes;
+﻿using System;
+using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Entities;
 using Microsoft.EntityFrameworkCore;
 

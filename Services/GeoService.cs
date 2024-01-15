@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Attributes;
+﻿using System.Threading.Tasks;
+using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Models;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Http;

@@ -1,4 +1,5 @@
-﻿using UAParser.Objects;
+﻿using System;
+using UAParser.Objects;
 
 namespace Dorbit.Framework.Models.Users;
 
