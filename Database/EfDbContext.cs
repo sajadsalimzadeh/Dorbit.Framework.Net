@@ -4,8 +4,10 @@ using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Database.Abstractions;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Entities.Abstractions;
@@ -14,6 +16,7 @@ using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Hosts;
 using Dorbit.Framework.Services.Abstractions;
+using Innofactor.EfCoreJsonValueConverter;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -58,14 +61,15 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.AddJsonFields();
+        
         base.OnModelCreating(modelBuilder);
 
         RegisterAuditProperties(modelBuilder);
 
         foreach (var type in modelBuilder.Model.GetEntityTypes())
         {
-            foreach (var keys in type.GetForeignKeys()
-                         .Where(x => !x.IsOwnership && x.DeleteBehavior == DeleteBehavior.Cascade))
+            foreach (var keys in type.GetForeignKeys().Where(x => x is { IsOwnership: false, DeleteBehavior: DeleteBehavior.Cascade }))
             {
                 keys.DeleteBehavior = DeleteBehavior.NoAction;
             }
@@ -87,23 +91,24 @@ public abstract class EfDbContext : DbContext, IDbContext
     {
         foreach (var type in modelBuilder.Model.GetEntityTypes().Select(x => x.ClrType))
         {
+            var entity = modelBuilder.Entity(type);
             if (typeof(ICreationAudit).IsAssignableFrom(type))
-                modelBuilder.Entity(type).Property(nameof(ICreationAudit.CreatorName)).HasMaxLength(256);
+                entity.Property(nameof(ICreationAudit.CreatorName)).HasMaxLength(256);
 
             if (typeof(IModificationAudit).IsAssignableFrom(type))
-                modelBuilder.Entity(type).Property(nameof(IModificationAudit.ModifierName)).HasMaxLength(256);
+                entity.Property(nameof(IModificationAudit.ModifierName)).HasMaxLength(256);
 
             if (typeof(IDeletationAudit).IsAssignableFrom(type))
-                modelBuilder.Entity(type).Property(nameof(IDeletationAudit.DeleterName)).HasMaxLength(256);
+                entity.Property(nameof(IDeletationAudit.DeleterName)).HasMaxLength(256);
 
             if (typeof(ITenantAudit).IsAssignableFrom(type))
-                modelBuilder.Entity(type).Property(nameof(ITenantAudit.TenantName)).HasMaxLength(256);
+                entity.Property(nameof(ITenantAudit.TenantName)).HasMaxLength(256);
 
             if (typeof(IServerAudit).IsAssignableFrom(type))
-                modelBuilder.Entity(type).Property(nameof(IServerAudit.ServerName)).HasMaxLength(256);
+                entity.Property(nameof(IServerAudit.ServerName)).HasMaxLength(256);
 
             if (typeof(ISoftwareAudit).IsAssignableFrom(type))
-                modelBuilder.Entity(type).Property(nameof(ISoftwareAudit.SoftwareName)).HasMaxLength(256);
+                entity.Property(nameof(ISoftwareAudit.SoftwareName)).HasMaxLength(256);
         }
     }
 
@@ -145,6 +150,7 @@ public abstract class EfDbContext : DbContext, IDbContext
                 set = set.Cast<ISoftDelete>().Where(x => !x.IsDeleted).Cast<T>().AsQueryable();
             }
         }
+
         return set;
     }
 
@@ -161,31 +167,35 @@ public abstract class EfDbContext : DbContext, IDbContext
             creationAudit.CreatorId = user?.Id;
             creationAudit.CreatorName = user?.Name;
         }
+
         if (model is ITenantAudit tenantAudit)
         {
             var tenant = TenantResolver?.GetTenant();
             tenantAudit.TenantId = tenant?.Id;
             tenantAudit.TenantName = tenant?.Name;
         }
+
         if (model is IServerAudit serverAudit)
         {
             var server = ServerResolver?.GetServer();
             serverAudit.ServerId = server?.Id;
             serverAudit.ServerName = server?.Name;
         }
+
         if (model is ISoftwareAudit softwareAudit)
         {
             var software = SoftwareResolver?.GetSoftware();
             softwareAudit.SoftwareId = software?.Id;
             softwareAudit.SoftwareName = software?.Name;
         }
+
         if (model is IHistorical historical)
         {
             historical.IsHistorical = false;
             historical.HistoryId = Guid.NewGuid();
         }
 
-        if(model.Id == Guid.Empty) model.Id = Guid.NewGuid();
+        if (model.Id == Guid.Empty) model.Id = Guid.NewGuid();
         await AddAsync(model, _cancellationToken);
         await SaveIfNotInTransactionAsync();
         if (model is ICreationLogging logging) Log(logging, LogAction.Insert);
@@ -209,6 +219,7 @@ public abstract class EfDbContext : DbContext, IDbContext
             modificationAudit.ModifierId = user?.Id;
             modificationAudit.ModifierName = user?.Name;
         }
+
         var oldModel = DbSet<T>().FirstOrDefault(x => x.Id == model.Id);
         if (model is IHistorical historical)
         {
@@ -226,6 +237,7 @@ public abstract class EfDbContext : DbContext, IDbContext
                 Entry(creationAudit).Property(x => x.CreatorId).IsModified = false;
                 Entry(creationAudit).Property(x => x.CreatorName).IsModified = false;
             }
+
             await InsertEntityAsync(historical);
             transaction.Commit();
         }
@@ -239,6 +251,7 @@ public abstract class EfDbContext : DbContext, IDbContext
                 if (readonlyAttr is null || !readonlyAttr.IsReadOnly) continue;
                 Entry(model).Property(property.Name).IsModified = false;
             }
+
             if (model is ICreationTime creationTime) Entry(creationTime).Property(x => x.CreationTime).IsModified = false;
             if (model is ICreationAudit creationAudit)
             {
@@ -246,6 +259,7 @@ public abstract class EfDbContext : DbContext, IDbContext
                 Entry(creationAudit).Property(x => x.CreatorName).IsModified = false;
             }
         }
+
         await SaveIfNotInTransactionAsync();
         if (model is ILogging logging) Log(logging, LogAction.Update, oldModel);
         return model;
@@ -287,6 +301,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         {
             Entry(model).State = EntityState.Deleted;
         }
+
         await SaveIfNotInTransactionAsync();
         if (model is ILogging logging) Log(logging, LogAction.Delete);
         return model;
@@ -351,6 +366,7 @@ public abstract class EfDbContext : DbContext, IDbContext
             if (item.Value is null) parameter.Value = DBNull.Value;
             command.Parameters.Add(parameter);
         }
+
         command.CommandType = CommandType.Text;
         await Database.OpenConnectionAsync(_cancellationToken);
         await using var reader = await command.ExecuteReaderAsync(_cancellationToken);
@@ -367,8 +383,10 @@ public abstract class EfDbContext : DbContext, IDbContext
                 if (value == DBNull.Value) value = null;
                 property.SetValue(transaction, value);
             }
+
             result.Add(transaction);
         }
+
         return result;
     }
 }
