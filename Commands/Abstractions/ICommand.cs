@@ -11,5 +11,5 @@ public interface ICommand
     int Order { get; }
     IEnumerable<CommandParameter> GetParameters(ICommandContext context);
     IEnumerable<ICommand> GetSubCommands(ICommandContext context);
-    Task Invoke(ICommandContext context);
+    Task InvokeAsync(ICommandContext context);
 }

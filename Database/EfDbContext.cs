@@ -49,8 +49,6 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public IServiceProvider ServiceProvider { get; }
 
-    public DbSet<Lookup> Lookups { get; set; }
-
     public EfDbContext(DbContextOptions options, IServiceProvider serviceProvider) : base(options)
     {
         ServiceProvider = serviceProvider;
@@ -72,8 +70,6 @@ public abstract class EfDbContext : DbContext, IDbContext
                 keys.DeleteBehavior = DeleteBehavior.NoAction;
             }
         }
-
-        AddLookupEntity<LogAction>();
     }
 
     private DatabaseProviderType GetProvider()
@@ -85,11 +81,6 @@ public abstract class EfDbContext : DbContext, IDbContext
         if (providerName.Contains("sqlserver")) return DatabaseProviderType.SqlServer;
         if (providerName.Contains("postgressql")) return DatabaseProviderType.Postgres;
         return DatabaseProviderType.Unknown;
-    }
-
-    protected void AddLookupEntity<T>() where T : struct, Enum
-    {
-        _lookupEntities.Add(typeof(T));
     }
 
     private void RegisterAuditProperties(ModelBuilder modelBuilder)

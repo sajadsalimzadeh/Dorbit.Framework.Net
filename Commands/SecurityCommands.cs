@@ -28,7 +28,7 @@ public class SecurityCommands : Command
         yield return _serviceProvider.GetService<ValidateTokenCommand>();
     }
 
-    public override Task Invoke(ICommandContext context)
+    public override Task InvokeAsync(ICommandContext context)
     {
         return Task.CompletedTask;
     }

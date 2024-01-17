@@ -44,7 +44,7 @@ public static class FrameworkInstaller
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
         configuration.Logger?.Configure(services);
-        services.AddDbContext<LogDbContext>(configuration.LogDbContextConfiguration);
+        services.AddDbContext<FrameworkDbContext>(configuration.LogDbContextConfiguration);
 
         return services;
     }

@@ -78,7 +78,7 @@ internal class LoggerHostInterval : BaseHostInterval
             if (logs.Count > 0)
             {
                 using var scope = _serviceProvider.CreateScope();
-                var dbContext = scope.ServiceProvider.GetService<LogDbContext>();
+                var dbContext = scope.ServiceProvider.GetService<FrameworkDbContext>();
                 var set = dbContext.Set<EntityLog>();
                 await set.AddRangeAsync(logs, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);

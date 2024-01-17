@@ -21,5 +21,5 @@ public abstract class Command : ICommand
         return new List<ICommand>();
     }
 
-    public abstract Task Invoke(ICommandContext context);
+    public abstract Task InvokeAsync(ICommandContext context);
 }

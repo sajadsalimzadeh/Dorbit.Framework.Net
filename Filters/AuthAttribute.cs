@@ -107,7 +107,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         {
             if (!await authService.IsTokenValid(context.HttpContext, user.Claims))
             {
-                throw new UnauthorizedAccessException("InvalidToken");
+                throw new AuthenticationException("InvalidToken");
             }
         }
 

@@ -55,7 +55,7 @@ public class CliRunnerService
 
                 try
                 {
-                    command.Invoke(context);
+                    command.InvokeAsync(context);
                 }
                 catch (Exception ex)
                 {

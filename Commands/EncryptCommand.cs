@@ -19,7 +19,7 @@ public class EncryptCommand : Command
         yield return new CommandParameter("Key", "Key");
     }
 
-    public override Task Invoke(ICommandContext context)
+    public override Task InvokeAsync(ICommandContext context)
     {
         var cypherText = new Aes().Encrypt(context.Arguments["Input"].ToString(), context.Arguments["Key"].ToString());
         context.Log($"{cypherText}\n");

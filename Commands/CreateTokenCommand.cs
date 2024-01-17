@@ -33,7 +33,7 @@ public class CreateTokenCommand : Command
         yield return new CommandParameter("Lifetime", "Enter Lifetime (10s, 30m, 2h, 7d, 2w, 3M, 1y) (default:1h)");
     }
 
-    public override async Task Invoke(ICommandContext context)
+    public override async Task InvokeAsync(ICommandContext context)
     {
         var accesses = (context.GetArgAsString("Accesses") ?? "admin").Split(',');
         var lifetime = context.GetArgAsString("Lifetime") ?? "1h";

@@ -26,7 +26,7 @@ public class ValidateTokenCommand : Command
         yield return new CommandParameter("Key", "Key");
     }
     
-    public override async Task Invoke(ICommandContext context)
+    public override async Task InvokeAsync(ICommandContext context)
     {
         var result = await _jwtService.TryValidateTokenAsync(context.GetArgAsString("Key"));
         if(result) context.Success("Token Is Valid");
