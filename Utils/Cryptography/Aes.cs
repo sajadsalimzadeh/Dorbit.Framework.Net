@@ -2,81 +2,98 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 
 namespace Dorbit.Framework.Utils.Cryptography;
 
 public class Aes
 {
+    public enum Size : short
+    {
+        Aes128 = 128
+    }
+
+    private readonly short _size;
+    private readonly ICryptoTransform _encryptor;
+    private readonly ICryptoTransform _decryptor;
     public int Iterations { get; set; } = 1000;
     public HashAlgorithmName HashAlgorithm { get; set; } = HashAlgorithmName.SHA1;
+    public PaddingMode PaddingMode { get; init; } = PaddingMode.Zeros;
+    public CipherMode CipherMode { get; init; } = CipherMode.CBC;
+    public byte[] Key { get; }
+    public byte[] Iv { get; }
 
-    
-    public byte[] Encrypt(byte[] bytesToBeEncrypted, byte[] password)
+    private Aes(Size size = Size.Aes128)
     {
-        using var ms = new MemoryStream();
-        using var aes = System.Security.Cryptography.Aes.Create();
-        aes.KeySize = 256;
-        aes.BlockSize = 128;
+        _size = (short)size;
+    }
 
+    public Aes(byte[] password, Size size = Size.Aes128) : this(size)
+    {
         var key = new Rfc2898DeriveBytes(password, password, Iterations, HashAlgorithm);
-        aes.Key = key.GetBytes(aes.KeySize / 8);
-        aes.IV = key.GetBytes(aes.BlockSize / 8);
+        Key = key.GetBytes(_size / 8);
+        Iv = key.GetBytes(_size / 8);
 
-        aes.Mode = CipherMode.CBC;
-
-        using (var cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
-        {
-            cs.Write(bytesToBeEncrypted, 0, bytesToBeEncrypted.Length);
-            cs.Close();
-        }
-
-        var encryptedBytes = ms.ToArray();
-
-        return encryptedBytes;
-    }
-    
-    public byte[] Encrypt(string text, string password)
-    {
-        return Encrypt(text, Encoding.ASCII.GetBytes(password));
+        var aes = Create();
+        _encryptor = aes.CreateEncryptor();
+        _decryptor = aes.CreateDecryptor();
     }
 
-    public byte[] Encrypt(string text, byte[] password)
+    public Aes(string password, Size size = Size.Aes128) : this(password.ToByteArray(), size)
     {
-        return Encrypt(Encoding.UTF8.GetBytes(text), password);
     }
 
-    public byte[] Decrypt(byte[] text, byte[] password)
+    public Aes(byte[] key, byte[] iv, Size size = Size.Aes128) : this(size)
     {
-        var saltBytes = password ?? throw new ArgumentNullException(nameof(password));
+        Key = key;
+        Iv = iv;
 
+        if (key.Length != _size / 8) throw new OperationException(Errors.AesKeySizeIsInvalid);
+        if (key.Length != Iv.Length) throw new OperationException(Errors.AesKeySizeMostEqualIvSize);
+
+        var aes = Create();
+        _encryptor = aes.CreateEncryptor();
+        _decryptor = aes.CreateDecryptor();
+    }
+
+    private System.Security.Cryptography.Aes Create()
+    {
+        var aes = System.Security.Cryptography.Aes.Create();
+        aes.KeySize = _size;
+        aes.BlockSize = _size;
+        aes.Padding = PaddingMode.Zeros;
+        aes.Key = Key;
+        aes.IV = Iv;
+        return aes;
+    }
+
+
+    public byte[] Encrypt(byte[] data)
+    {
         using var ms = new MemoryStream();
-        using var aes = System.Security.Cryptography.Aes.Create();
-        aes.KeySize = 256;
-        aes.BlockSize = 128;
-
-        var key = new Rfc2898DeriveBytes(password, saltBytes, Iterations, HashAlgorithm);
-        aes.Key = key.GetBytes(aes.KeySize / 8);
-        aes.IV = key.GetBytes(aes.BlockSize / 8);
-
-        aes.Mode = CipherMode.CBC;
-
-        using var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write);
-        cs.Write(text, 0, text.Length);
-        cs.Close();
-
-        var decryptedBytes = ms.ToArray();
-
-        return decryptedBytes;
+        using var cryptoStream = new CryptoStream(ms, _encryptor, CryptoStreamMode.Write);
+        cryptoStream.Write(data, 0, data.Length);
+        cryptoStream.FlushFinalBlock();
+        return ms.ToArray();
     }
 
-    public byte[] Decrypt(string text, byte[] password)
+    public byte[] Encrypt(string text)
     {
-        return Decrypt(text.ToBytesUtf8(), password);
+        return Encrypt(Encoding.UTF8.GetBytes(text));
     }
 
-    public byte[] Decrypt(string text, string password)
+    public byte[] Decrypt(byte[] text)
     {
-        return Decrypt(text.ToBytesUtf8(), password.ToBytesUtf8());
+        using var ms = new MemoryStream();
+        using var cryptoStream = new CryptoStream(ms, _decryptor, CryptoStreamMode.Write);
+        cryptoStream.Write(text, 0, text.Length);
+        cryptoStream.Close();
+        return ms.ToArray();
+    }
+
+    public byte[] Decrypt(string text)
+    {
+        return Decrypt(text.ToBytesUtf8());
     }
 }

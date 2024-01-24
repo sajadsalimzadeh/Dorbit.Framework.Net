@@ -31,5 +31,7 @@ internal enum Errors
     EntityIsReadonly,
     EntityIsUnDeletable,
     CanNotChangeVerifiedFile,
-    TransactionRollback
+    TransactionRollback,
+    AesKeySizeIsInvalid,
+    AesKeySizeMostEqualIvSize
 }

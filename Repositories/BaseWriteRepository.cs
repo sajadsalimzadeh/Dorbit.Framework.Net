@@ -25,7 +25,7 @@ public class BaseWriteRepository<T> : BaseReadRepository<T>, IWriterRepository<T
 
     public virtual Task<T> RemoveAsync(T model)
     {
-        return _dbContext.RemoveEntityAsync(model);
+        return _dbContext.DeleteEntityAsync(model);
     }
 
     public virtual Task<T> UpdateAsync(T model)

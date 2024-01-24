@@ -19,8 +19,13 @@ public static class DateTimeExtensions
         return dateTime;
     }
 
-    public static long GetUnixTime(this DateTime dateTime)
+    public static long GetUnixTimeSeconds(this DateTime dateTime)
     {
-        return Math.Abs((long)dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds);
+        return (long)dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+    }
+    
+    public static long GetUnixTimeMilliseconds(this DateTime dateTime)
+    {
+        return (long)dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
     }
 }

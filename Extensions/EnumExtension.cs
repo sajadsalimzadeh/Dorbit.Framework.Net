@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 
-namespace Dorbit.Framework.Utils;
+namespace Dorbit.Framework.Extensions;
 
 public static class EnumExtension
 {

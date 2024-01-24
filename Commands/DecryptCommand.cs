@@ -21,7 +21,7 @@ public class DecryptCommand : Command
 
     public override Task Invoke(ICommandContext context)
     {
-        var cypherText = new Aes().Decrypt(context.Arguments["Input"].ToString(), context.Arguments["Key"].ToString());
+        var cypherText = new Aes(context.GetArgAsString("Key")).Decrypt(context.GetArgAsString("Input"));
         context.Log($"{cypherText}\n");
         return Task.CompletedTask;
     }
