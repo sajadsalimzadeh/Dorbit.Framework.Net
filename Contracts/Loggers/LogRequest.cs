@@ -1,8 +1,7 @@
-﻿using Dorbit.Framework.Entities.Abstractions;
-using Dorbit.Framework.Enums;
-using Dorbit.Framework.Models.Abstractions;
+﻿using Dorbit.Framework.Contracts.Abstractions;
+using Dorbit.Framework.Entities.Abstractions;
 
-namespace Dorbit.Framework.Models.Loggers;
+namespace Dorbit.Framework.Contracts.Loggers;
 
 public class LogRequest
 {

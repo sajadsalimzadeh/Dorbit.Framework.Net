@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Dorbit.Framework.Utils.Files;
+namespace Dorbit.Framework.Utils.Paths;
 
 public static class PathUtil
 {

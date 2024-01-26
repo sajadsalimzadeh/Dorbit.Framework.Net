@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
-using Dorbit.Framework.Enums;
+using Dorbit.Framework.Contracts;
 using Fare;
 
 namespace Dorbit.Framework.Utils.Captcha;

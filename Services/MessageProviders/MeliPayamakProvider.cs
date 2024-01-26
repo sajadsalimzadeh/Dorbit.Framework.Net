@@ -2,8 +2,8 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Dorbit.Framework.Models;
-using Dorbit.Framework.Models.Messages;
+using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Messages;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Configuration;
 

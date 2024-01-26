@@ -6,7 +6,6 @@ using System.Security.Authentication;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dorbit.Framework.Controllers;
-using Dorbit.Framework.Models.Users;
 using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using MailKit.Security;
@@ -97,7 +96,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
             }
 
             var authenticationService = sp.GetService<IAuthService>();
-            if (user.Name != "admin" && !await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
+            if (user.Username != "admin" && !await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
             {
                 throw new UnauthorizedAccessException("AccessDenied");
             }

@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Dorbit.Framework.Models.Cryptograpy;
+namespace Dorbit.Framework.Contracts.Cryptograpy;
 
 public class ProtectedProperty
 {

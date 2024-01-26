@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Framework.Models.Abstractions;
+﻿namespace Dorbit.Framework.Contracts.Abstractions;
 
 public interface ITenantDto
 {

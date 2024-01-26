@@ -5,11 +5,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Loggers;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Entities.Abstractions;
-using Dorbit.Framework.Enums;
-using Dorbit.Framework.Models.Loggers;
 using Dorbit.Framework.Utils.Json;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -70,7 +70,7 @@ internal class LoggerHostInterval : BaseHostInterval
                     Action = request.Action,
                     CreationTime = DateTime.UtcNow,
                     CreatorId = request.User?.Id,
-                    CreatorName = request.User?.Name,
+                    CreatorName = request.User?.Username,
                 };
                 logs.Add(entity);
             }

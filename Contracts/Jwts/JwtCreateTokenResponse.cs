@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Framework.Models.Jwts
+﻿namespace Dorbit.Framework.Contracts.Jwts
 {
 
     public class JwtCreateTokenResponse

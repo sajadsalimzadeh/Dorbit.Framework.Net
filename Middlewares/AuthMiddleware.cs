@@ -3,7 +3,7 @@ using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
-using Dorbit.Framework.Models.Users;
+using Dorbit.Framework.Contracts.Users;
 using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Http;
@@ -43,10 +43,10 @@ public class AuthMiddleware : IMiddleware
             if (await jwtService.TryValidateTokenAsync(token, out _, out var claims))
             {
                 var id = claims.FindFirst("UserId")?.Value ?? claims.FindFirst("Id")?.Value;
-                userResolver.User = new UserDto()
+                userResolver.User = new BaseUserDto()
                 {
                     Id = Guid.Parse(id ?? ""),
-                    Name = claims.FindFirst("Name")?.Value,
+                    Username = claims.FindFirst("Name")?.Value,
                     Claims = claims,
                 };
             }

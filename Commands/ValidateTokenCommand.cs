@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
-using Dorbit.Framework.Commands;
 using Dorbit.Framework.Commands.Abstractions;
-using Dorbit.Framework.Models.Commands;
+using Dorbit.Framework.Contracts.Commands;
 using Dorbit.Framework.Services;
 
-namespace Mobicar.Gateway.Commands;
+namespace Dorbit.Framework.Commands;
 
 [ServiceRegister]
 public class ValidateTokenCommand : Command

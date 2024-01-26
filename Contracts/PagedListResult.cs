@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Dorbit.Framework.Models;
+namespace Dorbit.Framework.Contracts;
 
 public class PagedListResult<T> : QueryResult<IEnumerable<T>>
 {

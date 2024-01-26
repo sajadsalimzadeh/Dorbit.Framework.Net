@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Extensions;
-using Dorbit.Framework.Models;
 using Dorbit.Framework.Repositories.Abstractions;
 using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;

@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using System.Reflection;
+using Dorbit.Framework.Attributes;
 using Microsoft.OpenApi.Models;
-using Mobicar.Common.Models.Attributes;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Mobicar.Core.WebApi.Extensions;
+namespace Dorbit.Framework.Filters;
 
 public class SwaggerExcludeFilter : ISchemaFilter
 {

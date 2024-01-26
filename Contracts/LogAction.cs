@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Dorbit.Framework.Enums;
+namespace Dorbit.Framework.Contracts;
 
 public enum LogAction : byte
 {

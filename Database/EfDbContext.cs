@@ -8,10 +8,11 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Loggers;
 using Dorbit.Framework.Database.Abstractions;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Entities.Abstractions;
-using Dorbit.Framework.Enums;
 using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Hosts;
@@ -165,7 +166,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         {
             var user = UserResolver?.User;
             creationAudit.CreatorId = user?.Id;
-            creationAudit.CreatorName = user?.Name;
+            creationAudit.CreatorName = user?.Username;
         }
 
         if (model is ITenantAudit tenantAudit)
@@ -217,7 +218,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         {
             var user = UserResolver?.User;
             modificationAudit.ModifierId = user?.Id;
-            modificationAudit.ModifierName = user?.Name;
+            modificationAudit.ModifierName = user?.Username;
         }
 
         var oldModel = DbSet<T>().FirstOrDefault(x => x.Id == model.Id);
@@ -286,7 +287,7 @@ public abstract class EfDbContext : DbContext, IDbContext
                 {
                     var user = UserResolver?.User;
                     deletionAudit.DeleterId = user?.Id;
-                    deletionAudit.DeleterName = user?.Name;
+                    deletionAudit.DeleterName = user?.Username;
                 }
 
                 Entry(softDelete).State = EntityState.Detached;
@@ -317,7 +318,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     private void Log(IEntity newObj, LogAction action, IEntity oldObj = null)
     {
-        LoggerHostInterval.Add(new Models.Loggers.LogRequest()
+        LoggerHostInterval.Add(new LogRequest()
         {
             NewObj = newObj,
             OldObj = oldObj,

@@ -1,5 +1,5 @@
 ﻿using System;
-using Dorbit.Framework.Models.Cryptograpy;
+using Dorbit.Framework.Contracts.Cryptograpy;
 using Dorbit.Framework.Utils.Cryptography;
 
 namespace Dorbit.Framework.Extensions;

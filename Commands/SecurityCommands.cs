@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
-using Dorbit.Framework.Models.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using Mobicar.Gateway.Commands;
 
 namespace Dorbit.Framework.Commands;
 

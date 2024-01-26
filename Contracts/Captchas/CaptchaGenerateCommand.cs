@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Framework.Models.Captchas;
+﻿namespace Dorbit.Framework.Contracts.Captchas;
 
 public class CaptchaGenerateCommand
 {

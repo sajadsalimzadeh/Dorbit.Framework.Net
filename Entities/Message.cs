@@ -1,4 +1,4 @@
-﻿using Dorbit.Framework.Enums;
+﻿using Dorbit.Framework.Contracts;
 
 namespace Dorbit.Framework.Entities;
 

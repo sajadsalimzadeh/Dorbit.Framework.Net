@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Dorbit.Framework.Models.Commands;
+using Dorbit.Framework.Contracts.Commands;
 
 namespace Dorbit.Framework.Commands.Abstractions;
 
