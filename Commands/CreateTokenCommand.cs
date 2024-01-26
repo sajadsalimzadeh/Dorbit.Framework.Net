@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
 using Dorbit.Framework.Contracts.Commands;
 using Dorbit.Framework.Contracts.Jwts;
 using Dorbit.Framework.Services;
-using Dorbit.Framework.Utils.Cryptography;
 
 namespace Dorbit.Framework.Commands;
 

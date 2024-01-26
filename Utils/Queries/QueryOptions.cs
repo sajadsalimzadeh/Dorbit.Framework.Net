@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Utils.Queries;
 

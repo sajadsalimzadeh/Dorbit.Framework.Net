@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Authentication;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dorbit.Framework.Controllers;
-using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
-using MailKit.Security;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;

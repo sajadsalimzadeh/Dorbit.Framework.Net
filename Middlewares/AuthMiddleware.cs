@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Security.Authentication;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Users;
