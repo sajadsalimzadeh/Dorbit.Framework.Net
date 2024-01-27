@@ -1,7 +1,7 @@
 ﻿using System;
 using UAParser.Objects;
 
-namespace Dorbit.Framework.Models.Users;
+namespace Dorbit.Framework.Contracts.Users;
 
 public class UserState
 {

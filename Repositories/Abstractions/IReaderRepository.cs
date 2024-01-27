@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Database.Abstractions;
 using Dorbit.Framework.Entities.Abstractions;
-using Dorbit.Framework.Models;
 using Dorbit.Framework.Utils.Queries;
 
 namespace Dorbit.Framework.Repositories.Abstractions;

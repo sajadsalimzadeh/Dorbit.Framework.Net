@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
-using Dorbit.Framework.Models.Commands;
-using Dorbit.Framework.Models.Jwts;
+using Dorbit.Framework.Contracts.Commands;
+using Dorbit.Framework.Contracts.Jwts;
 using Dorbit.Framework.Services;
-using Dorbit.Framework.Utils.Cryptography;
 
 namespace Dorbit.Framework.Commands;
 
@@ -33,7 +31,7 @@ public class CreateTokenCommand : Command
         yield return new CommandParameter("Lifetime", "Enter Lifetime (10s, 30m, 2h, 7d, 2w, 3M, 1y) (default:1h)");
     }
 
-    public override async Task Invoke(ICommandContext context)
+    public override async Task InvokeAsync(ICommandContext context)
     {
         var accesses = (context.GetArgAsString("Accesses") ?? "admin").Split(',');
         var lifetime = context.GetArgAsString("Lifetime") ?? "1h";

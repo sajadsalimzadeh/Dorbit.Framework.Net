@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mobicar.Common.Models.Attributes;
+namespace Dorbit.Framework.Attributes;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class DocIgnoreAttribute : Attribute

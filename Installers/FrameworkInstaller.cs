@@ -44,7 +44,7 @@ public static class FrameworkInstaller
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
         configuration.Logger?.Configure(services);
-        services.AddDbContext<LogDbContext>(configuration.LogDbContextConfiguration);
+        services.AddDbContext<FrameworkDbContext>(configuration.LogDbContextConfiguration);
 
         return services;
     }
@@ -91,7 +91,7 @@ public static class FrameworkInstaller
         await app.RunAsync();
     }
     
-    public static async Task<WebApplication> RunDorbit(this WebApplication app, string[] args)
+    public static async Task RunDorbitAsync(this WebApplication app, string[] args)
     {
         if (app.Environment.IsDevelopment())
         {
@@ -106,8 +106,6 @@ public static class FrameworkInstaller
         {
             await app.RunCliAsync();
         }
-
-        return app;
     }
 
     public class Configuration

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace Dorbit.Framework.Models.Messages;
+namespace Dorbit.Framework.Contracts.Messages;
 
 public class MessageEmailRequest : MessageRequest
 {

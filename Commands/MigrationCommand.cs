@@ -31,14 +31,17 @@ public class MigrationCommand : Command
         }
     }
     
-    public override Task Invoke(ICommandContext context)
+    public override Task InvokeAsync(ICommandContext context)
     {
         throw new NotImplementedException();
     }
 }
 
+[ServiceRegister]
 public class MigrationCommandAll : Command
 {
+    public override bool IsRoot { get; } = false;
+    
     private readonly IEnumerable<IDbContext> _dbContexts;
 
     public override string Message => "Migrate All";
@@ -48,7 +51,7 @@ public class MigrationCommandAll : Command
         _dbContexts = dbContexts;
     }
 
-    public override async Task Invoke(ICommandContext context)
+    public override async Task InvokeAsync(ICommandContext context)
     {
         foreach (var dbContext in _dbContexts)
         {
@@ -75,7 +78,7 @@ internal class MigrationCommandItem : Command
         _dbContext = dbContext;
     }
 
-    public override async Task Invoke(ICommandContext context)
+    public override async Task InvokeAsync(ICommandContext context)
     {
         await _dbContext.MigrateAsync();
         context.Log($"{_dbContext.GetType().Name} Migrate");

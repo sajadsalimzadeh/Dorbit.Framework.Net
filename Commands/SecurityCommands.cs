@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
-using Dorbit.Framework.Models.Commands;
 using Microsoft.Extensions.DependencyInjection;
-using Mobicar.Gateway.Commands;
 
 namespace Dorbit.Framework.Commands;
 
@@ -28,7 +26,7 @@ public class SecurityCommands : Command
         yield return _serviceProvider.GetService<ValidateTokenCommand>();
     }
 
-    public override Task Invoke(ICommandContext context)
+    public override Task InvokeAsync(ICommandContext context)
     {
         return Task.CompletedTask;
     }

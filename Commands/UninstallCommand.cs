@@ -12,7 +12,7 @@ public class UninstallCommand : Command
     public override string Message { get; } = "Uninstall";
     public override int Order { get; } = 101;
 
-    public override Task Invoke(ICommandContext context)
+    public override Task InvokeAsync(ICommandContext context)
     {
         var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
         Process.Start("sc", $"stop {assemblyName}");

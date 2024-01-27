@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Framework.Models;
+﻿namespace Dorbit.Framework.Contracts;
 
 public class QueryResult<T> : CommandResult
 {

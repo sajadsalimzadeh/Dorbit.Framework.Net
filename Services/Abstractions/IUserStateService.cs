@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Dorbit.Framework.Models.Users;
+using Dorbit.Framework.Contracts.Users;
 
 namespace Dorbit.Framework.Services.Abstractions;
 

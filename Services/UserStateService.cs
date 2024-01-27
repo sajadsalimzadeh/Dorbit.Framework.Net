@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Dorbit.Framework.Attributes;
-using Dorbit.Framework.Models.Users;
+using Dorbit.Framework.Contracts.Users;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using UAParser;

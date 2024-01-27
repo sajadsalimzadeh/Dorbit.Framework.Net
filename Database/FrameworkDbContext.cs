@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Dorbit.Framework.Database;
 
 [ServiceRegister]
-public class LogDbContext : EfDbContext
+public class FrameworkDbContext : EfDbContext
 {
-    public LogDbContext(DbContextOptions<LogDbContext> options, IServiceProvider serviceProvider) : base(options, serviceProvider)
+    public FrameworkDbContext(DbContextOptions<FrameworkDbContext> options, IServiceProvider serviceProvider) : base(options, serviceProvider)
     {
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Framework.Enums;
+﻿namespace Dorbit.Framework.Contracts;
 
 public enum DbContextType
 {

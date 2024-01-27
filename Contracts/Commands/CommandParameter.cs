@@ -1,4 +1,4 @@
-﻿namespace Dorbit.Framework.Models.Commands;
+﻿namespace Dorbit.Framework.Contracts.Commands;
 
 public class CommandParameter<T>
 {

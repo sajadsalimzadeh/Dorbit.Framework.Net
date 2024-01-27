@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Dorbit.Framework.Models.Commands;
+using Dorbit.Framework.Contracts.Commands;
 
 namespace Dorbit.Framework.Commands.Abstractions;
 
@@ -11,5 +11,5 @@ public interface ICommand
     int Order { get; }
     IEnumerable<CommandParameter> GetParameters(ICommandContext context);
     IEnumerable<ICommand> GetSubCommands(ICommandContext context);
-    Task Invoke(ICommandContext context);
+    Task InvokeAsync(ICommandContext context);
 }
