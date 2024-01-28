@@ -9,9 +9,11 @@ public class Job
 {
     public Guid Id { get; } = Guid.NewGuid();
     private JobStatus _status = JobStatus.Draft;
+    public Exception Exception { get; private set; }
     private Thread _thread;
     private double _progress = 0;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private Semaphore _semaphore = new(0, 1);
 
     public JobStatus Status
     {
@@ -59,11 +61,15 @@ public class Job
             {
                 Status = JobStatus.Running;
                 await task(_cancellationTokenSource.Token);
-                Status = JobStatus.Success;
             }
             catch (Exception ex)
             {
-                Status = JobStatus.Failed;
+                Exception = ex;
+            }
+            finally
+            {
+                Status = JobStatus.Finish;
+                _semaphore.Release();
             }
         }
     }
@@ -71,5 +77,11 @@ public class Job
     public void Cancel()
     {
         _cancellationTokenSource.Cancel();
+    }
+
+    public Task Wait()
+    {
+        _semaphore.WaitOne();
+        return Task.CompletedTask;
     }
 }

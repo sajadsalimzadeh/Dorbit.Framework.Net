@@ -112,7 +112,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public ITransaction BeginTransaction()
     {
-        if (GetProvider() == DatabaseProviderType.InMemory) return new InMemoryTransaction();
+        if (GetProvider() == DatabaseProviderType.InMemory) return new InMemoryTransaction(this);
         return _efTransactionContext.BeginTransaction();
     }
 

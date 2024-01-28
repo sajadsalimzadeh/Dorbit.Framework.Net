@@ -14,18 +14,18 @@ public static class StringExtensions
 
     public static int ToInt32(this string input, bool hex = false)
     {
+        input = input?.Trim();
+        
         if (string.IsNullOrEmpty(input))
         {
             return 0;
         }
 
-        input = input.Trim();
         if (input.StartsWith("0x"))
         {
             return (int)new System.ComponentModel.Int32Converter().ConvertFromString(input)!;
         }
-
-
+        
         if (hex || HexChars.Any(input.Contains))
         {
             return Convert.ToInt32(input, 16);

@@ -38,4 +38,9 @@ public static class QueryableExtensions
     {
         return query.FirstOrDefaultAsyncWithCache(x => x.Id == id, $"{key}-{id}", duration);
     }
+
+    public static IQueryable<T> WhereIf<T>(this IQueryable<T> query, Func<bool> condition, Expression<Func<T, bool>> predicate)
+    {
+        return (condition() ? query.Where(predicate) : query);
+    }
 }
