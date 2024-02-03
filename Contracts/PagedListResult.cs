@@ -17,7 +17,7 @@ public class PagedListResult<T> : QueryResult<IEnumerable<T>>
         };
     }
 
-    public QueryResult<IEnumerable<T>> ToOperationResult()
+    public QueryResult<IEnumerable<T>> ToCommandResult()
     {
         return new QueryResult<IEnumerable<T>>()
         {

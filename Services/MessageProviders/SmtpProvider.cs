@@ -2,6 +2,7 @@
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Messages;
+using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -15,28 +16,25 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest>
 {
     public string Name => "Smtp";
 
-    public string Server { get; set; }
-    public short Port { get; set; }
-    public string SenderName { get; set; }
-    public string SenderEmail { get; set; }
-    public string Username { get; set; }
-    public string Password { get; set; }
-    
-    public void Configure(IConfiguration configuration)
+    private string _server;
+    private short _port;
+    private string _senderEmail;
+    private string _username;
+    private string _password;
+
+    public void Configure(AppSettingMessageProvider configuration)
     {
-        Server = configuration.GetValue<string>("Server");
-        Port = configuration.GetValue<short>("Port");
-        SenderName = configuration.GetValue<string>("SenderName");
-        SenderEmail = configuration.GetValue<string>("SenderEmail");
-        Username = configuration.GetValue<string>("Username");
-        Password = configuration.GetValue<string>("Password");
+        _server = configuration.Server;
+        _port = configuration.Port;
+        _senderEmail = configuration.Sender;
+        _username = configuration.Username;
+        _password = configuration.Password.GetDecryptedValue();
     }
 
-    public async Task<OperationResult> Send(MessageEmailRequest request)
+    public async Task<QueryResult<string>> Send(MessageEmailRequest request)
     {
-        
         var email = new MimeMessage();
-        email.Sender = MailboxAddress.Parse(SenderEmail);
+        email.Sender = MailboxAddress.Parse(_senderEmail);
         email.To.Add(MailboxAddress.Parse(request.To));
         email.Subject = request.Subject;
         var builder = new BodyBuilder();
@@ -52,14 +50,15 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest>
                 }
             }
         }
+
         builder.HtmlBody = string.Format(request.Body, request.Args);
         email.Body = builder.ToMessageBody();
         using var smtp = new SmtpClient();
-        smtp.Connect(Server, Port, SecureSocketOptions.StartTls);
-        smtp.Authenticate(Username, Password);
+        await smtp.ConnectAsync(_server, _port, SecureSocketOptions.StartTls);
+        await smtp.AuthenticateAsync(_username, _password);
         await smtp.SendAsync(email);
-        smtp.Disconnect(true);
+        await smtp.DisconnectAsync(true);
 
-        return new OperationResult(true);
+        return new QueryResult<string>() { Success = true, Data = "" };
     }
 }

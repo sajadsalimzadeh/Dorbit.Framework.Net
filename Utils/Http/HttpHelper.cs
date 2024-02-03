@@ -167,7 +167,7 @@ public class HttpHelper : IDisposable
             return default;
         }
 
-        using var stream = await httpModel.Response.Content.ReadAsStreamAsync();
+        await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(cancellationToken);
         using var reader = new StreamReader(stream);
 
 
@@ -179,7 +179,7 @@ public class HttpHelper : IDisposable
 
         if (ResponseContentType == ContentType.Json)
         {
-            using var jsonTextReader = new JsonTextReader(reader);
+            await using var jsonTextReader = new JsonTextReader(reader);
             httpModelType.Result = new JsonSerializer().Deserialize<T>(jsonTextReader);
         }
         else if (ResponseContentType == ContentType.Xml)

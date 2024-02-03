@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
@@ -21,7 +22,7 @@ public class DecryptCommand : Command
 
     public override Task InvokeAsync(ICommandContext context)
     {
-        var cypherText = new Aes(context.GetArgAsString("Key")).Decrypt(context.GetArgAsString("Input"));
+        var cypherText = new Aes(context.GetArgAsString("Key")).Decrypt(Convert.FromBase64String(context.GetArgAsString("Input")));
         context.Log($"{cypherText}\n");
         return Task.CompletedTask;
     }

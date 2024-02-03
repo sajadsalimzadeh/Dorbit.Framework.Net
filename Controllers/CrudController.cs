@@ -20,9 +20,9 @@ public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudControlle
     protected IBaseRepository<TEntity> Repository => ServiceProvider.GetService<IBaseRepository<TEntity>>();
 
     [HttpGet]
-    public virtual async Task<PagedListResult<TGet>> Select(ODataQueryOptions<TEntity> queryOptions)
+    public virtual async Task<PagedListResult<TGet>> SelectAsync()
     {
-        return (await Repository.Set().ApplyToPagedListAsync(queryOptions)).Select(x => Mapper.Map<TGet>(x));
+        return (await Repository.Set().ApplyToPagedListAsync(QueryOptions)).Select(x => Mapper.Map<TGet>(x));
     }
 
     [HttpGet("{id}")]
@@ -32,13 +32,13 @@ public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudControlle
     }
 
     [HttpPost]
-    public virtual Task<QueryResult<TGet>> Add([FromBody] TAdd dto)
+    public virtual Task<QueryResult<TGet>> AddAsync([FromBody] TAdd dto)
     {
         return Repository.InsertAsync(dto.MapTo<TEntity>()).MapAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
     [HttpPatch("{id}")]
-    public virtual Task<QueryResult<TGet>> Edit(Guid id, [FromBody] TEdit dto)
+    public virtual Task<QueryResult<TGet>> EditAsync(Guid id, [FromBody] TEdit dto)
     {
         dto.Id = id;
         return Repository.UpdateAsync(id, dto).MapAsync<TEntity, TGet>().ToQueryResultAsync();
