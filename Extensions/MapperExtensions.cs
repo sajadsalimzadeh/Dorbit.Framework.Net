@@ -15,7 +15,7 @@ public static class MapperExtensions
         return App.Mapper.Map(obj, model);
     }
     
-    public static async Task<TResult> MapAsync<TSource, TResult>(this Task<TSource> task)
+    public static async Task<TResult> MapToAsync<TSource, TResult>(this Task<TSource> task)
     {
         return App.Mapper.Map<TResult>(await task);
     }

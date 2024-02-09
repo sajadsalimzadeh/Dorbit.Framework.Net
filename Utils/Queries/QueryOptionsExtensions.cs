@@ -79,7 +79,7 @@ public static class QueryOptionsExtensions
         var countQuery = query.AsQueryable();
         return new PagedListResult<TR>()
         {
-            Data = await queryOptions.ApplyTo(itemsQuery).ToListAsync().MapAsync<List<T>, List<TR>>(),
+            Data = await queryOptions.ApplyTo(itemsQuery).ToListAsync().MapToAsync<List<T>, List<TR>>(),
             TotalCount = await queryOptions.ApplyCountTo(countQuery).CountAsync()
         };
     }

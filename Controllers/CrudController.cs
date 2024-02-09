@@ -28,26 +28,26 @@ public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudControlle
     [HttpGet("{id}")]
     public virtual Task<QueryResult<TGet>> GetById(Guid id)
     {
-        return Repository.GetByIdAsync(id).MapAsync<TEntity, TGet>().ToQueryResultAsync();
+        return Repository.GetByIdAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
     [HttpPost]
     public virtual Task<QueryResult<TGet>> AddAsync([FromBody] TAdd dto)
     {
-        return Repository.InsertAsync(dto.MapTo<TEntity>()).MapAsync<TEntity, TGet>().ToQueryResultAsync();
+        return Repository.InsertAsync(dto.MapTo<TEntity>()).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
     [HttpPatch("{id}")]
     public virtual Task<QueryResult<TGet>> EditAsync(Guid id, [FromBody] TEdit dto)
     {
         dto.Id = id;
-        return Repository.UpdateAsync(id, dto).MapAsync<TEntity, TGet>().ToQueryResultAsync();
+        return Repository.UpdateAsync(id, dto).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
     [HttpDelete("{id}")]
     public virtual Task<QueryResult<TGet>> Remove(Guid id)
     {
-        return Repository.RemoveAsync(id).MapAsync<TEntity, TGet>().ToQueryResultAsync();
+        return Repository.RemoveAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 }
 
