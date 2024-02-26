@@ -16,6 +16,11 @@ public static class QueryableExtensions
         return query.FirstOrDefault(x => x.Id == id);
     }
     
+    public static Task<T> GetByIdAsync<T>(this IQueryable<T> query, Guid id) where T : IEntity
+    {
+        return query.FirstOrDefaultAsync(x => x.Id == id);
+    }
+    
     public static async Task<List<T>> ToListAsyncWithCache<T>(this IQueryable<T> query, string key, TimeSpan duration)
     {
         if (App.MemoryCache.TryGetValue(key, out List<T> result)) return result;
