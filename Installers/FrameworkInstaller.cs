@@ -40,6 +40,7 @@ public static class FrameworkInstaller
         services.AddScoped<IPrincipal>((sp) => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
 
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
+        
         services.AddControllers(typeof(FrameworkInstaller).Assembly)
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 

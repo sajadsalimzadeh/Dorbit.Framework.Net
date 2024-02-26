@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Jobs;
@@ -23,10 +25,19 @@ public class JobService
         return Task.FromResult(jobs);
     }
 
+    public async Task<Job> GetAsync(Guid id)
+    {
+        var jobs = await GetAllAsync();
+        return jobs.FirstOrDefault(x => x.Id == id);
+    }
+
     public async Task<Job> Create(JobCreateRequest request)
     {
         var jobs = await GetAllAsync();
-        var job = new Job();
+        var job = new Job
+        {
+            Name = request.Name
+        };
         jobs.Add(job);
         return job;
     }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Loggers;
 using Dorbit.Framework.Database.Abstractions;
@@ -26,6 +27,7 @@ namespace Dorbit.Framework.Database;
 
 public abstract class EfDbContext : DbContext, IDbContext
 {
+    private static readonly List<string> Sequences = [];
     private readonly EfTransactionContext _efTransactionContext;
 
     private IUserResolver _userResolver;
@@ -64,12 +66,24 @@ public abstract class EfDbContext : DbContext, IDbContext
         base.OnModelCreating(modelBuilder);
 
         RegisterAuditProperties(modelBuilder);
-
+        
         foreach (var type in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var keys in type.GetForeignKeys().Where(x => x is { IsOwnership: false, DeleteBehavior: DeleteBehavior.Cascade }))
             {
                 keys.DeleteBehavior = DeleteBehavior.NoAction;
+            }
+
+            foreach (var property in type.ClrType.GetProperties())
+            {
+                var sequenceAttribute = property.GetCustomAttribute<SequenceAttribute>();
+                if(sequenceAttribute is null) continue;
+                if (!Sequences.Contains(sequenceAttribute.Name))
+                {
+                    modelBuilder.HasSequence<int>(sequenceAttribute.Name).StartsAt(sequenceAttribute.StartAt).IncrementsBy(sequenceAttribute.IncrementsBy);
+                    Sequences.Add(sequenceAttribute.Name);
+                }
+                modelBuilder.Entity(type.ClrType).Property(property.Name).HasDefaultValueSql($"NEXT VALUE FOR {sequenceAttribute.Name}");
             }
         }
     }

@@ -2,18 +2,40 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Contracts.Jobs;
 
 public class Job
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public class AuditLog
+    {
+        public DateTime Time { get; set; } = DateTime.UtcNow;
+        public Guid? UserId { get; set; }
+        public string UserName { get; set; }
+    }
+    
     private JobStatus _status = JobStatus.Draft;
-    public Exception Exception { get; private set; }
     private Thread _thread;
-    private double _progress = 0;
+    private double _progress;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private Semaphore _semaphore = new(0, 1);
+    private readonly Semaphore _semaphore = new(0, 1);
+
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Exception Exception { get; private set; }
+    public string Name { get; set; }
+    public List<JobLog> Logs { get; } = [];
+    public List<AuditLog> AuditLogs { get; } = [];
+    public JobLogger Logger { get; }
+    public bool Pausable { get; set; }
+    
+    public DateTime? StartTime { get; private set; }
+    public DateTime? CancelTime { get; private set; }
+    public DateTime? EndTime { get; private set; }
+    
+
+    public event EventHandler<JobStatus> OnStatusChange;
+    public event EventHandler<double> OnProgress;
 
     public JobStatus Status
     {
@@ -36,13 +58,6 @@ public class Job
         }
     }
 
-    public string Name { get; set; }
-    public List<JobLog> Logs { get; } = [];
-    public JobLogger Logger { get; }
-
-    public event EventHandler<JobStatus> OnStatusChange;
-    public event EventHandler<double> OnProgress;
-
     public Job()
     {
         Logger = new JobLogger(this);
@@ -51,8 +66,10 @@ public class Job
     public void Start(Func<CancellationToken, Task> task)
     {
         if (_thread is not null) return;
+
         _thread = new Thread(ThreadStart);
         _thread.Start();
+        StartTime = DateTime.UtcNow;
         return;
 
         async void ThreadStart()
@@ -68,6 +85,7 @@ public class Job
             }
             finally
             {
+                EndTime = DateTime.UtcNow;
                 Status = JobStatus.Finish;
                 _semaphore.Release();
             }
@@ -76,7 +94,21 @@ public class Job
 
     public void Cancel()
     {
+        if(_cancellationTokenSource.IsCancellationRequested) return;
         _cancellationTokenSource.Cancel();
+        CancelTime = DateTime.UtcNow;
+    }
+
+    public void Pause()
+    {
+        if(!Pausable) return;
+        Status = JobStatus.Pause;
+    }
+
+    public void Resume()
+    {
+        if(!Pausable) return;
+        Status = JobStatus.Running;
     }
 
     public Task Wait()
