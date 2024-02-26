@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Authentication;
 using System.Threading.Tasks;
@@ -27,23 +30,25 @@ public class ExceptionMiddleware : IMiddleware
         {
             var authenticationService = context.RequestServices.GetService<IAuthService>();
             var logger = context.RequestServices.GetService<ILogger>();
-            var op = new QueryResult<object>
+            var op = new ExceptionResult<IDictionary>
             {
                 Code = 500,
-                Success = false
+                Success = false,
+                Message = ex.Message
             };
 
-            op.Message = ex.Message;
             logger?.Error(ex, ex.Message);
             if (context.Items.TryGetValue("UserId", out var userId) && userId is Guid userGuid)
             {
                 if (await authenticationService.HasAccessAsync(userGuid, "Developer"))
                 {
-                    op.Data = ex.StackTrace;
+                    op.Data = ex.Data;
+                    op.StackTrace = ex.StackTrace;
                 }
             }
-
-            op.Data = ex.StackTrace;
+#if DEBUG
+            op.StackTrace = ex.StackTrace;
+#endif
 
             switch (ex)
             {
@@ -62,7 +67,7 @@ public class ExceptionMiddleware : IMiddleware
                     break;
                 case ModelValidationException modelValidationException:
                     op.Code = (int)HttpStatusCode.BadRequest;
-                    op.Data = modelValidationException.Errors;
+                    op.Data = modelValidationException.Errors.ToDictionary(x => x.Field, x => x.Message);
                     op.Message = modelValidationException.Message;
                     break;
                 default:
