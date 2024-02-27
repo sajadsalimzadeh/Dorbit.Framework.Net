@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Dorbit.Framework.Controllers;
 
@@ -20,33 +22,57 @@ public class JobsController(JobService jobService) : BaseController
         var jobs = await jobService.GetAllAsync();
         return jobs.MapTo<List<JobDto>>().ToQueryResult();
     }
-    
-    [HttpGet("{id:guid}/Progress")]
-    public async IAsyncEnumerable<double> GetProgressAsync(Guid id, [EnumeratorCancellation] CancellationToken cancellationToken)
+
+    [HttpGet("Watch")]
+    public async IAsyncEnumerable<JobStatusDto> WatchAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeSpan.FromSeconds(30));
 
-        var job = await jobService.GetAsync(id);
+        var jobs = await jobService.GetAllAsync();
         while (!cts.IsCancellationRequested)
         {
-            await Task.Delay(50, cancellationToken);
-            yield return job.Progress;
+            await Task.Delay(250, cancellationToken);
+            foreach (var statusDto in jobs.Select(x => new JobStatusDto() { Id = x.Id, Progress = x.Progress, Status = x.Status, }))
+            {
+                yield return statusDto;
+            }
         }
     }
 
     [HttpGet("{id:guid}/Logs")]
-    public async Task<QueryResult<List<JobLogDto>>> GetAllLogsAsync(Guid id)
+    public async Task<QueryResult<List<JobLogDto>>> GetAllLogsAsync(Guid id, LogLevel? logLevel)
     {
         var job = await jobService.GetAsync(id);
-        return job.Logs.MapTo<List<JobLogDto>>().ToQueryResult();
+        var logs = job.Logs;
+        if (logLevel.HasValue) logs = logs.Where(x => x.Level == logLevel.Value).ToList();
+        return logs.MapTo<List<JobLogDto>>().ToQueryResult();
     }
 
     [HttpPost("{id:guid}/Cancel")]
-    public async Task<Job> CancelAsync(Guid id)
+    public async Task<QueryResult<JobDto>> CancelAsync(Guid id)
     {
         var job = await jobService.GetAsync(id);
+        job.AuditLogs.Add(new Job.AuditLog(Job.AuditLogType.Cancel, UserResolver.User));
         job.Cancel();
-        return job;
+        return job.MapTo<JobDto>().ToQueryResult();
+    }
+
+    [HttpPost("{id:guid}/Pause")]
+    public async Task<QueryResult<JobDto>> PauseAsync(Guid id)
+    {
+        var job = await jobService.GetAsync(id);
+        job.AuditLogs.Add(new Job.AuditLog(Job.AuditLogType.Pause, UserResolver.User));
+        job.Pause();
+        return job.MapTo<JobDto>().ToQueryResult();
+    }
+
+    [HttpPost("{id:guid}/Resume")]
+    public async Task<QueryResult<JobDto>> ResumeAsync(Guid id)
+    {
+        var job = await jobService.GetAsync(id);
+        job.AuditLogs.Add(new Job.AuditLog(Job.AuditLogType.Resume, UserResolver.User));
+        job.Resume();
+        return job.MapTo<JobDto>().ToQueryResult();
     }
 }

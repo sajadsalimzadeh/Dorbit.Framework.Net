@@ -5,7 +5,7 @@ namespace Dorbit.Framework.Contracts.Jobs;
 
 public class JobDto
 {
-    public Guid Id { get; } = Guid.NewGuid();
+    public Guid Id { get; set; }
     public string Name { get; set; }
     public DateTime? StartTime { get; set; }
     public DateTime? CancelTime { get; set; }

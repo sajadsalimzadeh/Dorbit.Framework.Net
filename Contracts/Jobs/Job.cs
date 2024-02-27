@@ -2,19 +2,47 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Dorbit.Framework.Contracts.Abstractions;
 using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Contracts.Jobs;
 
 public class Job
 {
+    public enum AuditLogType
+    {
+        Create = 0,
+        Start = 1,
+        Cancel = 2,
+        Pause = 3,
+        Resume = 4,
+    }
+
     public class AuditLog
     {
+        public AuditLogType Type { get; set; }
         public DateTime Time { get; set; } = DateTime.UtcNow;
         public Guid? UserId { get; set; }
         public string UserName { get; set; }
+
+        public AuditLog(AuditLogType type, IUserDto userDto)
+        {
+            Type = type;
+            if (userDto is not null)
+            {
+                UserId = userDto.Id;
+                UserName = userDto.Username;
+            }
+        }
+
+        public AuditLog(AuditLogType type, Guid userId, string userName)
+        {
+            Type = type;
+            UserId = userId;
+            UserName = userName;
+        }
     }
-    
+
     private JobStatus _status = JobStatus.Draft;
     private Thread _thread;
     private double _progress;
@@ -28,11 +56,11 @@ public class Job
     public List<AuditLog> AuditLogs { get; } = [];
     public JobLogger Logger { get; }
     public bool Pausable { get; set; }
-    
+
     public DateTime? StartTime { get; private set; }
     public DateTime? CancelTime { get; private set; }
     public DateTime? EndTime { get; private set; }
-    
+
 
     public event EventHandler<JobStatus> OnStatusChange;
     public event EventHandler<double> OnProgress;
@@ -94,20 +122,20 @@ public class Job
 
     public void Cancel()
     {
-        if(_cancellationTokenSource.IsCancellationRequested) return;
+        if (_cancellationTokenSource.IsCancellationRequested) return;
         _cancellationTokenSource.Cancel();
         CancelTime = DateTime.UtcNow;
     }
 
     public void Pause()
     {
-        if(!Pausable) return;
+        if (!Pausable) return;
         Status = JobStatus.Pause;
     }
 
     public void Resume()
     {
-        if(!Pausable) return;
+        if (!Pausable) return;
         Status = JobStatus.Running;
     }
 

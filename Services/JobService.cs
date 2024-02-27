@@ -4,24 +4,18 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Jobs;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
-public class JobService
+public class JobService(IMemoryCache memoryCache, IUserResolver userResolver)
 {
-    private readonly IMemoryCache _memoryCache;
-
-    public JobService(IMemoryCache memoryCache)
-    {
-        _memoryCache = memoryCache;
-    }
-
     public Task<List<Job>> GetAllAsync()
     {
         const string key = $"{nameof(JobService)}-Jobs";
-        if (!_memoryCache.TryGetValue<List<Job>>(key, out var jobs)) _memoryCache.Set(key, jobs = []);
+        if (!memoryCache.TryGetValue<List<Job>>(key, out var jobs)) memoryCache.Set(key, jobs = []);
         return Task.FromResult(jobs);
     }
 
@@ -38,6 +32,7 @@ public class JobService
         {
             Name = request.Name
         };
+        job.AuditLogs.Add(new Job.AuditLog(Job.AuditLogType.Create, userResolver.User));
         jobs.Add(job);
         return job;
     }
