@@ -27,8 +27,8 @@ public abstract class BaseController : ControllerBase
         return new CommandResult(true);
     }
 
-    protected OperationResult Failed(string message)
+    protected CommandResult Failed(string message)
     {
-        return new OperationResult(message);
+        return new CommandResult(message);
     }
 }

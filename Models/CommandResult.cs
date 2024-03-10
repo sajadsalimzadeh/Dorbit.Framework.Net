@@ -5,6 +5,7 @@ public class CommandResult
     public int Code { get; set; }
     public string Message { get; set; }
     public bool Success { get; set; } = true;
+    public IEnumerable<Enum> Messages { get; set; }
 
     public CommandResult()
     {
