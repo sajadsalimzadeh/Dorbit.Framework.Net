@@ -37,7 +37,7 @@ public static class FrameworkInstaller
         services.AddControllers(typeof(FrameworkInstaller).Assembly)
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
-        configuration.Logger?.Configure(services);
+        configuration.LogDbContextConfiguration ??= builder => builder.UseInMemoryDatabase("Logger");
         services.AddDbContext<LogDbContext>(configuration.LogDbContextConfiguration);
 
         return services;
@@ -77,9 +77,6 @@ public static class FrameworkInstaller
     public class Configuration
     {
         public required List<string> DependencyRegisterNamespaces { get; init; }
-        public required Action<DbContextOptionsBuilder> LogDbContextConfiguration { get; init; }
-
-        public IConfigurationLogger Logger { get; set; }
-        public string LogConnectionString { get; init; }
+        public Action<DbContextOptionsBuilder> LogDbContextConfiguration { get; set; }
     }
 }

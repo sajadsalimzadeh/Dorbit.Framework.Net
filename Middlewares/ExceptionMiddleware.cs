@@ -60,6 +60,7 @@ public class ExceptionMiddleware : IMiddleware
                     op.Code = (int)HttpStatusCode.BadRequest;
                     op.Data = operationException.Data;
                     op.Message = operationException.Message;
+                    op.Messages = operationException.Messages;
                     break;
                 case ModelValidationException modelValidationException:
                     op.Code = (int)HttpStatusCode.BadRequest;

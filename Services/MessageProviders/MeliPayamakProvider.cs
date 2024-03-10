@@ -20,7 +20,7 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
         BodyId = configuration.GetValue<string>("BodyId");
     }
 
-    public Task<OperationResult> Send(MessageSmsRequest request)
+    public Task<CommandResult> Send(MessageSmsRequest request)
     {
         var apiBaseAddress = new Uri("https://console.melipayamak.com");
         using var client = new HttpClient();
@@ -47,6 +47,6 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
             _ = result.Content.ReadAsStringAsync().Result;
         }
 
-        return Task.FromResult(new OperationResult());
+        return Task.FromResult(new CommandResult());
     }
 }

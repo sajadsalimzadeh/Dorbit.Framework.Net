@@ -19,7 +19,7 @@ public class MessageManager
         _appSetting = serviceProvider.GetService<AppSetting>();
     }
 
-    public Task<OperationResult> SendAsync(MessageRequest request)
+    public Task<CommandResult> SendAsync(MessageRequest request)
     {
         if (request is MessageSmsRequest smsRequest)
         {
@@ -32,10 +32,10 @@ public class MessageManager
             return Process(providers, emailRequest);
         }
 
-        return Task.FromResult(new OperationResult(false));
+        return Task.FromResult(new CommandResult(false));
     }
 
-    private async Task<OperationResult> Process<T>(List<IMessageProvider<T>> providers, T messageRequest) where T : MessageRequest
+    private async Task<CommandResult> Process<T>(List<IMessageProvider<T>> providers, T messageRequest) where T : MessageRequest
     {
         foreach (var configuration in _appSetting.Message.Providers)
         {
@@ -47,6 +47,6 @@ public class MessageManager
             if (op.Success) return op;
         }
 
-        return new OperationResult(false);
+        return new CommandResult(false);
     }
 }

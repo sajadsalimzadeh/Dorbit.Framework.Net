@@ -8,5 +8,5 @@ public interface IMessageProvider<T> where T : MessageRequest
 {
     public string Name { get; }
     void Configure(IConfiguration configuration);
-    Task<OperationResult> Send(T request);
+    Task<CommandResult> Send(T request);
 }

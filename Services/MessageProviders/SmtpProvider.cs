@@ -31,7 +31,7 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest>
         Password = configuration.GetValue<string>("Password");
     }
 
-    public async Task<OperationResult> Send(MessageEmailRequest request)
+    public async Task<CommandResult> Send(MessageEmailRequest request)
     {
         
         var email = new MimeMessage();
@@ -59,6 +59,6 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest>
         await smtp.SendAsync(email);
         smtp.Disconnect(true);
 
-        return new OperationResult(true);
+        return new CommandResult(true);
     }
 }
