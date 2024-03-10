@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -63,6 +63,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
                 return;
             }
         }
+        //Find Token
 
         var sp = context.HttpContext.RequestServices;
         var userResolver = sp.GetService<IUserResolver>();

@@ -112,9 +112,6 @@ public static class FrameworkInstaller
     public class Configuration
     {
         public required List<string> DependencyRegisterNamespaces { get; init; }
-        public required Action<DbContextOptionsBuilder> LogDbContextConfiguration { get; init; }
-
-        public IConfigurationLogger Logger { get; set; }
-        public string LogConnectionString { get; init; }
+        public Action<DbContextOptionsBuilder> LogDbContextConfiguration { get; set; }
     }
 }
