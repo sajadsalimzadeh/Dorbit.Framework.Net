@@ -1,4 +1,6 @@
-﻿namespace Dorbit.Framework.Services.Abstractions;
+﻿using System.Collections.Generic;
+
+namespace Dorbit.Framework.Services.Abstractions;
 
 public interface ISoftwareManager
 {

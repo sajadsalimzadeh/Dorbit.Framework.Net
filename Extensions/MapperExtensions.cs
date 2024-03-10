@@ -1,4 +1,7 @@
-﻿namespace Dorbit.Framework.Extensions;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Dorbit.Framework.Extensions;
 
 public static class MapperExtensions
 {
@@ -8,13 +11,23 @@ public static class MapperExtensions
         return App.Mapper.Map<T>(obj);
     }
     
+    public static List<TR> MapTo<T, TR>(this List<T> obj)
+    {
+        return App.Mapper.Map<List<TR>>(obj);
+    }
+    
     public static T MapTo<T>(this object obj, T model)
     {
         return App.Mapper.Map(obj, model);
     }
     
-    public static async Task<TResult> MapAsync<TSource, TResult>(this Task<TSource> task)
+    public static async Task<TR> MapToAsync<T, TR>(this Task<T> task)
     {
-        return App.Mapper.Map<TResult>(await task);
+        return App.Mapper.Map<TR>(await task);
+    }
+    
+    public static async Task<List<TR>> MapToAsync<T, TR>(this Task<List<T>> task)
+    {
+        return App.Mapper.Map<List<TR>>(await task);
     }
 }

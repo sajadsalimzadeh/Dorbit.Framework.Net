@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Entities.Abstractions;
-using Dorbit.Framework.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dorbit.Framework.Entities;

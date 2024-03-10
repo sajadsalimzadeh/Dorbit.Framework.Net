@@ -1,4 +1,8 @@
-﻿namespace Dorbit.Framework.Extensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Dorbit.Framework.Extensions;
 
 public static class ListExtensions
 {
@@ -15,5 +19,10 @@ public static class ListExtensions
             list[n] = value;  
         }
         return list;
+    }
+
+    public static Dictionary<int, T> ToDictionary<T>(this IEnumerable<T> items)
+    {
+        return items.Select((value, index) => new { Index = index, Value = value }).ToDictionary(x => x.Index, x => x.Value);
     }
 }

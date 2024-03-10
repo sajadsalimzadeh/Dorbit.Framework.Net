@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Dorbit.Framework.Utils.Queries;
 
 public class FilterQueryOptionUnaryExpression : FilterQueryOptionExpression

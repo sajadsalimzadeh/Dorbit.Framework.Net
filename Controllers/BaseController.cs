@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Dorbit.Framework.Filters;
-using Dorbit.Framework.Models;
+﻿using System;
+using AutoMapper;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +19,7 @@ public abstract class BaseController : ControllerBase
 
     protected IMapper Mapper => ServiceProvider.GetService<IMapper>();
 
-    protected Guid? UserId => UserResolver.User?.Id;
+    protected Guid UserId => UserResolver.User?.Id ?? throw new UnauthorizedAccessException();
     protected QueryOptions QueryOptions => new ODataQueryOptions().Parse(Request);
 
     protected CommandResult Succeed()

@@ -1,4 +1,6 @@
-﻿namespace Dorbit.Framework.Commands.Abstractions;
+﻿using System.Collections.Generic;
+
+namespace Dorbit.Framework.Commands.Abstractions;
 
 public interface ICommandContext
 {

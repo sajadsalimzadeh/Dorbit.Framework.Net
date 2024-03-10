@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentValidation.Results;
 
 namespace Dorbit.Framework.Utils.FluentValidator;

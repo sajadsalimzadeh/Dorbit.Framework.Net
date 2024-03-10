@@ -1,7 +1,13 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Security.Authentication;
+using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Exceptions;
-using Dorbit.Framework.Models;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,37 +30,35 @@ public class ExceptionMiddleware : IMiddleware
         {
             var authenticationService = context.RequestServices.GetService<IAuthService>();
             var logger = context.RequestServices.GetService<ILogger>();
-            var op = new QueryResult<object>
+            var op = new ExceptionResult<IDictionary>
             {
                 Code = 500,
-                Success = false
+                Success = false,
+                Message = ex.Message
             };
 
-            op.Message = ex.Message;
             logger?.Error(ex, ex.Message);
             if (context.Items.TryGetValue("UserId", out var userId) && userId is Guid userGuid)
             {
                 if (await authenticationService.HasAccessAsync(userGuid, "Developer"))
                 {
-                    op.Data = ex.StackTrace;
+                    op.Data = ex.Data;
+                    op.StackTrace = ex.StackTrace;
                 }
             }
-            op.Data = ex.StackTrace;
+#if DEBUG
+            op.StackTrace = ex.StackTrace;
+#endif
 
             switch (ex)
             {
                 case UnauthorizedAccessException unauthorizedAccessException:
-                    if (unauthorizedAccessException.Message == "AccessDenied")
-                    {
-                        op.Code = StatusCodes.Status403Forbidden;
-                        op.Message = Errors.AccessDenied.ToString();
-                    }
-                    else
-                    {
-                        op.Code = StatusCodes.Status401Unauthorized;
-                        op.Message = Errors.UnAuthorized.ToString();
-                    }
-
+                    op.Code = StatusCodes.Status403Forbidden;
+                    op.Message = Errors.AccessDenied.ToString();
+                    break;
+                case AuthenticationException authenticationException:
+                    op.Code = StatusCodes.Status401Unauthorized;
+                    op.Message = Errors.UnAuthorized.ToString();
                     break;
                 case OperationException operationException:
                     op.Code = (int)HttpStatusCode.BadRequest;
@@ -64,7 +68,7 @@ public class ExceptionMiddleware : IMiddleware
                     break;
                 case ModelValidationException modelValidationException:
                     op.Code = (int)HttpStatusCode.BadRequest;
-                    op.Data = modelValidationException.Errors;
+                    op.Data = modelValidationException.Errors.ToDictionary(x => x.Field, x => x.Message);
                     op.Message = modelValidationException.Message;
                     break;
                 default:

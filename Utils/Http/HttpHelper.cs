@@ -1,6 +1,13 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
@@ -37,7 +44,7 @@ public class HttpHelper : IDisposable
     {
         BaseUrl = baseUrl;
 
-        HttpClient = (handler is null ? new HttpClient() : new HttpClient(handler));
+        HttpClient = new HttpClient(handler ?? new HttpClientHandler());
         HttpClient.BaseAddress = new Uri(BaseUrl);
         HttpClient.DefaultRequestHeaders.Add("Accept", "*/*");
         HttpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
@@ -80,55 +87,57 @@ public class HttpHelper : IDisposable
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
         }
 
-        url = BaseUrl + (BaseUrl.EndsWith("/") ? "" : "/") + url;
-        
-        
-        request.RequestUri = new Uri(url + (url.Contains("?") ? "&" : "?") + GetQueryString(parameter));
-
-        switch (method.Method.ToLower())
+        if (parameter is HttpContent content)
         {
-            case "get":
-            case "delete":
-            case "options":
-                if (parameter is not null)
-                {
-                    request.RequestUri = new Uri((BaseUrl.Contains("?") ? "&" : "?") + GetQueryString(parameter));
-                }
-
-                break;
-            case "post":
-            case "put":
-            case "patch":
-                if (parameter is byte[] bytes)
-                {
-                    var fileContent = new ByteArrayContent(bytes);
-                    fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-                    request.Content = fileContent;
-                }
-                else if (parameter is IEnumerable<KeyValuePair<string, string>> keyValuePairs)
-                {
-                    request.Content = new FormUrlEncodedContent(keyValuePairs);
-                }
-                else
-                {
-                    if (RequestContentType == ContentType.Json)
+            request.Content = content;
+        }
+        else
+        {
+            switch (method.Method.ToLower())
+            {
+                case "get":
+                case "delete":
+                case "options":
+                    if (parameter is not null)
                     {
-                        request.Content = new StringContent(JsonConvert.SerializeObject(parameter), Encoding.UTF8, "application/json");
+                        request.RequestUri = new Uri((BaseUrl.Contains("?") ? "&" : "?") + GetQueryString(parameter));
                     }
-                    else if (RequestContentType == ContentType.Xml)
+
+                    break;
+                case "post":
+                case "put":
+                case "patch":
+                    if (parameter is byte[] bytes)
                     {
-                        await using var writer = new StringWriter();
-                        if (parameter != null)
+                        var fileContent = new ByteArrayContent(bytes);
+                        fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                        request.Content = fileContent;
+                    }
+                    else if (parameter is IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+                    {
+                        request.Content = new FormUrlEncodedContent(keyValuePairs);
+                    }
+                    else
+                    {
+                        if (RequestContentType == ContentType.Json)
                         {
-                            var serializer = new XmlSerializer(parameter.GetType());
-                            serializer.Serialize(writer, parameter);
+                            request.Content = new StringContent(JsonConvert.SerializeObject(parameter), Encoding.UTF8, "application/json");
+                        }
+                        else if (RequestContentType == ContentType.Xml)
+                        {
+                            using (var writer = new StringWriter())
+                            {
+                                var serializer = new XmlSerializer(parameter.GetType());
+                                serializer.Serialize(writer, parameter);
+                                request.Content = new StringContent(writer.ToString(), Encoding.UTF8, "application/xml");
+                            }
                         }
 
                         request.Content = new StringContent(writer.ToString(), Encoding.UTF8, "application/xml");
                     }
-                }
 
-                break;
+                    break;
+            }
         }
 
         foreach (var item in _headers) request.Headers.Add(item.Key, item.Value);

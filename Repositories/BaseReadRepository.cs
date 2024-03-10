@@ -1,7 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Database.Abstractions;
 using Dorbit.Framework.Entities.Abstractions;
-using Dorbit.Framework.Models;
 using Dorbit.Framework.Repositories.Abstractions;
 using Dorbit.Framework.Utils.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +33,11 @@ public class BaseReadRepository<T> : IReaderRepository<T> where T : class, IEnti
     public virtual Task<int> CountAsync()
     {
         return Set().CountAsync();
+    }
+
+    public virtual Task<int> CountAsync(Expression<Func<T, bool>> predicate)
+    {
+        return Set().CountAsync(predicate);
     }
 
     public virtual Task<List<T>> GetAllAsync()

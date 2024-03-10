@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Database.Abstractions;
+﻿using System.Threading.Tasks;
+using Dorbit.Framework.Database.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,6 +1,9 @@
-﻿using Dorbit.Framework.Attributes;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Exceptions;
-using Dorbit.Framework.Models;
 using Dorbit.Framework.Utils.Captcha;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,7 +24,7 @@ public class CaptchaService
     {
         if (dto.Width > 500 || dto.Height > 500) throw new OperationException(Errors.CaptchaSizeIsTooLarg);
 
-        if (dto.Dificulty == Enums.CaptchaDificulty.None) dto.Dificulty = _appSetting.Captcha.Difficulty;
+        if (dto.Dificulty == CaptchaDificulty.None) dto.Dificulty = _appSetting.Captcha.Difficulty;
         if (dto.Length == 0) dto.Length = _appSetting.Captcha.Length;
         if (string.IsNullOrEmpty(dto.Pattern)) dto.Pattern = _appSetting.Captcha.Pattern;
 

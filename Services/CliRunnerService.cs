@@ -1,4 +1,8 @@
-﻿using ConsoleTools;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using ConsoleTools;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands;
 using Dorbit.Framework.Commands.Abstractions;
@@ -16,15 +20,15 @@ public class CliRunnerService
         _commands = commands;
     }
 
-    public void Run(WebApplication app)
+    public Task RunAsync(WebApplication app)
     {
-        CreateMenus(app, _commands.Where(x => x.IsRoot));
+        return CreateMenus(app, _commands.Where(x => x.IsRoot));
     }
 
-    private static void CreateMenus(WebApplication app, IEnumerable<ICommand> commands, bool isRoot = true)
+    private static Task CreateMenus(WebApplication app, IEnumerable<ICommand> commands, bool isRoot = true)
     {
         var menu = new ConsoleMenu(Array.Empty<string>(), level: 0);
-        foreach (var command in commands)
+        foreach (var command in commands.OrderBy(x => x.Order))
         {
             menu.Add(command.Message, () =>
             {
@@ -51,7 +55,7 @@ public class CliRunnerService
 
                 try
                 {
-                    command.Invoke(context);
+                    command.InvokeAsync(context);
                 }
                 catch (Exception ex)
                 {
@@ -68,15 +72,16 @@ public class CliRunnerService
             menu.Add("Run Webserver", () => app.Run());
         }
 
-        menu.Add(isRoot ? "Exit" : "Back", () => Environment.Exit(0))
-            .Configure(config =>
-            {
-                config.Selector = "-> ";
-                config.Title = "Main menu";
-                config.SelectedItemBackgroundColor = ConsoleColor.DarkCyan;
-                config.EnableWriteTitle = true;
-            });
+        menu.Add(isRoot ? "Exit" : "Back", () => menu.CloseMenu());
 
-        menu.Show();
+        menu.Configure(config =>
+        {
+            config.Selector = "-> ";
+            config.Title = "Main menu";
+            config.SelectedItemBackgroundColor = ConsoleColor.DarkCyan;
+            config.EnableWriteTitle = true;
+        });
+
+        return menu.ShowAsync();
     }
 }

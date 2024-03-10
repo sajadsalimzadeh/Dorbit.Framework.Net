@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Extensions;
+﻿using System;
+using Dorbit.Framework.Extensions;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Dorbit.Framework.Filters;

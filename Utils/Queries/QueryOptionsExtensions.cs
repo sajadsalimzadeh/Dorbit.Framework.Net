@@ -1,4 +1,9 @@
-using Dorbit.Framework.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Extensions;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 
@@ -64,6 +69,17 @@ public static class QueryOptionsExtensions
         return new PagedListResult<T>()
         {
             Data = await queryOptions.ApplyTo(itemsQuery).ToListAsync(),
+            TotalCount = await queryOptions.ApplyCountTo(countQuery).CountAsync()
+        };
+    }
+    
+    public static async Task<PagedListResult<TR>> ApplyToPagedListAsync<T, TR>(this IQueryable<T> query, QueryOptions queryOptions)
+    {
+        var itemsQuery = query.AsQueryable();
+        var countQuery = query.AsQueryable();
+        return new PagedListResult<TR>()
+        {
+            Data = await queryOptions.ApplyTo(itemsQuery).ToListAsync().MapToAsync<List<T>, List<TR>>(),
             TotalCount = await queryOptions.ApplyCountTo(countQuery).CountAsync()
         };
     }

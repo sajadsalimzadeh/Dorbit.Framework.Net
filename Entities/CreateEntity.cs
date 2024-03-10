@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Entities.Abstractions;
+﻿using System;
+using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Entities;
 

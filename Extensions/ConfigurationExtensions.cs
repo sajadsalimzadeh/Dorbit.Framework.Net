@@ -1,4 +1,4 @@
-﻿using Dorbit.Framework.Models.Cryptograpy;
+﻿using Dorbit.Framework.Contracts.Cryptograpy;
 using Microsoft.Extensions.Configuration;
 
 namespace Dorbit.Framework.Extensions;

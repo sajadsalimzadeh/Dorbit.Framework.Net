@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+
 namespace Dorbit.Framework.Utils.Queries;
 
 [AttributeUsage(AttributeTargets.All)]

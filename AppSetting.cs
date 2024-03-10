@@ -1,5 +1,6 @@
-﻿using Dorbit.Framework.Enums;
-using Dorbit.Framework.Models.Cryptograpy;
+﻿using System.Collections.Generic;
+using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Cryptograpy;
 using Microsoft.Extensions.Configuration;
 
 namespace Dorbit.Framework;
@@ -26,15 +27,21 @@ internal class AppSettingCaptcha
 
 internal class AppSettingMessage
 {
-    public List<IConfiguration> Providers { get; set; }
+    public AppSettingMessageProvider[] Providers { get; set; }
 }
 
-internal class AppSettingMessageSmsProvider
+public class AppSettingMessageProvider
 {
     public string Name { get; set; }
-    public string ApiToken { get; set; }
+    public string Sender { get; set; }
     public string Username { get; set; }
-    public string Password { get; set; }
+    public ProtectedProperty ApiKey { get; set; }
+    public ProtectedProperty Password { get; set; }
+    public Dictionary<string, string> Templates { get; set; }
+    
+    //Email
+    public string Server { get; set; }
+    public short Port { get; set; }
 }
 
 internal class AppSettingSecurity

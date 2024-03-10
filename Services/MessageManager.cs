@@ -1,52 +1,73 @@
-﻿using Dorbit.Framework.Attributes;
-using Dorbit.Framework.Models;
-using Dorbit.Framework.Models.Messages;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Messages;
+using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace Dorbit.Framework.Services;
 
-[ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
+[ServiceRegister]
 public class MessageManager
 {
-    private readonly AppSetting _appSetting;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger _logger;
 
-    public MessageManager(IServiceProvider serviceProvider)
+    public MessageManager(IServiceProvider serviceProvider, ILogger logger)
     {
         _serviceProvider = serviceProvider;
-        _appSetting = serviceProvider.GetService<AppSetting>();
+        _logger = logger;
     }
 
     public Task<CommandResult> SendAsync(MessageRequest request)
     {
         if (request is MessageSmsRequest smsRequest)
         {
-            var providers = _serviceProvider.GetServices<IMessageProvider<MessageSmsRequest>>().ToList();
+            var providers = _serviceProvider.GetServices<IMessageProvider<MessageSmsRequest>>();
             return Process(providers, smsRequest);
         }
-        else if (request is MessageEmailRequest emailRequest)
+
+        if (request is MessageEmailRequest emailRequest)
         {
-            var providers = _serviceProvider.GetServices<IMessageProvider<MessageEmailRequest>>().ToList();
+            var providers = _serviceProvider.GetServices<IMessageProvider<MessageEmailRequest>>();
             return Process(providers, emailRequest);
         }
 
         return Task.FromResult(new CommandResult(false));
     }
 
-    private async Task<CommandResult> Process<T>(List<IMessageProvider<T>> providers, T messageRequest) where T : MessageRequest
+    private async Task<CommandResult> Process<T>(IEnumerable<IMessageProvider<T>> providers, T messageRequest) where T : MessageRequest
     {
-        foreach (var configuration in _appSetting.Message.Providers)
+        if (App.Setting.Message is not null)
         {
-            var name = configuration.GetValue<string>("Name");
-            var provider = providers.FirstOrDefault(x => x.Name == name);
-            if (provider is null) continue;
-            provider.Configure(configuration);
-            var op = await provider.Send(messageRequest);
-            if (op.Success) return op;
+            foreach (var configuration in App.Setting.Message.Providers)
+            {
+                try
+                {
+                    var provider = providers.FirstOrDefault(x => x.Name == configuration.Name);
+                    if (provider is null) continue;
+                    provider.Configure(configuration);
+                    if (!string.IsNullOrEmpty(messageRequest.TemplateType))
+                    {
+                        messageRequest.TemplateId = configuration.Templates[messageRequest.TemplateType];
+                    }
+
+                    var op = await provider.Send(messageRequest);
+                    if (op.Success) return op;
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex.Message, ex);
+                }
+            }
         }
 
-        return new CommandResult(false);
+        throw new OperationException(Errors.NoMessageProviderFound);
     }
 }

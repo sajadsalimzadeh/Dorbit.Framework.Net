@@ -1,6 +1,7 @@
-﻿using Dorbit.Framework.Filters;
-using Dorbit.Framework.Models;
-using Dorbit.Framework.Models.Captchas;
+﻿using System.Collections.Generic;
+using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Captchas;
+using Dorbit.Framework.Filters;
 using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Mvc;
 

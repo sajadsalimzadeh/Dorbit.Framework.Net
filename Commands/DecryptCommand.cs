@@ -1,6 +1,9 @@
-﻿using Dorbit.Framework.Attributes;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
-using Dorbit.Framework.Models.Commands;
+using Dorbit.Framework.Contracts.Commands;
 using Dorbit.Framework.Utils.Cryptography;
 
 namespace Dorbit.Framework.Commands;
@@ -8,6 +11,7 @@ namespace Dorbit.Framework.Commands;
 [ServiceRegister]
 public class DecryptCommand : Command
 {
+    public override bool IsRoot { get; } = false;
     public override string Message => "Decrypt String";
 
     public override IEnumerable<CommandParameter> GetParameters(ICommandContext context)
@@ -16,9 +20,9 @@ public class DecryptCommand : Command
         yield return new CommandParameter("Key", "Key");
     }
 
-    public override Task Invoke(ICommandContext context)
+    public override Task InvokeAsync(ICommandContext context)
     {
-        var cypherText = new Aes().Decrypt(context.Arguments["Input"].ToString(), context.Arguments["Key"].ToString());
+        var cypherText = new Aes(context.GetArgAsString("Key")).Decrypt(Convert.FromBase64String(context.GetArgAsString("Input")));
         context.Log($"{cypherText}\n");
         return Task.CompletedTask;
     }

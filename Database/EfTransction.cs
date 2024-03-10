@@ -63,8 +63,16 @@ internal class EfSecondaryTransaction : ITransaction
 
 internal class InMemoryTransaction : ITransaction
 {
+    private readonly DbContext _dbContext;
+
+    public InMemoryTransaction(DbContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
     public void Commit()
     {
+        _dbContext.SaveChanges();
     }
 
     public void Rollback()

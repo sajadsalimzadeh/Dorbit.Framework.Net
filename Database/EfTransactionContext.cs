@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Database.Abstractions;
+﻿using System.Collections.Generic;
+using Dorbit.Framework.Database.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dorbit.Framework.Database;

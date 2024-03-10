@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Linq;
+using System.Text;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -27,6 +29,11 @@ public static class EncodingExtensions
     public static byte[] ToBytesUtf8(this string bytes)
     {
         return Encoding.UTF8.GetBytes(bytes);
+    }
+
+    public static byte[] ToByteArray(this string bytes)
+    {
+        return bytes.Select(s => Convert.ToByte(s)).ToArray();
     }
 
     public static byte[] ToBytesUtf32(this string bytes)

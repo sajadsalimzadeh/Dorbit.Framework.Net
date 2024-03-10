@@ -1,4 +1,5 @@
-﻿using Dorbit.Framework.Models;
+﻿using System;
+using Dorbit.Framework.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Prometheus;
 
