@@ -75,4 +75,11 @@ public class JobsController(JobService jobService) : BaseController
         job.Resume();
         return job.MapTo<JobDto>().ToQueryResult();
     }
+
+    [HttpPost("{id:guid}/Download")]
+    public async Task<FileStreamResult> DownloadAsync(Guid id)
+    {
+        var job = await jobService.GetAsync(id);
+        return File(job.Download(), "application/octet-stream");
+    }
 }

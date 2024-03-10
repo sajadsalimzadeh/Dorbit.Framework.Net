@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Abstractions;
@@ -43,6 +44,7 @@ public class Job
         }
     }
 
+
     private JobStatus _status = JobStatus.Draft;
     private Thread _thread;
     private double _progress;
@@ -56,6 +58,8 @@ public class Job
     public List<AuditLog> AuditLogs { get; } = [];
     public JobLogger Logger { get; }
     public bool Pausable { get; set; }
+    public string DownloadFilename { get; set; }
+    public Func<Stream> Download { get; set; }
 
     public DateTime? StartTime { get; private set; }
     public DateTime? CancelTime { get; private set; }

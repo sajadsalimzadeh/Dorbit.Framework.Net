@@ -12,6 +12,8 @@ public class JobDto
     public DateTime? EndTime { get; set; }
     public JobStatus Status { get; set; }
     public bool Pausable { get; set; }
+    public bool Downloadable { get; set; }
+    public string DownloadFilename { get; set; }
     public double Progress { get; set; }
     public List<Job.AuditLog> AuditLogs { get; set; }
 }

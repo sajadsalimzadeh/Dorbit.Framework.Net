@@ -20,24 +20,29 @@ public static class EncodingExtensions
     {
         return Encoding.UTF32.GetString(bytes);
     }
-    
-    public static byte[] ToBytesAscii(this string bytes)
+
+    public static byte[] ToBytesAscii(this string input)
     {
-        return Encoding.ASCII.GetBytes(bytes);
+        return Encoding.ASCII.GetBytes(input);
     }
 
-    public static byte[] ToBytesUtf8(this string bytes)
+    public static byte[] ToBytesUtf8(this string input)
     {
-        return Encoding.UTF8.GetBytes(bytes);
+        return Encoding.UTF8.GetBytes(input);
     }
 
-    public static byte[] ToByteArray(this string bytes)
+    public static byte[] ToByteArray(this string input)
     {
-        return bytes.Select(s => Convert.ToByte(s)).ToArray();
+        return input.Select(Convert.ToByte).ToArray();
     }
 
-    public static byte[] ToBytesUtf32(this string bytes)
+    public static byte[] ToBytesUtf32(this string input)
     {
-        return Encoding.UTF32.GetBytes(bytes);
+        return Encoding.UTF32.GetBytes(input);
+    }
+
+    public static string ToHexString(this byte[] bytes)
+    {
+        return string.Join("", bytes.Select(b => b.ToString("x2")));
     }
 }

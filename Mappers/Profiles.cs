@@ -8,7 +8,8 @@ public class Profiles : Profile
 {
     public Profiles()
     {
-        CreateMap<Job, JobDto>();
+        CreateMap<Job, JobDto>()
+            .ForMember(x => x.Downloadable, o => o.MapFrom(x => x.Download != null));
         CreateMap<JobLog, JobLogDto>();
     }
 }

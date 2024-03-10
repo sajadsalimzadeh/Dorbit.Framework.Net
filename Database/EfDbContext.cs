@@ -148,7 +148,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         return set;
     }
 
-    private Task<T> InsertEntityValidatorAsync<T>(T model) where T : class, IEntity
+    private void InsertEntityValidator<T>(T model) where T : class, IEntity
     {
         var e = new ModelValidationException();
         if (model is IValidator validator) validator.Validate(e, ServiceProvider);
@@ -190,20 +190,18 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
 
         if (model.Id == Guid.Empty) model.Id = Guid.NewGuid();
-
-        return Task.FromResult(model);
     }
 
     public async Task<T> InsertEntityAsync<T>(T model) where T : class, IEntity
     {
-        await InsertEntityValidatorAsync(model);
+        InsertEntityValidator(model);
         await AddAsync(model, CancellationToken);
         await SaveIfNotInTransactionAsync();
         if (model is ICreationLogging logging) Log(logging, LogAction.Insert);
         return model;
     }
 
-    private Task<T> UpdateEntityValidatorAsync<T>(T model) where T : class, IEntity
+    private void UpdateEntityValidator<T>(T model) where T : class, IEntity
     {
         if (model is IReadonly) throw new OperationException(Errors.EntityIsReadonly);
 
@@ -239,13 +237,11 @@ public abstract class EfDbContext : DbContext, IDbContext
                 Entry(creationAudit).Property(x => x.CreatorName).IsModified = false;
             }
         }
-
-        return Task.FromResult(model);
     }
 
     public async Task<T> UpdateEntityAsync<T>(T model) where T : class, IEntity
     {
-        await UpdateEntityValidatorAsync(model);
+        UpdateEntityValidator(model);
 
         T oldModel = default;
         if (model is IHistorical historical)
@@ -274,7 +270,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         return model;
     }
 
-    private Task<T> RemoveEntityValidatorAsync<T>(T model) where T : class, IEntity
+    private void DeleteEntityValidator<T>(T model) where T : class, IEntity
     {
         if (model is IUnDeletable) throw new OperationException(Errors.EntityIsUnDeletable);
 
@@ -282,7 +278,6 @@ public abstract class EfDbContext : DbContext, IDbContext
         if (model is IValidator validator) validator.Validate(e, ServiceProvider);
         if (model is IDeletationValidator deletionValidator) deletionValidator.ValidateOnDelete(e, ServiceProvider);
         e.ThrowIfHasError();
-
 
         if (model is ISoftDelete)
         {
@@ -310,13 +305,11 @@ public abstract class EfDbContext : DbContext, IDbContext
         {
             Entry(model).State = EntityState.Deleted;
         }
-
-        return Task.FromResult(model);
     }
 
     public async Task<T> DeleteEntityAsync<T>(T model) where T : class, IEntity
     {
-        await RemoveEntityValidatorAsync(model);
+        DeleteEntityValidator(model);
         await SaveIfNotInTransactionAsync();
         if (model is ILogging logging) Log(logging, LogAction.Delete);
         return model;
@@ -408,13 +401,10 @@ public abstract class EfDbContext : DbContext, IDbContext
     public async Task BulkInsertEntityAsync<T>(List<T> items) where T : class, IEntity
     {
         using var transaction = BeginTransaction();
-        var tasks = new List<Task>();
         foreach (var item in items)
         {
-            tasks.Add(InsertEntityValidatorAsync(item));
+            InsertEntityValidator(item);
         }
-
-        Task.WaitAll(tasks.ToArray(), CancellationToken);
 
         if (GetProvider() == DatabaseProviderType.InMemory)
         {
@@ -431,13 +421,10 @@ public abstract class EfDbContext : DbContext, IDbContext
     public async Task BulkUpdateEntityAsync<T>(List<T> items) where T : class, IEntity
     {
         using var transaction = BeginTransaction();
-        var tasks = new List<Task>();
         foreach (var item in items)
         {
-            tasks.Add(UpdateEntityAsync(item));
+            UpdateEntityValidator(item);
         }
-
-        Task.WaitAll(tasks.ToArray(), CancellationToken);
 
         await this.BulkUpdateAsync(items, cancellationToken: CancellationToken);
 
@@ -447,13 +434,10 @@ public abstract class EfDbContext : DbContext, IDbContext
     public async Task BulkDeleteEntityAsync<T>(List<T> items) where T : class, IEntity
     {
         using var transaction = BeginTransaction();
-        var tasks = new List<Task>();
         foreach (var item in items)
         {
-            tasks.Add(DeleteEntityAsync(item));
+            DeleteEntityValidator(item);
         }
-
-        Task.WaitAll(tasks.ToArray(), CancellationToken);
 
         await this.BulkDeleteAsync(items, cancellationToken: CancellationToken);
 
