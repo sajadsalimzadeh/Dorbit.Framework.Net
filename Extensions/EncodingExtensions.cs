@@ -43,6 +43,6 @@ public static class EncodingExtensions
 
     public static string ToHexString(this byte[] bytes)
     {
-        return string.Join("", bytes.Select(b => b.ToString("x2")));
+        return string.Join("", bytes.Select(b => b.ToString("x2").ToUpper()));
     }
 }

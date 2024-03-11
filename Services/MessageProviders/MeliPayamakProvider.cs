@@ -39,7 +39,7 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
     public async Task<QueryResult<string>> Send(MessageSmsRequest request)
     {
         var client = new HttpHelper($"https://console.melipayamak.com/api/send/shared/{_apiKey}");
-        var response = await client.PostAsync<SendResponse>(new
+        var response = await client.PostAsync<SendResponse>("", new
         {
             bodyId = Convert.ToInt32(request.TemplateId),
             to = request.To,

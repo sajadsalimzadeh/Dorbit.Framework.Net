@@ -57,6 +57,10 @@ public class Aes
         _decryptor = aes.CreateDecryptor();
     }
 
+    public Aes(string key, string iv, Size size = Size.Aes128) : this(key.ToByteArray(), iv.ToByteArray(), size)
+    {
+    }
+
     private System.Security.Cryptography.Aes Create()
     {
         var aes = System.Security.Cryptography.Aes.Create();

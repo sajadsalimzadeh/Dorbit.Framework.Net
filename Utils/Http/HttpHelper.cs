@@ -125,15 +125,14 @@ public class HttpHelper : IDisposable
                         }
                         else if (RequestContentType == ContentType.Xml)
                         {
-                            using (var writer = new StringWriter())
+                            await using var writer = new StringWriter();
+                            if (parameter != null)
                             {
                                 var serializer = new XmlSerializer(parameter.GetType());
                                 serializer.Serialize(writer, parameter);
                                 request.Content = new StringContent(writer.ToString(), Encoding.UTF8, "application/xml");
                             }
                         }
-
-                        request.Content = new StringContent(writer.ToString(), Encoding.UTF8, "application/xml");
                     }
 
                     break;
@@ -149,7 +148,8 @@ public class HttpHelper : IDisposable
         };
     }
 
-    public async Task<HttpModel<T>> SendAsync<T>(string url, HttpMethod method, object parameter = null, CancellationToken cancellationToken = default)
+    public async Task<HttpModel<T>> SendAsync<T>(string url, HttpMethod method, object parameter = null,
+        CancellationToken cancellationToken = default)
     {
         var httpModel = await SendAsync(url, method, parameter, cancellationToken);
         if (httpModel.Response.StatusCode == HttpStatusCode.Unauthorized)
@@ -206,7 +206,7 @@ public class HttpHelper : IDisposable
     public Task<HttpModel> PatchAsync(string url = "", object parameter = null) => SendAsync(url, HttpMethod.Patch, parameter);
     public Task<HttpModel> DeleteAsync(string url = "", object parameter = null) => SendAsync(url, HttpMethod.Delete, parameter);
     public Task<HttpModel> OptionsAsync(string url = "", object parameter = null) => SendAsync(url, HttpMethod.Options, parameter);
-    
+
 
     public void Dispose()
     {

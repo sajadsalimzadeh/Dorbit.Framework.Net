@@ -1,4 +1,7 @@
-﻿namespace Dorbit.Framework.Contracts;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Dorbit.Framework.Contracts;
 
 public class CommandResult
 {
