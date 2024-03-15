@@ -47,7 +47,7 @@ public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudControlle
     [HttpDelete("{id:guid}")]
     public virtual Task<QueryResult<TGet>> Remove(Guid id)
     {
-        return Repository.RemoveAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
+        return Repository.DeleteAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 }
 

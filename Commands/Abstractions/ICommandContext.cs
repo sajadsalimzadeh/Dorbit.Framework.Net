@@ -12,4 +12,5 @@ public interface ICommandContext
 
     object GetArg(string name);
     string GetArgAsString(string name);
+    int GetArgAsInt(string name);
 }

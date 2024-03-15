@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
+using Dorbit.Framework.Contracts.Commands;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Commands;
@@ -28,7 +30,7 @@ public class InstallCommand : Command
         var migrationCommandAll = _serviceProvider.GetService<MigrationCommandAll>();
         await migrationCommandAll.InvokeAsync(context);
         
-        var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
+        var assemblyName = Assembly.GetEntryAssembly()?.GetName().Name;
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;
         var entryFilename = Path.Combine(baseDir, assemblyName + ".exe");
         Process.Start("sc", $"create {assemblyName} binpath= \"{entryFilename} run\" start= auto");
