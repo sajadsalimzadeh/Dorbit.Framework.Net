@@ -1,5 +1,4 @@
-﻿using System;
-using AutoMapper;
+﻿using AutoMapper;
 using Dorbit.Framework.Contracts.Jobs;
 
 namespace Dorbit.Framework.Mappers;

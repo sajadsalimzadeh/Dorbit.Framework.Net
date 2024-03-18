@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Messages;
 using Dorbit.Framework.Extensions;
-using Dorbit.Framework.Send;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Http;
-using Microsoft.Extensions.Configuration;
-using mpNuget;
 
 namespace Dorbit.Framework.Services.MessageProviders;
 

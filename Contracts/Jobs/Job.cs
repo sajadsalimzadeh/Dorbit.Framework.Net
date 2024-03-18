@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Abstractions;
-using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Contracts.Jobs;
 

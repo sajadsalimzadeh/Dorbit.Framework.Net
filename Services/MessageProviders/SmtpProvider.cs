@@ -6,7 +6,6 @@ using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using Microsoft.Extensions.Configuration;
 using MimeKit;
 
 namespace Dorbit.Framework.Services.MessageProviders;
