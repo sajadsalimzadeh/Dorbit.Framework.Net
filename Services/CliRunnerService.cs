@@ -72,7 +72,7 @@ public class CliRunnerService
             menu.Add("Run Webserver", () => app.Run());
         }
 
-        menu.Add(isRoot ? "Exit" : "Back", () => menu.CloseMenu());
+        menu.Add(isRoot ? "Exit" : "Back", (m) => m.CloseMenu());
 
         menu.Configure(config =>
         {
