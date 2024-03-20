@@ -7,7 +7,6 @@ using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Messages;
 using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Services.Abstractions;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 

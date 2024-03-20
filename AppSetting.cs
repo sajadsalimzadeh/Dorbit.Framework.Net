@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Cryptograpy;
-using Microsoft.Extensions.Configuration;
 
 namespace Dorbit.Framework;
 

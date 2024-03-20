@@ -8,7 +8,6 @@ using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Jobs;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 

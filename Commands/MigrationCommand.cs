@@ -58,7 +58,7 @@ public class MigrationCommandAll : Command
             try
             {
                 await dbContext.MigrateAsync();
-                context.Log($"{dbContext.GetType().Name} Migrate");
+                context.Log($"\n{dbContext.GetType().Name} Migrate");
             }
             catch (Exception ex)
             {

@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Messages;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
-using Dorbit.Framework.Utils.Http;
 using Kavenegar.Models;
 
 namespace Dorbit.Framework.Services.MessageProviders;
