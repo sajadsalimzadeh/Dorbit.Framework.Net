@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -28,6 +29,7 @@ namespace Dorbit.Framework.Database;
 public abstract class EfDbContext : DbContext, IDbContext
 {
     private static readonly List<string> Sequences = [];
+    private static readonly ConcurrentDictionary<string, int> SequenceCounter = [];
     private readonly EfTransactionContext _efTransactionContext;
 
     private IUserResolver _userResolver;
@@ -66,7 +68,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         base.OnModelCreating(modelBuilder);
 
         RegisterAuditProperties(modelBuilder);
-        
+
         foreach (var type in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var keys in type.GetForeignKeys().Where(x => x is { IsOwnership: false, DeleteBehavior: DeleteBehavior.Cascade }))
@@ -77,12 +79,14 @@ public abstract class EfDbContext : DbContext, IDbContext
             foreach (var property in type.ClrType.GetProperties())
             {
                 var sequenceAttribute = property.GetCustomAttribute<SequenceAttribute>();
-                if(sequenceAttribute is null) continue;
+                if (sequenceAttribute is null) continue;
                 if (!Sequences.Contains(sequenceAttribute.Name))
                 {
-                    modelBuilder.HasSequence<int>(sequenceAttribute.Name).StartsAt(sequenceAttribute.StartAt).IncrementsBy(sequenceAttribute.IncrementsBy);
+                    modelBuilder.HasSequence<int>(sequenceAttribute.Name).StartsAt(sequenceAttribute.StartAt)
+                        .IncrementsBy(sequenceAttribute.IncrementsBy);
                     Sequences.Add(sequenceAttribute.Name);
                 }
+
                 modelBuilder.Entity(type.ClrType).Property(property.Name).HasDefaultValueSql($"NEXT VALUE FOR {sequenceAttribute.Name}");
             }
         }
@@ -150,6 +154,20 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     private void InsertEntityValidator<T>(T model) where T : class, IEntity
     {
+        if (GetProvider() == DatabaseProviderType.InMemory)
+        {
+            var type = typeof(T);
+            foreach (var property in type.GetProperties())
+            {
+                var sequenceAttribute = property.GetCustomAttribute<SequenceAttribute>();
+                if (sequenceAttribute is null) continue;
+
+                var counter = SequenceCounter.GetOrAdd(sequenceAttribute.Name, _ => sequenceAttribute.StartAt);
+                counter += sequenceAttribute.IncrementsBy;
+                property.SetValue(model, counter);
+            }
+        }
+
         var e = new ModelValidationException();
         if (model is IValidator validator) validator.Validate(e, ServiceProvider);
         if (model is ICreationValidator creationValidator) creationValidator.ValidateOnCreate(e, ServiceProvider);
