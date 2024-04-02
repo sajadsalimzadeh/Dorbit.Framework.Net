@@ -13,7 +13,7 @@ public class FilterQueryOptionBinaryExpression : FilterQueryOptionExpression
         var format = Operator.GetFormat();
         if (string.IsNullOrEmpty(format)) format = "{0} {1} {2}";
 
-        if (Left is FilterQueryOptionLiteralExpression literalLeft && 
+        if (Left is FilterQueryOptionLiteralExpression literalLeft &&
             Right is FilterQueryOptionLiteralExpression literalRight && parameters != null)
         {
             var key = literalLeft.Value.ToString();

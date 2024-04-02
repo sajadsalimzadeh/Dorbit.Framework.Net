@@ -25,7 +25,7 @@ public class ODataQueryOptions : QueryOptions
         RawValues = request.QueryString.ToString();
         return Parse();
     }
-        
+
     public ODataQueryOptions Parse(string rawQuery)
     {
         RawValues = rawQuery;
@@ -39,7 +39,7 @@ public class ODataQueryOptions : QueryOptions
         Skip.ODataParseRaw(RawValues);
         Top.ODataParseRaw(RawValues);
         IsSet = true;
-            
+
         return this;
     }
 

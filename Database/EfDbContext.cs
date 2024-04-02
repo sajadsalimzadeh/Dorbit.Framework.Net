@@ -66,7 +66,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         base.OnModelCreating(modelBuilder);
 
         RegisterAuditProperties(modelBuilder);
-        
+
         foreach (var type in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var keys in type.GetForeignKeys().Where(x => x is { IsOwnership: false, DeleteBehavior: DeleteBehavior.Cascade }))
@@ -77,12 +77,13 @@ public abstract class EfDbContext : DbContext, IDbContext
             foreach (var property in type.ClrType.GetProperties())
             {
                 var sequenceAttribute = property.GetCustomAttribute<SequenceAttribute>();
-                if(sequenceAttribute is null) continue;
+                if (sequenceAttribute is null) continue;
                 if (!Sequences.Contains(sequenceAttribute.Name))
                 {
                     modelBuilder.HasSequence<int>(sequenceAttribute.Name).StartsAt(sequenceAttribute.StartAt).IncrementsBy(sequenceAttribute.IncrementsBy);
                     Sequences.Add(sequenceAttribute.Name);
                 }
+
                 modelBuilder.Entity(type.ClrType).Property(property.Name).HasDefaultValueSql($"NEXT VALUE FOR {sequenceAttribute.Name}");
             }
         }

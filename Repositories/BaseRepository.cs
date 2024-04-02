@@ -8,6 +8,5 @@ public class BaseRepository<T> : BaseWriteRepository<T>, IBaseRepository<T> wher
 {
     public BaseRepository(IDbContext dbContext) : base(dbContext)
     {
-
     }
 }

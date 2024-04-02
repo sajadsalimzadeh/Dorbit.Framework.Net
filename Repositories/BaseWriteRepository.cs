@@ -35,9 +35,10 @@ public class BaseWriteRepository<T> : BaseReadRepository<T>, IWriterRepository<T
 
     public virtual Task<T> SaveAsync(T model)
     {
-        if(model.Id != Guid.Empty) return _dbContext.UpdateEntityAsync(model);
+        if (model.Id != Guid.Empty) return _dbContext.UpdateEntityAsync(model);
         return _dbContext.InsertEntityAsync(model);
     }
+
     //================== Extended Methods ==================\\
     public Task<T> InsertAsync<TR>(TR dto)
     {

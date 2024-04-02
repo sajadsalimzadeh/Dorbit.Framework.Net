@@ -24,13 +24,16 @@ public class ModelValidationException : Exception
         if (Errors.Count > 0) throw this;
     }
 }
+
 public class ModelValidationExceptionItem : OperationException
 {
     public string Field { get; set; }
+
     public ModelValidationExceptionItem(string field, string message) : base(message)
     {
         Field = field;
     }
+
     public ModelValidationExceptionItem(string field, ValidationMessage e) : base(e)
     {
         Field = field;

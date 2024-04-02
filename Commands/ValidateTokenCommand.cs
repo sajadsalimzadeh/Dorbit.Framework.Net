@@ -11,7 +11,7 @@ namespace Dorbit.Framework.Commands;
 public class ValidateTokenCommand : Command
 {
     private readonly JwtService _jwtService;
- 
+
     public override bool IsRoot { get; } = false;
     public override string Message => "Validate Token";
 
@@ -24,11 +24,11 @@ public class ValidateTokenCommand : Command
     {
         yield return new CommandParameter("Key", "Key");
     }
-    
+
     public override async Task InvokeAsync(ICommandContext context)
     {
         var result = await _jwtService.TryValidateTokenAsync(context.GetArgAsString("Key"));
-        if(result) context.Success("Token Is Valid");
+        if (result) context.Success("Token Is Valid");
         else context.Error("Token Is InValid");
     }
 }

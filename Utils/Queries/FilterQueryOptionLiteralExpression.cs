@@ -24,6 +24,7 @@ public class FilterQueryOptionLiteralExpression : FilterQueryOptionExpression
             case TypeCode.Single:
                 return Value.ToString();
         }
+
         return Value is DateTime ? $"{Value}" : Value.ToString();
     }
 }

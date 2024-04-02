@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Cryptograpy;
-using Microsoft.Extensions.Configuration;
 
 namespace Dorbit.Framework;
 
 internal class AppSetting
 {
-    public AppSettingGeo Geo { get; set; } = new ();
-    public AppSettingCaptcha Captcha { get; set; } = new ();
-    public AppSettingMessage Message { get; set; } = new ();
-    public AppSettingSecurity Security { get; set; } = new ();
+    public AppSettingGeo Geo { get; set; } = new();
+    public AppSettingCaptcha Captcha { get; set; } = new();
+    public AppSettingMessage Message { get; set; } = new();
+    public AppSettingSecurity Security { get; set; } = new();
 }
 
 internal class AppSettingGeo
@@ -38,7 +37,7 @@ public class AppSettingMessageProvider
     public ProtectedProperty ApiKey { get; set; }
     public ProtectedProperty Password { get; set; }
     public Dictionary<string, string> Templates { get; set; }
-    
+
     //Email
     public string Server { get; set; }
     public short Port { get; set; }

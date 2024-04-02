@@ -13,9 +13,8 @@ public class OperationException : Exception
 
     public OperationException(string message) : base(message)
     {
-        
     }
-    
+
     public OperationException(params Enum[] messages) : base(messages.First().ToString())
     {
         Code = Convert.ToInt32(messages.First());
@@ -26,7 +25,7 @@ public class OperationException : Exception
     {
         Entities = data;
     }
-    
+
     public OperationException(HttpStatusCode code, params Enum[] messages) : this(messages)
     {
         Code = (int)code;

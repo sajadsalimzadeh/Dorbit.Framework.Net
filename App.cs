@@ -9,7 +9,7 @@ namespace Dorbit.Framework;
 public static class App
 {
     public static IServiceProvider ServiceProvider { get; internal set; }
-    
+
     private static byte[] _key;
     public static byte[] Key => _key ??= ServiceProvider.GetService<IApplication>().Key;
 

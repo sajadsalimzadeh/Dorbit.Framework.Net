@@ -9,7 +9,6 @@ namespace Dorbit.Framework.Utils.Queries;
 
 public static class ODataQueryOptionExtensions
 {
-
     public static FilterQueryOption ODataParse(this FilterQueryOption option, HttpRequest request)
     {
         var queryString = request.Query["$filter"].FirstOrDefault();
@@ -254,13 +253,14 @@ public static class ODataQueryOptionExtensions
     private static string Strip(this string rawValues)
     {
         if (string.IsNullOrEmpty(rawValues)) return rawValues;
-            
+
         while (rawValues.Count(x => x == '?') > 1)
         {
             var index = rawValues.LastIndexOf("?");
-            var sb = new StringBuilder(rawValues) {[index] = '&'};
+            var sb = new StringBuilder(rawValues) { [index] = '&' };
             rawValues = sb.ToString();
         }
+
         return rawValues;
     }
 }

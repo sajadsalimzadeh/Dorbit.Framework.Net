@@ -5,7 +5,9 @@ namespace Dorbit.Framework.Utils.Json;
 
 public class CustomJsonTextWriter : JsonTextWriter
 {
-    public CustomJsonTextWriter(TextWriter textWriter) : base(textWriter) { }
+    public CustomJsonTextWriter(TextWriter textWriter) : base(textWriter)
+    {
+    }
 
     public int CurrentDepth { get; private set; }
 

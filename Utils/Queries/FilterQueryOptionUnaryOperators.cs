@@ -4,8 +4,6 @@ namespace Dorbit.Framework.Utils.Queries;
 
 public enum FilterQueryOptionUnaryOperators
 {
-    [Description("None")]
-    None = 0,
-    [Description("Not"), FilterQueryOptionSql("NOT")]
-    Not = 1,
+    [Description("None")] None = 0,
+    [Description("Not"), FilterQueryOptionSql("NOT")] Not = 1,
 }

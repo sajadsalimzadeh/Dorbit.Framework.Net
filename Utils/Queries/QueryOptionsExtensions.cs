@@ -18,6 +18,7 @@ public static class QueryOptionsExtensions
             var tempQuery = queryOptions.ApplyTo(query);
             query = query.Select(x => tempQuery.Expression) as IQueryable<T>;
         }
+
         if (queryOptions.Filter is not null) query = queryOptions.Filter.ApplyTo(query, new ODataQuerySettings()) as IQueryable<T> ?? query;
         if (queryOptions.OrderBy is not null) query = queryOptions.OrderBy.ApplyTo(query, new ODataQuerySettings()) ?? query;
         if (queryOptions.Skip is not null) query = queryOptions.Skip.ApplyTo(query, new ODataQuerySettings()) ?? query;
@@ -72,7 +73,7 @@ public static class QueryOptionsExtensions
             TotalCount = await queryOptions.ApplyCountTo(countQuery).CountAsync()
         };
     }
-    
+
     public static async Task<PagedListResult<TR>> ApplyToPagedListAsync<T, TR>(this IQueryable<T> query, QueryOptions queryOptions)
     {
         var itemsQuery = query.AsQueryable();

@@ -16,6 +16,5 @@ public class UserState
     internal UserState(Guid userId)
     {
         UserId = userId;
-
     }
 }

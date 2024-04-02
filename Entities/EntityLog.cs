@@ -10,8 +10,10 @@ public class EntityLog : CreateEntity, ICreationAudit
 {
     [StringLength(64), Required]
     public string Module { get; set; }
+
     [StringLength(64), Required]
     public string EntityType { get; set; }
+
     public string ReferenceId { get; set; }
     public string Data { get; set; }
     public LogAction Action { get; set; }

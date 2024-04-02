@@ -30,7 +30,7 @@ public static class CryptographyExtensions
     {
         return GetEncryptedValue(value, App.Key, aes);
     }
-    
+
     public static ProtectedProperty GetEncryptedValue(this string value, byte[] key, Aes aes = null)
     {
         aes ??= new Aes(key);

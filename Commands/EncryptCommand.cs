@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
 using Dorbit.Framework.Contracts.Commands;
-using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Utils.Cryptography;
 
 namespace Dorbit.Framework.Commands;

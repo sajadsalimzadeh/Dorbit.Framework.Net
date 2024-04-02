@@ -25,7 +25,7 @@ public class CommandParameter : CommandParameter<object>
     public CommandParameter(string key) : base(key, key)
     {
     }
-    
+
     public CommandParameter(string key, string message) : base(key, message)
     {
     }

@@ -28,7 +28,7 @@ public class AntiDosAttribute : ActionFilterAttribute
 
         long key = 0;
         var remoteAddress = context.HttpContext.Connection.RemoteIpAddress ?? new IPAddress(0);
-        if (user is null )
+        if (user is null)
         {
             if (long.TryParse(remoteAddress.ToString().Replace(".", "").Replace(":", ""), out var ipNumber))
             {

@@ -44,6 +44,7 @@ public class CaptchaService
             if (_captchas.Count > 1000) _captchas = _captchas.Skip(500).ToDictionary(x => x.Key, x => x.Value);
             _captchas.Add(key, value);
         }
+
         return new KeyValuePair<string, string>(key, generator.GenerateBase64(value));
     }
 
@@ -55,6 +56,7 @@ public class CaptchaService
             lock (_captchas) _captchas.Remove(key);
             return result;
         }
+
         return false;
     }
 

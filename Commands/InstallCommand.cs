@@ -13,7 +13,7 @@ namespace Dorbit.Framework.Commands;
 public class InstallCommand : Command
 {
     private readonly IServiceProvider _serviceProvider;
-    
+
     public override string Message { get; } = "Install";
     public override int Order { get; } = 100;
 
@@ -27,7 +27,7 @@ public class InstallCommand : Command
     {
         var migrationCommandAll = _serviceProvider.GetService<MigrationCommandAll>();
         await migrationCommandAll.InvokeAsync(context);
-        
+
         var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;
         var entryFilename = Path.Combine(baseDir, assemblyName + ".exe");

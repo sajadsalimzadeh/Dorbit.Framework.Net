@@ -14,7 +14,7 @@ namespace Dorbit.Framework.Commands;
 public class CreateTokenCommand : Command
 {
     private readonly JwtService _jwtService;
-    
+
     public override bool IsRoot { get; } = false;
     public override string Message => "Create Token";
 
@@ -36,7 +36,7 @@ public class CreateTokenCommand : Command
         var accesses = (context.GetArgAsString("Accesses") ?? "admin").Split(',');
         var lifetime = context.GetArgAsString("Lifetime") ?? "1h";
         var lifetimeValue = Convert.ToInt32(lifetime.Substring(0, lifetime.Length - 1));
-        
+
         var expires = DateTime.UtcNow;
         if (lifetime.EndsWith("s")) expires = expires.AddSeconds(lifetimeValue);
         else if (lifetime.EndsWith("m")) expires = expires.AddMinutes(lifetimeValue);

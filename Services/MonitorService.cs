@@ -30,11 +30,12 @@ internal class MonitorService : IMonitorService
 
     public void AddRequest()
     {
-        if((DateTime.UtcNow - _requestTime).Seconds > 0)
+        if ((DateTime.UtcNow - _requestTime).Seconds > 0)
         {
             RequestPerSecond = 0;
             _requestTime = DateTime.UtcNow;
         }
+
         RequestPerSecond++;
     }
 }

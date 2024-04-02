@@ -15,12 +15,12 @@ public static class QueryableExtensions
     {
         return query.FirstOrDefault(x => x.Id == id);
     }
-    
+
     public static Task<T> GetByIdAsync<T>(this IQueryable<T> query, Guid id) where T : IEntity
     {
         return query.FirstOrDefaultAsync(x => x.Id == id);
     }
-    
+
     public static async Task<List<T>> ToListAsyncWithCache<T>(this IQueryable<T> query, string key, TimeSpan duration)
     {
         if (App.MemoryCache.TryGetValue(key, out List<T> result)) return result;
@@ -34,7 +34,7 @@ public static class QueryableExtensions
     {
         if (App.MemoryCache.TryGetValue(key, out T result)) return result;
         result = await query.FirstOrDefaultAsync(predicate);
-        if(result is not null) App.MemoryCache.Set(key, result, duration);
+        if (result is not null) App.MemoryCache.Set(key, result, duration);
 
         return result;
     }

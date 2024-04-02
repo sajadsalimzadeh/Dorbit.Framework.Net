@@ -30,8 +30,8 @@ public class QueryOptions
         var orderQuery = OrderBy.ToSql();
         if (Switches.EnableFilter && filterQuery?.Length > 0) query = query.Where(filterQuery);
         if (Switches.EnableOrderBy && orderQuery?.Length > 0) query = query.OrderBy(orderQuery);
-            
-        if (Switches.EnableSkip && Skip.Value > 0) 
+
+        if (Switches.EnableSkip && Skip.Value > 0)
             query = query.Skip(Skip.Value);
         else
             query = query.Skip(Defaults.PageIndex * Defaults.PageSize);
@@ -40,7 +40,7 @@ public class QueryOptions
             query = query.Take(Top.Value);
         else
             query = query.Take(Defaults.PageSize);
-            
+
         return query;
     }
 

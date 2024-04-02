@@ -13,8 +13,9 @@ public static class EnumExtension
         if (memInfo.Length > 0)
         {
             var attribute = memInfo[0].GetCustomAttribute(typeof(DescriptionAttribute));
-            return ((DescriptionAttribute) attribute)?.Description;
+            return ((DescriptionAttribute)attribute)?.Description;
         }
+
         return null;
     }
 }

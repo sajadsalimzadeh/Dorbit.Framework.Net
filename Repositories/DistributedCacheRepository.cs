@@ -23,7 +23,7 @@ public abstract class DistributedCacheRepository<T> where T : IEntity
     public async Task<T> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var bytes = await _cache.GetAsync(id.ToString(), cancellationToken);
-        return (bytes is not null ? MessagePackSerializer.Deserialize<T>(bytes, cancellationToken: cancellationToken) : default);   
+        return (bytes is not null ? MessagePackSerializer.Deserialize<T>(bytes, cancellationToken: cancellationToken) : default);
     }
 
     public async Task<List<T>> GetAllAsync(List<Guid> ids, CancellationToken cancellationToken = default)
@@ -33,6 +33,7 @@ public abstract class DistributedCacheRepository<T> where T : IEntity
         {
             result.Add(await GetAsync(id, cancellationToken));
         }
+
         return result;
     }
 

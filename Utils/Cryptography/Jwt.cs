@@ -9,8 +9,8 @@ namespace Dorbit.Framework.Utils.Cryptography;
 
 public static class Jwt
 {
-    public static IEnumerable<Claim> GetClaims(string token, string secret) {
-            
+    public static IEnumerable<Claim> GetClaims(string token, string secret)
+    {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(secret);
         tokenHandler.ValidateToken(token, new TokenValidationParameters

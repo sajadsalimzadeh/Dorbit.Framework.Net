@@ -17,6 +17,7 @@ public static class JsonConverterWrapper
                 var serializer = new JsonSerializer { ContractResolver = resolver };
                 serializer.Serialize(jsonWriter, obj);
             }
+
             return strWriter.ToString();
         }
     }

@@ -5,6 +5,7 @@ namespace Dorbit.Framework.Utils.Queries;
 public class FilterQueryOption
 {
     public FilterQueryOptionExpression Expression { get; set; }
+
     public string ToSql()
     {
         return Expression?.ToSql(null);
@@ -13,7 +14,7 @@ public class FilterQueryOption
     public string ToSql(out Dictionary<string, object> parameters)
     {
         var dict = new Dictionary<string, object>();
-        var sql =  Expression?.ToSql(dict);
+        var sql = Expression?.ToSql(dict);
         parameters = dict;
         return sql;
     }

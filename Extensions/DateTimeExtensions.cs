@@ -23,7 +23,7 @@ public static class DateTimeExtensions
     {
         return (long)dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
     }
-    
+
     public static long GetUnixTimeMilliseconds(this DateTime dateTime)
     {
         return (long)dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;

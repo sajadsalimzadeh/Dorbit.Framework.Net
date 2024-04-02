@@ -10,6 +10,7 @@ public enum TransactionState
     Commit = 1,
     Rollback = 2,
 }
+
 internal class EfTransactionContext
 {
     internal readonly DbContext DbContext;
@@ -34,6 +35,7 @@ internal class EfTransactionContext
             transaction = new EfPrimaryTransaction(DbContext, this);
             Transactions.Add(transaction);
         }
+
         return transaction;
     }
 }

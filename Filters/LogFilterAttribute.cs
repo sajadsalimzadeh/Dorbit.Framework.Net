@@ -51,6 +51,7 @@ public class LogAttribute : ActionFilterAttribute
                 }
             }
         }
+
         base.OnActionExecuted(context);
     }
 }

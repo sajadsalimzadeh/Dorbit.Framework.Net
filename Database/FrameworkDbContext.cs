@@ -11,6 +11,7 @@ public class FrameworkDbContext : EfDbContext
     public FrameworkDbContext(DbContextOptions<FrameworkDbContext> options, IServiceProvider serviceProvider) : base(options, serviceProvider)
     {
     }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

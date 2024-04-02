@@ -12,6 +12,7 @@ public static class MemberInfoExtensions
         var attribute = member.GetCustomAttribute(typeof(DisplayNameAttribute));
         return (attribute != null ? ((DisplayNameAttribute)attribute).DisplayName : member.Name);
     }
+
     public static bool IsField(this MemberInfo member) => member.GetCustomAttribute<NotMappedAttribute>() == null;
     public static bool IsPrimaryKey(this MemberInfo member) => member.GetCustomAttribute<KeyAttribute>() != null;
     public static bool IsIdentity(this MemberInfo member) => member.GetCustomAttribute<DatabaseGeneratedAttribute>() != null;

@@ -17,7 +17,8 @@ public class CaptchaGenerator
     public int Length { get; set; } = 6;
     public string Pattern { get; set; } = "[0-9A-Z]";
 
-    private readonly string[] _fontNames = {
+    private readonly string[] _fontNames =
+    {
         "Comic Sans MS",
         "Arial",
         "Times New Roman",
@@ -26,7 +27,8 @@ public class CaptchaGenerator
         "Geneva"
     };
 
-    FontStyle[] _fontStyles = {
+    FontStyle[] _fontStyles =
+    {
         FontStyle.Regular,
         FontStyle.Bold,
         FontStyle.Italic,
@@ -141,10 +143,11 @@ public class CaptchaGenerator
                 //Random Color (Darker colors RGB 0 to 100)
                 new SolidBrush(Color.FromArgb(118, 38, 133)),
                 x,
-                y//rnd.Next(10, 40)
+                y //rnd.Next(10, 40)
             );
             graphics.ResetTransform();
         }
+
         return bitmap;
     }
 

@@ -6,7 +6,6 @@ using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Repositories.Abstractions;
 using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Controllers;

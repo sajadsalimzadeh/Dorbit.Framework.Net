@@ -1,6 +1,5 @@
 ﻿namespace Dorbit.Framework.Contracts.Jwts
 {
-
     public class JwtCreateTokenResponse
     {
         public string Key { get; set; }

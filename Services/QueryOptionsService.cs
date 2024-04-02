@@ -14,7 +14,6 @@ internal class QueryOptionsService : IQueryOptionsService
 
     public QueryOptionsService()
     {
-
     }
 
     public IQueryOptionsService AddOptions(Type type, QueryOptions options)

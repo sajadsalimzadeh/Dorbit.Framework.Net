@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Messages;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
-using Dorbit.Framework.Utils.Http;
 using Kavenegar.Models;
 
 namespace Dorbit.Framework.Services.MessageProviders;
@@ -48,6 +46,7 @@ public class KavenegarProvider : IMessageProvider<MessageSmsRequest>
             var api = new Kavenegar.KavenegarApi(_apKey);
             result = api.VerifyLookup(request.To, request.Args[0], request.TemplateId);
         }
+
         return result.Status switch
         {
             6 => throw new Exception("خطا در ارسال پیام که توسط سر شماره پیش می آید و به معنی عدم رسیدن پیامک می باشد"),

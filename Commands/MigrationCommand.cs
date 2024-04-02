@@ -30,7 +30,7 @@ public class MigrationCommand : Command
             yield return new MigrationCommandItem(dbContext);
         }
     }
-    
+
     public override Task InvokeAsync(ICommandContext context)
     {
         throw new NotImplementedException();
@@ -41,7 +41,7 @@ public class MigrationCommand : Command
 public class MigrationCommandAll : Command
 {
     public override bool IsRoot { get; } = false;
-    
+
     private readonly IEnumerable<IDbContext> _dbContexts;
 
     public override string Message => "Migrate All";
@@ -67,6 +67,7 @@ public class MigrationCommandAll : Command
         }
     }
 }
+
 internal class MigrationCommandItem : Command
 {
     private readonly IDbContext _dbContext;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Authentication;
@@ -52,11 +51,11 @@ public class ExceptionMiddleware : IMiddleware
 
             switch (ex)
             {
-                case UnauthorizedAccessException unauthorizedAccessException:
+                case UnauthorizedAccessException:
                     op.Code = StatusCodes.Status403Forbidden;
                     op.Message = Errors.AccessDenied.ToString();
                     break;
-                case AuthenticationException authenticationException:
+                case AuthenticationException:
                     op.Code = StatusCodes.Status401Unauthorized;
                     op.Message = Errors.UnAuthorized.ToString();
                     break;

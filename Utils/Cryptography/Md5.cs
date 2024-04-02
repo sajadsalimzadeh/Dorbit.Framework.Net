@@ -10,6 +10,7 @@ public static class Md5
     {
         return MD5.Create().ComputeHashAsync(stream);
     }
+
     public static Task<byte[]> HashFileAsync(string filePath)
     {
         using var stream = File.OpenRead(filePath);

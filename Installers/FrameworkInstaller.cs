@@ -40,7 +40,7 @@ public static class FrameworkInstaller
         services.AddScoped<IPrincipal>((sp) => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
 
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
-        
+
         services.AddControllers(typeof(FrameworkInstaller).Assembly)
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
@@ -88,9 +88,10 @@ public static class FrameworkInstaller
         {
             await startup.RunAsync();
         }
+
         await app.RunAsync();
     }
-    
+
     public static async Task RunDorbitAsync(this WebApplication app, string[] args)
     {
         if (app.Environment.IsDevelopment())
@@ -98,7 +99,7 @@ public static class FrameworkInstaller
             if (args.Contains("cli")) await app.RunCliAsync();
             else await app.RunWithStartupsAsync();
         }
-        else if(args.Contains("run"))
+        else if (args.Contains("run"))
         {
             await app.RunWithStartupsAsync();
         }

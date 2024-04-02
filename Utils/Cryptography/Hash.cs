@@ -5,7 +5,7 @@ namespace Dorbit.Framework.Utils.Cryptography;
 public static class Hash
 {
     private const string Salt = "yf4m394wpV";
-    
+
     public static string Sha1(string text, string secret)
     {
         var data = Encoding.ASCII.GetBytes(text + secret + Salt);
@@ -15,6 +15,7 @@ public static class Hash
         {
             hash += b.ToString("X2");
         }
+
         return hash;
     }
 }

@@ -7,11 +7,13 @@ namespace Dorbit.Framework.Utils.Queries;
 internal class FilterQueryOptionSqlAttribute : Attribute
 {
     public string Value { get; set; }
+
     public FilterQueryOptionSqlAttribute(string value)
     {
         Value = value;
     }
 }
+
 [AttributeUsage(AttributeTargets.All)]
 internal class FilterQueryOptionFormatAttribute : Attribute
 {
@@ -22,6 +24,7 @@ internal class FilterQueryOptionFormatAttribute : Attribute
         Format = format;
     }
 }
+
 internal static class FilterQueryOptionAttributeExtension
 {
     public static string GetSqlValue(this Enum value)

@@ -17,7 +17,7 @@ public class UninstallCommand : Command
         var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
         Process.Start("sc", $"stop {assemblyName}");
         Process.Start("sc", $"delete {assemblyName}");
-        
+
         return Task.CompletedTask;
     }
 }

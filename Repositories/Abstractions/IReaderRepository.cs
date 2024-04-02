@@ -12,7 +12,7 @@ namespace Dorbit.Framework.Repositories.Abstractions;
 public interface IReaderRepository<T> where T : class, IEntity
 {
     IDbContext DbContext { get; }
-    
+
     IQueryable<T> Set(bool excludeDeleted = true);
     Task<T> GetByIdAsync(Guid id);
     Task<List<T>> GetAllAsync();
