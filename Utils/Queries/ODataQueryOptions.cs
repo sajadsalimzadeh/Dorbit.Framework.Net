@@ -9,15 +9,8 @@ public class ODataQueryOptions : QueryOptions
     public string RawValues { get; private set; }
     public bool IsSet { get; set; }
 
-    public int PageSize =>
-        (IsSet && Switches.EnableTop && Top.Value > 0)
-            ? Top.Value
-            : Defaults.PageSize;
-
-    public int PageIndex =>
-        (IsSet && Switches.EnableSkip && Skip.Value > 0)
-            ? Skip.Value / Top.Value
-            : Defaults.PageIndex;
+    public int PageSize => (IsSet && Top.Value > 0) ? Top.Value : 10000;
+    public int PageIndex => (IsSet && Skip.Value > 0) ? Skip.Value / Top.Value : 0;
 
     public ODataQueryOptions Parse(HttpRequest request)
     {
@@ -39,27 +32,6 @@ public class ODataQueryOptions : QueryOptions
         Skip.ODataParseRaw(RawValues);
         Top.ODataParseRaw(RawValues);
         IsSet = true;
-
-        return this;
-    }
-
-    public ODataQueryOptions Patch(
-        Action<QueryOptionsSwitches> switches = default,
-        Action<QueryOptionsDefaults> defaults = default,
-        Action<QueryOptionsPatches> patches = default
-    )
-    {
-        defaults?.Invoke(Defaults);
-        switches?.Invoke(Switches);
-        patches?.Invoke(Patches);
-
-        if (Patches.BypassPagination)
-        {
-            Switches.EnableSkip = false;
-            Switches.EnableTop = false;
-            Defaults.PageIndex = 0;
-            Defaults.PageSize = int.MaxValue;
-        }
 
         return this;
     }

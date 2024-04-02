@@ -23,7 +23,6 @@ public static class FrameworkInstaller
     public static IServiceCollection AddDorbitFramework(this IServiceCollection services, Configuration configuration)
     {
         services.BindConfiguration<AppSetting>();
-
         services.TryAddSingleton(services);
         services.AddMemoryCache();
         services.AddHttpContextAccessor();
@@ -45,6 +44,8 @@ public static class FrameworkInstaller
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
         services.AddDbContext<FrameworkDbContext>(configuration.FrameworkDbContextConfiguration);
+        
+        App.ServiceProvider = services.BuildServiceProvider();
 
         return services;
     }

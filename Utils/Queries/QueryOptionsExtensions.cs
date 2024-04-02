@@ -48,16 +48,6 @@ public static class QueryOptionsExtensions
         }
     }
 
-    public static IQueryable<T> Apply<T>(this IQueryable<T> query,
-        QueryOptions queryOptions,
-        Action<QueryOptionsSwitches> switches,
-        Action<QueryOptionsDefaults> defaults)
-    {
-        defaults?.Invoke(queryOptions.Defaults);
-        switches?.Invoke(queryOptions.Switches);
-        return queryOptions.ApplyTo(query);
-    }
-
     public static IQueryable<T> ApplyToList<T>(this IQueryable<T> query, QueryOptions queryOptions)
     {
         return queryOptions.ApplyTo(query);

@@ -20,12 +20,11 @@ public static class ServiceCollectionExtensions
         public ServiceDescriptor ServiceDescriptor { get; set; }
     }
 
-    public static void RegisterServicesByAssembly(this IServiceCollection services, string[] namespaces)
+    public static void RegisterServicesByAssembly(this IServiceCollection services, string[] prefixes)
     {
-        var entryAssembly = Assembly.GetEntryAssembly();
         using var serviceProvider = services.BuildServiceProvider();
         using var scope = serviceProvider.CreateScope();
-        var assemblies = entryAssembly.GetAssemblies(namespaces);
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(x => prefixes.Any(n => x.FullName?.StartsWith(n) == true));
         var descriptors = new List<Descriptor>();
         foreach (var assembly in assemblies)
         {

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Dorbit.Framework.Database.Abstractions;
@@ -23,14 +25,44 @@ public class BaseWriteRepository<T> : BaseReadRepository<T>, IWriterRepository<T
         return _dbContext.InsertEntityAsync(model);
     }
 
-    public virtual Task<T> RemoveAsync(T model)
+    public virtual Task BulkInsertAsync(Func<T, bool> predicate)
     {
-        return _dbContext.DeleteEntityAsync(model);
+        return BulkInsertAsync(Set().Where(predicate).ToList());
+    }
+
+    public virtual Task BulkInsertAsync(List<T> entities)
+    {
+        return _dbContext.BulkInsertEntityAsync(entities);
     }
 
     public virtual Task<T> UpdateAsync(T model)
     {
         return _dbContext.UpdateEntityAsync(model);
+    }
+
+    public virtual Task BulkUpdateAsync(Func<T, bool> predicate)
+    {
+        return BulkUpdateAsync(Set().Where(predicate).ToList());
+    }
+
+    public virtual Task BulkUpdateAsync(List<T> entities)
+    {
+        return _dbContext.BulkUpdateEntityAsync(entities);
+    }
+
+    public virtual Task<T> DeleteAsync(T model)
+    {
+        return _dbContext.DeleteEntityAsync(model);
+    }
+
+    public virtual Task BulkDeleteAsync(Func<T, bool> predicate)
+    {
+        return BulkDeleteAsync(Set().Where(predicate).ToList());
+    }
+
+    public virtual Task BulkDeleteAsync(List<T> entities)
+    {
+        return _dbContext.BulkDeleteEntityAsync(entities);
     }
 
     public virtual Task<T> SaveAsync(T model)
@@ -46,9 +78,9 @@ public class BaseWriteRepository<T> : BaseReadRepository<T>, IWriterRepository<T
         return InsertAsync(mapper.Map<T>(dto));
     }
 
-    public async Task<T> RemoveAsync(Guid id)
+    public async Task<T> DeleteAsync(Guid id)
     {
-        return await RemoveAsync(await GetByIdAsync(id));
+        return await DeleteAsync(await GetByIdAsync(id));
     }
 
     public async Task<T> UpdateAsync<TR>(Guid id, TR dto)

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Dorbit.Framework.Commands.Abstractions;
 
 namespace Dorbit.Framework.Commands;
@@ -18,5 +19,9 @@ public abstract class CommandContextBase : ICommandContext
     public string GetArgAsString(string name)
     {
         return GetArg(name)?.ToString();
+    }
+    public int GetArgAsInt(string name)
+    {
+        return Convert.ToInt32(GetArg(name)?.ToString());
     }
 }

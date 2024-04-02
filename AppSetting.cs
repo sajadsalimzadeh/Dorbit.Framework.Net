@@ -48,5 +48,5 @@ internal class AppSettingSecurity
     public ProtectedProperty Secret { get; set; }
     public string Issuer { get; set; }
     public string Audience { get; set; }
-    public short TimeoutInSecond { get; set; }
+    public int TimeoutInSecond { get; set; }
 }
