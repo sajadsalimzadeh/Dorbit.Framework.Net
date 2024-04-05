@@ -12,4 +12,13 @@ public class ProtectedProperty
     {
         return new HashAlgorithmName(Algorithm);
     }
+
+    public ProtectedProperty()
+    {
+    }
+
+    public ProtectedProperty(string value)
+    {
+        Value = value;
+    }
 }

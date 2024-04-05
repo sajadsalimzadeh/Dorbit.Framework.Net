@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
 using Dorbit.Framework.Contracts.Commands;
+using Dorbit.Framework.Contracts.Cryptograpy;
+using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Utils.Cryptography;
 
 namespace Dorbit.Framework.Commands;
@@ -22,8 +24,8 @@ public class DecryptCommand : Command
 
     public override Task InvokeAsync(ICommandContext context)
     {
-        var cypherText = new Aes(context.GetArgAsString("Key")).Decrypt(Convert.FromBase64String(context.GetArgAsString("Input")));
-        context.Log($"{cypherText}\n");
+        var protectedProperty = new ProtectedProperty(context.GetArgAsString("Input"));
+        context.Log($"{protectedProperty.GetDecryptedValue(context.GetArgAsString("Key").ToBytesUtf8())}\n");
         return Task.CompletedTask;
     }
 }

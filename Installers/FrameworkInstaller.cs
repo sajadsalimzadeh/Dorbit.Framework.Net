@@ -104,16 +104,13 @@ public static class FrameworkInstaller
         }
         if (app.Environment.IsDevelopment())
         {
-            if (args.Contains("cli")) await app.RunCliAsync();
-            else await app.RunWithStartupsAsync();
-        }
-        else if (args.Contains("run"))
-        {
-            await app.RunWithStartupsAsync();
+            if (args.Contains("run")) await app.RunWithStartupsAsync();
+            else await app.RunCliAsync();
         }
         else
         {
-            await app.RunCliAsync();
+            if (args.Contains("cli")) await app.RunCliAsync();
+            else await app.RunWithStartupsAsync();
         }
     }
 
