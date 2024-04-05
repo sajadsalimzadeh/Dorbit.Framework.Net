@@ -98,6 +98,10 @@ public static class FrameworkInstaller
 
     public static async Task RunDorbitAsync(this WebApplication app, string[] args)
     {
+        if (args.Contains("migrate"))
+        {
+            await app.MigrateAll();
+        }
         if (app.Environment.IsDevelopment())
         {
             if (args.Contains("cli")) await app.RunCliAsync();
