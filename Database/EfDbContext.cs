@@ -82,12 +82,14 @@ public abstract class EfDbContext : DbContext, IDbContext
                 if (sequenceAttribute is null) continue;
                 if (!Sequences.Contains(sequenceAttribute.Name))
                 {
-                    modelBuilder.HasSequence<int>(sequenceAttribute.Name).StartsAt(sequenceAttribute.StartAt)
-                        .IncrementsBy(sequenceAttribute.IncrementsBy);
-                    Sequences.Add(sequenceAttribute.Name);
+                    modelBuilder.Entity(type.ClrType).Property(property.Name).ValueGeneratedOnAdd();
+                    // modelBuilder.HasSequence<int>(sequenceAttribute.Name, schema: sequenceAttribute.Schema)
+                    //     .StartsAt(sequenceAttribute.StartAt)
+                    //     .IncrementsBy(sequenceAttribute.IncrementsBy);
+                    // Sequences.Add(sequenceAttribute.Name);
                 }
 
-                modelBuilder.Entity(type.ClrType).Property(property.Name).HasDefaultValueSql($"NEXT VALUE FOR {sequenceAttribute.Name}");
+                // modelBuilder.Entity(type.ClrType).Property(property.Name).HasDefaultValueSql($"NEXT VALUE FOR {sequenceAttribute.Name}");
             }
         }
     }
