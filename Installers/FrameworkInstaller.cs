@@ -100,7 +100,6 @@ public static class FrameworkInstaller
     {
         if (args.Contains("migrate"))
         {
-            await app.MigrateAll();
         }
         if (app.Environment.IsDevelopment())
         {
@@ -110,7 +109,11 @@ public static class FrameworkInstaller
         else
         {
             if (args.Contains("cli")) await app.RunCliAsync();
-            else await app.RunWithStartupsAsync();
+            else
+            {
+                await app.MigrateAll();
+                await app.RunWithStartupsAsync();
+            }
         }
     }
 
