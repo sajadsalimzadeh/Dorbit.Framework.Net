@@ -301,20 +301,26 @@ public abstract class EfDbContext : DbContext, IDbContext
 
         if (model is ISoftDelete)
         {
-            if (DbSet<T>(false).GetById(model.Id) is ISoftDelete { IsDeleted: true } softDelete)
+            if (DbSet<T>(false).GetById(model.Id) is ISoftDelete softDelete)
             {
-                softDelete.IsDeleted = true;
-
-                if (softDelete is IDeletationTime deletionTime) deletionTime.DeletionTime = DateTime.UtcNow;
-                if (softDelete is IDeletationAudit deletionAudit)
+                if (!softDelete.IsDeleted)
                 {
-                    var user = UserResolver?.User;
-                    deletionAudit.DeleterId = user?.Id;
-                    deletionAudit.DeleterName = user?.Username;
-                }
+                    softDelete.IsDeleted = true;
 
-                Entry(softDelete).State = EntityState.Detached;
-                Entry(softDelete).State = EntityState.Modified;
+                    if (softDelete is IDeletationTime deletionTime) deletionTime.DeletionTime = DateTime.UtcNow;
+                    if (softDelete is IDeletationAudit deletionAudit)
+                    {
+                        var user = UserResolver?.User;
+                        deletionAudit.DeleterId = user?.Id;
+                        deletionAudit.DeleterName = user?.Username;
+                    }
+                    
+                    Entry(softDelete).State = EntityState.Modified;
+                }
+                else
+                {
+                    Entry(softDelete).State = EntityState.Detached;
+                }
             }
             else
             {
