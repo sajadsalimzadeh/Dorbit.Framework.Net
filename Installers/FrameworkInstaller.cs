@@ -22,6 +22,9 @@ public static class FrameworkInstaller
 {
     public static IServiceCollection AddDorbitFramework(this IServiceCollection services, Configuration configuration)
     {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+        
         services.BindConfiguration<AppSetting>();
         services.TryAddSingleton(services);
         services.AddMemoryCache();
