@@ -36,4 +36,9 @@ public static class StringExtensions
 
         return Convert.ToInt32(input);
     }
+
+    public static string ToStringBy(this string format, params object[] args)
+    {
+        return string.Format(format, args);
+    }
 }

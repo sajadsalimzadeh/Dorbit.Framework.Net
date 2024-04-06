@@ -27,4 +27,16 @@ public static class ListExtensions
     {
         return items.Select((value, index) => new { Index = index, Value = value }).ToDictionary(x => x.Index, x => x.Value);
     }
+
+    public static T GetOrAdd<T>(this List<T> list, Predicate<T> predicate, Func<T> addFunction)
+    {
+        var item = list.Find(predicate);
+        if (item is null)
+        {
+            item = addFunction();
+            list.Add(item);
+        }
+
+        return item;
+    }
 }
