@@ -112,16 +112,8 @@ public static class FrameworkInstaller
 
     public static async Task RunDorbitAsync(this WebApplication app, string[] args)
     {
-        if (app.Environment.IsDevelopment())
-        {
-            if (args.Contains("run")) await app.RunWithStartupsAsync();
-            else await app.RunCliAsync();
-        }
-        else
-        {
-            if (args.Contains("cli")) await app.RunCliAsync();
-            else await app.RunWithStartupsAsync();
-        }
+        if (args.Contains("run")) await app.RunWithStartupsAsync();
+        else await app.RunCliAsync();
     }
 
     public class Configuration
