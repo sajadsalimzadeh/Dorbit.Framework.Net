@@ -24,6 +24,7 @@ public static class FrameworkInstaller
     {
         services.BindConfiguration<AppSetting>();
         services.TryAddSingleton(services);
+        services.AddResponseCaching();
         services.AddMemoryCache();
         services.AddHttpContextAccessor();
         services.AddDistributedMemoryCache();
@@ -36,12 +37,15 @@ public static class FrameworkInstaller
 
         services.RegisterServicesByAssembly(configuration.DependencyRegisterNamespaces.ToArray());
 
-        services.AddScoped<IPrincipal>((sp) => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
+        services.AddScoped<IPrincipal>(sp => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
 
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
 
         services.AddControllers(typeof(FrameworkInstaller).Assembly)
-            .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+            });
 
         services.AddDbContext<FrameworkDbContext>(configuration.FrameworkDbContextConfiguration);
         
@@ -66,19 +70,29 @@ public static class FrameworkInstaller
         return services;
     }
 
-    public static WebApplication BuildWithDorbit(this WebApplicationBuilder builder)
+    public static WebApplication UseDorbit(this WebApplication app)
     {
-        var app = builder.Build();
         App.ServiceProvider = app.Services;
-        var df = new DefaultFilesOptions();
-        df.DefaultFileNames.Add("index.html");
-        app.UseDefaultFiles(df);
+        var defaultFilesOptions = new DefaultFilesOptions();
+        defaultFilesOptions.DefaultFileNames.Add("index.html");
+        app.UseDefaultFiles(defaultFilesOptions);
         app.UseStaticFiles();
         app.UseCors();
         app.UseRouting();
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI(o => o.UseDefaultOptions("Mobicar API v1"));
+        }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+            app.UseHsts();
+        }
         app.UseMiddleware<AuthMiddleware>();
         app.UseMiddleware<ExceptionMiddleware>();
         app.UseMiddleware<CancellationTokenMiddleware>();
+        app.UseResponseCaching();
         return app;
     }
 
