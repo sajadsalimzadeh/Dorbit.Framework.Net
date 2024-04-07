@@ -20,6 +20,7 @@ public abstract class CommandContextBase : ICommandContext
     {
         return GetArg(name)?.ToString();
     }
+
     public int GetArgAsInt(string name)
     {
         return Convert.ToInt32(GetArg(name)?.ToString());

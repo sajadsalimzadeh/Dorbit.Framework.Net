@@ -314,7 +314,7 @@ public abstract class EfDbContext : DbContext, IDbContext
                         deletionAudit.DeleterId = user?.Id;
                         deletionAudit.DeleterName = user?.Username;
                     }
-                    
+
                     Entry(softDelete).State = EntityState.Modified;
                 }
                 else

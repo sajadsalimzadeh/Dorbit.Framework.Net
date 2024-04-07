@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Dorbit.Framework.Extensions;

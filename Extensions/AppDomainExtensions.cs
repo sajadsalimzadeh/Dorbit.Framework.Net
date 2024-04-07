@@ -7,9 +7,9 @@ public static class AppDomainExtensions
 {
     public static string GetEnvironment(this AppDomain domain)
     {
-        #if !DEBUG
+#if !DEBUG
         return Environments.Production;
-        #endif
+#endif
         return Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
     }
 

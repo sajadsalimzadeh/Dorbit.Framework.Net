@@ -13,7 +13,7 @@ public static class MigrationExtensions
         var sp = app.Services.CreateScope().ServiceProvider;
         await MigrateAll(sp);
     }
-    
+
     public static async Task MigrateAll(this IServiceProvider serviceProvider)
     {
         var dbContexts = serviceProvider.GetServices<IDbContext>();

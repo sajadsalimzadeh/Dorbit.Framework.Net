@@ -11,7 +11,7 @@ public static class DirectoryUtil
         foreach (var filePath in Directory.GetFiles(source))
         {
             var fileInfo = new FileInfo(filePath);
-            if(predicate is not null && !predicate(fileInfo)) continue;
+            if (predicate is not null && !predicate(fileInfo)) continue;
             File.Copy(filePath, Path.Combine(destination, fileInfo.Name));
         }
 

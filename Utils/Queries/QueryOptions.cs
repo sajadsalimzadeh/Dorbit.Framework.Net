@@ -22,16 +22,16 @@ public class QueryOptions
     {
         var filterQuery = Filters.ToSql();
         var orderQuery = OrderBy.ToSql();
-        
+
         if (filterQuery?.Length > 0) query = query.Where(filterQuery);
         if (orderQuery?.Length > 0) query = query.OrderBy(orderQuery);
-            
-        if (Skip.Value > 0) 
+
+        if (Skip.Value > 0)
             query = query.Skip(Skip.Value);
 
         if (Top.Value > 0)
             query = query.Take(Top.Value);
-            
+
         return query;
     }
 

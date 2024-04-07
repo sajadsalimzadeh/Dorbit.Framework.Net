@@ -24,7 +24,7 @@ public static class FrameworkInstaller
     {
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
-        
+
         services.BindConfiguration<AppSetting>();
         services.TryAddSingleton(services);
         services.AddResponseCaching();
@@ -45,13 +45,10 @@ public static class FrameworkInstaller
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
 
         services.AddControllers(typeof(FrameworkInstaller).Assembly)
-            .AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-            });
+            .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
         services.AddDbContext<FrameworkDbContext>(configuration.FrameworkDbContextConfiguration);
-        
+
         App.ServiceProvider = services.BuildServiceProvider();
 
         return services;
@@ -92,6 +89,7 @@ public static class FrameworkInstaller
             app.UseExceptionHandler("/Error");
             app.UseHsts();
         }
+
         app.UseMiddleware<AuthMiddleware>();
         app.UseMiddleware<ExceptionMiddleware>();
         app.UseMiddleware<CancellationTokenMiddleware>();
