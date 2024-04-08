@@ -34,6 +34,7 @@ public class HttpHelper : IDisposable
     public ContentType RequestContentType { get; set; } = ContentType.Json;
     public ContentType ResponseContentType { get; set; } = ContentType.Json;
     public HttpClient HttpClient { get; set; }
+    public CancellationToken CancellationToken { get; set; }
 
     public event Action OnUnAuthorizedHandler;
     public event Action OnForbiddenHandler;
@@ -69,7 +70,7 @@ public class HttpHelper : IDisposable
     }
 
 
-    public async Task<HttpModel> SendAsync(string url, HttpMethod method, object parameter = null, CancellationToken cancellationToken = default)
+    public async Task<HttpModel> SendAsync(string url, HttpMethod method, object parameter = null)
     {
         var request = new HttpRequestMessage();
         request.Method = method;
@@ -82,8 +83,7 @@ public class HttpHelper : IDisposable
         if (Username is not null && Password is not null)
         {
             var authenticationString = $"{Username}:{Password}";
-            var base64EncodedAuthenticationString =
-                Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
+            var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
         }
 
@@ -140,7 +140,7 @@ public class HttpHelper : IDisposable
         }
 
         foreach (var item in _headers) request.Headers.Add(item.Key, item.Value);
-        var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
         return new HttpModel()
         {
             Request = request,
@@ -148,10 +148,9 @@ public class HttpHelper : IDisposable
         };
     }
 
-    public async Task<HttpModel<T>> SendAsync<T>(string url, HttpMethod method, object parameter = null,
-        CancellationToken cancellationToken = default)
+    public async Task<HttpModel<T>> SendAsync<T>(string url, HttpMethod method, object parameter = null)
     {
-        var httpModel = await SendAsync(url, method, parameter, cancellationToken);
+        var httpModel = await SendAsync(url, method, parameter);
         if (httpModel.Response.StatusCode == HttpStatusCode.Unauthorized)
         {
             OnUnAuthorizedHandler?.Invoke();
@@ -169,7 +168,7 @@ public class HttpHelper : IDisposable
             return default;
         }
 
-        await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(cancellationToken);
+        await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
         using var reader = new StreamReader(stream);
 
 
