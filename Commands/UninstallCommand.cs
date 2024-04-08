@@ -6,7 +6,7 @@ using Dorbit.Framework.Commands.Abstractions;
 
 namespace Dorbit.Framework.Commands;
 
-[ServiceRegister]
+[ServiceRegister(Order = 101)]
 public class UninstallCommand : Command
 {
     public override string Message { get; } = "Uninstall";

@@ -5,11 +5,12 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
+using Dorbit.Framework.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Commands;
 
-[ServiceRegister]
+[ServiceRegister(Order = 100)]
 public class InstallCommand : Command
 {
     private readonly IServiceProvider _serviceProvider;
@@ -32,5 +33,7 @@ public class InstallCommand : Command
         var entryFilename = Path.Combine(baseDir, assemblyName + ".exe");
         Process.Start("sc", $"create {assemblyName} binpath= \"{entryFilename} run\" start= auto");
         Process.Start("sc", $"start {assemblyName}");
+
+        await _serviceProvider.MigrateAll();
     }
 }

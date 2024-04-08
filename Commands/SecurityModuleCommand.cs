@@ -8,12 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Commands;
 
 [ServiceRegister]
-public class SecurityCommands : Command
+public class SecurityModuleCommand : Command
 {
     private readonly IServiceProvider _serviceProvider;
-    public override string Message { get; } = "Security Commands";
+    public override string Message { get; } = "Security Module";
 
-    public SecurityCommands(IServiceProvider serviceProvider)
+    public SecurityModuleCommand(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
