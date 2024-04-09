@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Dorbit.Framework.Contracts;
+namespace Dorbit.Framework.Contracts.Results;
 
 public class CommandResult
 {

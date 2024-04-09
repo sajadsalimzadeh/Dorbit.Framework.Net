@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
-using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Messages;
+using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Http;

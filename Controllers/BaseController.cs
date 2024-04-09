@@ -1,6 +1,6 @@
 ﻿using System;
 using AutoMapper;
-using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
