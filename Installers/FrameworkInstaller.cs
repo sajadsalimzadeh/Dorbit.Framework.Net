@@ -54,7 +54,7 @@ public static class FrameworkInstaller
         return services;
     }
 
-    public static IHostBuilder ConfigureDorbitSerilog(this IHostBuilder builder)
+    public static IHostBuilder UseDorbitSerilog(this IHostBuilder builder)
     {
         builder.UseSerilog((hostingContext, loggerConfiguration) =>
             loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration));
@@ -82,7 +82,7 @@ public static class FrameworkInstaller
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI(o => o.UseDefaultOptions("Mobicar API v1"));
+            app.UseSwaggerUI(o => o.UseDefaultOptions("Mobicar.Shared API v1"));
         }
         else
         {

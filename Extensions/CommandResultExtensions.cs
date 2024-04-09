@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Results;
 
 namespace Dorbit.Framework.Extensions;
 

@@ -24,7 +24,6 @@ public class HttpHelper : IDisposable
 
     private readonly Dictionary<string, string> _headers = new();
 
-    public string BaseUrl { get; set; }
     public string AuthorizationToken { get; set; }
     public string Username { get; set; }
     public string Password { get; set; }
@@ -43,10 +42,8 @@ public class HttpHelper : IDisposable
 
     public HttpHelper(string baseUrl, HttpMessageHandler handler = null)
     {
-        BaseUrl = baseUrl;
-
         HttpClient = new HttpClient(handler ?? new HttpClientHandler());
-        HttpClient.BaseAddress = new Uri(BaseUrl);
+        HttpClient.BaseAddress = new Uri(baseUrl);
         HttpClient.DefaultRequestHeaders.Add("Accept", "*/*");
         HttpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
         HttpClient.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
@@ -69,11 +66,9 @@ public class HttpHelper : IDisposable
         return this;
     }
 
-
-    public async Task<HttpModel> SendAsync(string url, HttpMethod method, object parameter = null)
+    private HttpRequestMessage CreateRequest(string url, HttpMethod method, object parameter = null)
     {
-        var request = new HttpRequestMessage();
-        request.Method = method;
+        var request = new HttpRequestMessage(method, url);
 
         if (AuthorizationToken is not null)
         {
@@ -100,9 +95,8 @@ public class HttpHelper : IDisposable
                 case "options":
                     if (parameter is not null)
                     {
-                        request.RequestUri = new Uri((BaseUrl.Contains("?") ? "&" : "?") + GetQueryString(parameter));
+                        request.RequestUri = new Uri(url + (url.Contains("?") ? "&" : "?") + GetQueryString(parameter));
                     }
-
                     break;
                 case "post":
                 case "put":
@@ -125,7 +119,7 @@ public class HttpHelper : IDisposable
                         }
                         else if (RequestContentType == ContentType.Xml)
                         {
-                            await using var writer = new StringWriter();
+                            using var writer = new StringWriter();
                             if (parameter != null)
                             {
                                 var serializer = new XmlSerializer(parameter.GetType());
@@ -140,6 +134,11 @@ public class HttpHelper : IDisposable
         }
 
         foreach (var item in _headers) request.Headers.Add(item.Key, item.Value);
+        return request;
+    }
+
+    public async Task<HttpModel> SendAsync(HttpRequestMessage request)
+    {
         var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
         return new HttpModel()
         {
@@ -148,9 +147,9 @@ public class HttpHelper : IDisposable
         };
     }
 
-    public async Task<HttpModel<T>> SendAsync<T>(string url, HttpMethod method, object parameter = null)
+    public async Task<HttpModel<T>> SendAsync<T>(HttpRequestMessage request)
     {
-        var httpModel = await SendAsync(url, method, parameter);
+        var httpModel = await SendAsync(request);
         if (httpModel.Response.StatusCode == HttpStatusCode.Unauthorized)
         {
             OnUnAuthorizedHandler?.Invoke();
@@ -162,7 +161,7 @@ public class HttpHelper : IDisposable
             if (IsRetryAfterUnAuthorized && RemainRetryCount > 0)
             {
                 RemainRetryCount--;
-                return await SendAsync<T>(url, method, parameter);
+                return await SendAsync<T>(request);
             }
 
             return default;
@@ -171,13 +170,12 @@ public class HttpHelper : IDisposable
         await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
         using var reader = new StreamReader(stream);
 
-
         var httpModelType = new HttpModel<T>()
         {
             Request = httpModel.Request,
             Response = httpModel.Response,
         };
-
+        
         if (ResponseContentType == ContentType.Json)
         {
             await using var jsonTextReader = new JsonTextReader(reader);
@@ -192,20 +190,12 @@ public class HttpHelper : IDisposable
         return httpModelType;
     }
 
-    public Task<HttpModel<T>> GetAsync<T>(string url = "", object parameter = null) => SendAsync<T>(url, HttpMethod.Get, parameter);
-    public Task<HttpModel<T>> PostAsync<T>(string url = "", object parameter = null) => SendAsync<T>(url, HttpMethod.Post, parameter);
-    public Task<HttpModel<T>> PutAsync<T>(string url = "", object parameter = null) => SendAsync<T>(url, HttpMethod.Put, parameter);
-    public Task<HttpModel<T>> PatchAsync<T>(string url = "", object parameter = null) => SendAsync<T>(url, HttpMethod.Patch, parameter);
-    public Task<HttpModel<T>> DeleteAsync<T>(string url = "", object parameter = null) => SendAsync<T>(url, HttpMethod.Delete, parameter);
-    public Task<HttpModel<T>> OptionsAsync<T>(string url = "", object parameter = null) => SendAsync<T>(url, HttpMethod.Options, parameter);
-
-    public Task<HttpModel> GetAsync(string url = "", object parameter = null) => SendAsync(url, HttpMethod.Get, parameter);
-    public Task<HttpModel> PostAsync(string url = "", object parameter = null) => SendAsync(url, HttpMethod.Post, parameter);
-    public Task<HttpModel> PutAsync(string url = "", object parameter = null) => SendAsync(url, HttpMethod.Put, parameter);
-    public Task<HttpModel> PatchAsync(string url = "", object parameter = null) => SendAsync(url, HttpMethod.Patch, parameter);
-    public Task<HttpModel> DeleteAsync(string url = "", object parameter = null) => SendAsync(url, HttpMethod.Delete, parameter);
-    public Task<HttpModel> OptionsAsync(string url = "", object parameter = null) => SendAsync(url, HttpMethod.Options, parameter);
-
+    public Task<HttpModel<T>> GetAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Get, parameter));
+    public Task<HttpModel<T>> PostAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Post, parameter));
+    public Task<HttpModel<T>> PutAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Put, parameter));
+    public Task<HttpModel<T>> PatchAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Patch, parameter));
+    public Task<HttpModel<T>> DeleteAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Delete, parameter));
+    public Task<HttpModel<T>> OptionsAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Options, parameter));
 
     public void Dispose()
     {
@@ -216,4 +206,16 @@ public class HttpHelper : IDisposable
     {
         OnException?.Invoke(arg1, arg2, arg3);
     }
+}
+
+public static class HttpHelperExtensions
+{
+    public static async Task<T> ToResultAsync<T>(this Task<HttpModel<T>> httpModel)
+    {
+        return (await httpModel).Result;
+    } 
+    public static async Task<TR> ToResultAsync<T, TR>(this Task<HttpModel<T>> httpModel, Func<T, TR> select)
+    {
+        return select(await httpModel.ToResultAsync());
+    } 
 }
