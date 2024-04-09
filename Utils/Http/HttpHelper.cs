@@ -33,6 +33,7 @@ public class HttpHelper : IDisposable
     public ContentType RequestContentType { get; set; } = ContentType.Json;
     public ContentType ResponseContentType { get; set; } = ContentType.Json;
     public HttpClient HttpClient { get; set; }
+    public CancellationToken CancellationToken { get; set; }
 
     public event Action OnUnAuthorizedHandler;
     public event Action OnForbiddenHandler;
@@ -77,8 +78,7 @@ public class HttpHelper : IDisposable
         if (Username is not null && Password is not null)
         {
             var authenticationString = $"{Username}:{Password}";
-            var base64EncodedAuthenticationString =
-                Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
+            var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
         }
 
@@ -139,7 +139,7 @@ public class HttpHelper : IDisposable
 
     public async Task<HttpModel> SendAsync(HttpRequestMessage request)
     {
-        var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+        var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
         return new HttpModel()
         {
             Request = request,
@@ -167,7 +167,7 @@ public class HttpHelper : IDisposable
             return default;
         }
 
-        await using var stream = await httpModel.Response.Content.ReadAsStreamAsync();
+        await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
         using var reader = new StreamReader(stream);
 
         var httpModelType = new HttpModel<T>()

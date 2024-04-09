@@ -7,5 +7,5 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 internal class CancellationTokenService : ICancellationTokenService
 {
-    public CancellationToken CancellationToken { get; set; }
+    public CancellationToken? CancellationToken { get; set; }
 }
