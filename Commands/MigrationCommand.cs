@@ -53,16 +53,17 @@ public class MigrationCommandAll : Command
 
     public override async Task InvokeAsync(ICommandContext context)
     {
+        context.Log($"\n==========Migrating==========\n");
         foreach (var dbContext in _dbContexts)
         {
             try
             {
                 await dbContext.MigrateAsync();
-                context.Log($"\n{dbContext.GetType().Name} Migrate");
+                context.Log($"{dbContext.GetType().Name} Migrated\n");
             }
             catch (Exception ex)
             {
-                context.Error(ex.Message);
+                context.Error(ex.Message + "\n");
             }
         }
     }

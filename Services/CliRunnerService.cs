@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ConsoleTools;
 using Dorbit.Framework.Attributes;
@@ -14,6 +15,7 @@ namespace Dorbit.Framework.Services;
 public class CliRunnerService
 {
     private readonly IEnumerable<ICommand> _commands;
+    private CancellationToken _cancellationToken = default;
 
     public CliRunnerService(IEnumerable<ICommand> commands)
     {
@@ -25,13 +27,12 @@ public class CliRunnerService
         return CreateMenus(app, _commands.Where(x => x.IsRoot));
     }
 
-    private static Task CreateMenus(WebApplication app, IEnumerable<ICommand> commands, bool isRoot = true)
+    private Task CreateMenus(WebApplication app, IEnumerable<ICommand> commands, bool isRoot = true)
     {
         var menu = new ConsoleMenu(Array.Empty<string>(), level: 0);
         foreach (var command in commands.OrderBy(x => x.Order))
         {
-            menu.Add(command.Message, () =>
-            {
+            menu.Add(command.Message, async () => {
                 var context = new CommandContextCli();
                 var parameters = command.GetParameters(context);
                 foreach (var parameter in parameters)
@@ -50,12 +51,12 @@ public class CliRunnerService
                 var subCommands = command.GetSubCommands(context);
                 if (subCommands.Count() > 0)
                 {
-                    CreateMenus(app, subCommands.ToList(), false);
+                    await CreateMenus(app, subCommands.ToList(), false);
                 }
 
                 try
                 {
-                    command.InvokeAsync(context);
+                    await command.InvokeAsync(context);
                 }
                 catch (Exception ex)
                 {
@@ -82,6 +83,6 @@ public class CliRunnerService
             config.EnableWriteTitle = true;
         });
 
-        return menu.ShowAsync();
+        return menu.ShowAsync(_cancellationToken);
     }
 }

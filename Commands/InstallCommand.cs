@@ -2,10 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
-using Dorbit.Framework.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Commands;
@@ -15,7 +15,7 @@ public class InstallCommand : Command
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public override string Message { get; } = "Install";
+    public override string Message { get; } = "Install or Update";
     public override int Order { get; } = 100;
 
 
@@ -28,12 +28,16 @@ public class InstallCommand : Command
     {
         var migrationCommandAll = _serviceProvider.GetService<MigrationCommandAll>();
         await migrationCommandAll.InvokeAsync(context);
+        
         var assemblyName = Assembly.GetEntryAssembly()?.GetName().Name;
-        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        var entryFilename = Path.Combine(baseDir, assemblyName + ".exe");
-        Process.Start("sc", $"create {assemblyName} binpath= \"{entryFilename} run\" start= auto");
-        Process.Start("sc", $"start {assemblyName}");
+        var entryFilename = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, assemblyName + ".exe");
 
-        await _serviceProvider.MigrateAll();
+        var createProcess = Process.Start("cmd", $"/C sc create {assemblyName} binpath= \"{entryFilename} run\" start= auto");
+        context.Log($"\n==========Creating Service==========\n");
+        await createProcess?.WaitForExitAsync()!;
+
+        var startProcess = Process.Start("cmd", $"/C sc start {assemblyName}");
+        context.Log($"\n==========Starting Service==========\n");
+        await startProcess?.WaitForExitAsync()!;
     }
 }

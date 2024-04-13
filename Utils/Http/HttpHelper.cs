@@ -197,6 +197,13 @@ public class HttpHelper : IDisposable
     public Task<HttpModel<T>> DeleteAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Delete, parameter));
     public Task<HttpModel<T>> OptionsAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Options, parameter));
 
+    public Task<HttpModel> GetAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Get, parameter));
+    public Task<HttpModel> PostAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Post, parameter));
+    public Task<HttpModel> PutAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Put, parameter));
+    public Task<HttpModel> PatchAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Patch, parameter));
+    public Task<HttpModel> DeleteAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Delete, parameter));
+    public Task<HttpModel> OptionsAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Options, parameter));
+    
     public void Dispose()
     {
         HttpClient?.Dispose();
