@@ -381,7 +381,12 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public Task MigrateAsync()
     {
-        return Database.MigrateAsync(CancellationToken);
+        if (GetProvider() != DatabaseProviderType.InMemory)
+        {
+            return Database.MigrateAsync(CancellationToken);
+        }
+        
+        return Task.CompletedTask;
     }
 
     public async Task<List<T>> QueryAsync<T>(string query, Dictionary<string, object> parameters)
