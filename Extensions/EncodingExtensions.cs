@@ -33,7 +33,7 @@ public static class EncodingExtensions
 
     public static byte[] ToByteArray(this string input)
     {
-        return input.Select(Convert.ToByte).ToArray();
+        return Encoding.UTF8.GetBytes(input);
     }
 
     public static byte[] ToBytesUtf32(this string input)
@@ -43,6 +43,6 @@ public static class EncodingExtensions
 
     public static string ToHexString(this byte[] bytes)
     {
-        return string.Join("", bytes.Select(b => b.ToString("x2").ToUpper()));
+        return BitConverter.ToString(bytes).Replace("-", "");
     }
 }

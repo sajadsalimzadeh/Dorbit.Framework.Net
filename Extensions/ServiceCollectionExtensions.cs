@@ -24,7 +24,9 @@ public static class ServiceCollectionExtensions
     {
         using var serviceProvider = services.BuildServiceProvider();
         using var scope = serviceProvider.CreateScope();
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(x => prefixes.Any(n => x.FullName?.StartsWith(n) == true));
+        var allAssemblies = GetAllAssembly(Assembly.GetEntryAssembly(), prefixes);
+        var assemblies = allAssemblies.Where(x => prefixes.Any(n => x.FullName?.StartsWith(n) == true));
+
         var descriptors = new List<Descriptor>();
         foreach (var assembly in assemblies)
         {
@@ -47,6 +49,34 @@ public static class ServiceCollectionExtensions
         {
             services.Add(descriptor.ServiceDescriptor);
         }
+    }
+
+    public static List<Assembly> GetAllAssembly(Assembly root, string[] prefixes)
+    {
+        var visited = new List<Assembly>();
+        var queue = new Queue<Assembly>();
+
+        queue.Enqueue(root);
+
+        while (queue.Any())
+        {
+            var assembly = queue.Dequeue();
+            var assemblyName = assembly.GetName().FullName ?? "";
+            if (visited.Any(x => x.FullName == assemblyName)) continue;
+            visited.Add(assembly);
+
+            var references = assembly.GetReferencedAssemblies();
+            foreach (var reference in references)
+            {
+                if (visited.Any(x => x.FullName == reference.FullName)) continue;
+                if (prefixes.Any(x => reference.Name.StartsWith(x)))
+                {
+                    queue.Enqueue(Assembly.Load(reference));
+                }
+            }
+        }
+
+        return visited;
     }
 
     private static IEnumerable<Type> GetInterfacesDirect(this Type type)
@@ -94,16 +124,21 @@ public static class ServiceCollectionExtensions
         }
     }
 
-    public static T BindConfiguration<T>(this IServiceCollection services) where T : class
+    public static T BindConfiguration<T>(this IServiceCollection services, params string[] additionalEnvironments) where T : class
     {
         var basePath = Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "./";
         var environment = AppDomain.CurrentDomain.GetEnvironment()?.ToLower() ?? "development";
-        var settings = new ConfigurationBuilder()
+        var configurationBuilder = new ConfigurationBuilder()
             .SetBasePath(basePath)
             .AddJsonFile("appsettings.json", false, true)
-            .AddJsonFile($"appsettings.{environment}.json", true, true)
-            .Build();
+            .AddJsonFile($"appsettings.{environment}.json", true, true);
 
+        foreach (var additionalEnvironment in additionalEnvironments)
+        {
+            configurationBuilder.AddJsonFile($"appsettings.{additionalEnvironment}.json", true, true);
+        }
+
+        var settings = configurationBuilder.Build();
         var appSettings = Activator.CreateInstance<T>();
         settings.Bind(appSettings);
         services.Configure<T>(settings);

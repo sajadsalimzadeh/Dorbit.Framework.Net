@@ -22,6 +22,7 @@ public static class QueryResultExtensions
 {
     public static async Task<T> ToDataAsync<T>(this Task<QueryResult<T>> queryResultTask)
     {
-        return (await queryResultTask).Data;
+        var result = (await queryResultTask);
+        return result is not null ? result.Data : default;
     }
 }

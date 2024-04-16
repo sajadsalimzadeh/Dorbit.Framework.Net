@@ -1,4 +1,3 @@
-using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Services.Abstractions;

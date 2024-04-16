@@ -39,11 +39,16 @@ public class HttpHelper : IDisposable
     public event Action OnForbiddenHandler;
     public event Action<Exception, HttpRequestMessage, HttpResponseMessage> OnException;
 
-
     public HttpHelper(string baseUrl, HttpMessageHandler handler = null)
     {
-        HttpClient = new HttpClient(handler ?? new HttpClientHandler());
-        HttpClient.BaseAddress = new Uri(baseUrl);
+        handler ??= new HttpClientHandler()
+        {
+            Proxy = null,
+            ServerCertificateCustomValidationCallback = delegate { return true; },
+        };
+
+        HttpClient = new HttpClient(handler);
+        HttpClient.BaseAddress = new Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/"));
         HttpClient.DefaultRequestHeaders.Add("Accept", "*/*");
         HttpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
         HttpClient.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
@@ -58,7 +63,6 @@ public class HttpHelper : IDisposable
 
         return string.Join("&", properties.ToArray());
     }
-
 
     public HttpHelper AddHeader(string name, string value)
     {
@@ -97,6 +101,7 @@ public class HttpHelper : IDisposable
                     {
                         request.RequestUri = new Uri(url + (url.Contains("?") ? "&" : "?") + GetQueryString(parameter));
                     }
+
                     break;
                 case "post":
                 case "put":
@@ -175,7 +180,7 @@ public class HttpHelper : IDisposable
             Request = httpModel.Request,
             Response = httpModel.Response,
         };
-        
+
         if (ResponseContentType == ContentType.Json)
         {
             await using var jsonTextReader = new JsonTextReader(reader);
@@ -203,7 +208,7 @@ public class HttpHelper : IDisposable
     public Task<HttpModel> PatchAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Patch, parameter));
     public Task<HttpModel> DeleteAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Delete, parameter));
     public Task<HttpModel> OptionsAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Options, parameter));
-    
+
     public void Dispose()
     {
         HttpClient?.Dispose();
@@ -220,9 +225,10 @@ public static class HttpHelperExtensions
     public static async Task<T> ToResultAsync<T>(this Task<HttpModel<T>> httpModel)
     {
         return (await httpModel).Result;
-    } 
+    }
+
     public static async Task<TR> ToResultAsync<T, TR>(this Task<HttpModel<T>> httpModel, Func<T, TR> select)
     {
         return select(await httpModel.ToResultAsync());
-    } 
+    }
 }

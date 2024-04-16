@@ -60,7 +60,7 @@ public class ExceptionMiddleware : IMiddleware
                     op.Message = Errors.UnAuthorized.ToString();
                     break;
                 case OperationException operationException:
-                    op.Code = operationException.Code == 0 ? 400 : operationException.Code;
+                    op.Code = operationException.Code;
                     op.Data = operationException.Data;
                     op.Message = operationException.Message;
                     op.Messages = operationException.Messages;

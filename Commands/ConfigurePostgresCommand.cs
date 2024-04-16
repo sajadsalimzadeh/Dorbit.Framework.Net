@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
-using Dorbit.Framework.Commands;
 using Dorbit.Framework.Commands.Abstractions;
 using Dorbit.Framework.Contracts.Commands;
-using Dorbit.Framework.Contracts.Cryptograpy;
 using Dorbit.Framework.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Dorbit.Identity.Commands;
+namespace Dorbit.Framework.Commands;
 
 [ServiceRegister(Order = 99)]
 public class ConfigurePostgresCommand : Command
