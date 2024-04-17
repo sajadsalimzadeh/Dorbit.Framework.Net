@@ -2,18 +2,17 @@
 
 internal enum Errors
 {
-    CaptchaSizeIsTooLarg,
+    CaptchaSizeIsTooLarge,
     CaptchaNotCorrect,
     CaptchaNotSet,
     TooMuchRequest,
     ServerError,
-    AccessDenied,
-    UnAuthorized,
+    UnAuthorize,
+    AuthenticationFailed,
     EntityIsReadonly,
     EntityIsUnDeletable,
     TransactionRollback,
-    NoMessageProviderFound,
-    CanNotChangeVerifiedFile,
+    SendMessageFailed,
     AesKeySizeIsInvalid,
     AesKeySizeMostEqualIvSize
 }

@@ -19,11 +19,14 @@ public static class CryptographyExtensions
             return property.Value;
         }
 
-        return new Aes(key)
+        var encryptedText = Convert.FromBase64String(property.Value);
+        var aes = new Aes(key)
         {
             Iterations = property.Iterations,
             HashAlgorithm = algorithmName
-        }.Decrypt(Convert.FromBase64String(property.Value)).ToStringUtf8();
+        };
+        var decryptedText = aes.Decrypt(encryptedText);
+        return decryptedText.Trim().ToStringUtf8();
     }
 
     public static ProtectedProperty GetEncryptedValue(this string value, Aes aes = null)

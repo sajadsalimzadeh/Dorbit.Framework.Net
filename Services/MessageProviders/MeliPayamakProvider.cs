@@ -15,31 +15,33 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
     public string Name => "MeliPayamak";
     private string _username;
     private string _password;
-    private string _apiKey;
 
     private class SendResponse
     {
-        public string RecId { get; set; }
-        public string Status { get; set; }
+        public string Value { get; set; }
+        public int RetStatus { get; set; }
+        public string StrRetStatus { get; set; }
     }
 
     public void Configure(AppSettingMessageProvider configuration)
     {
         _username = configuration.Username;
         _password = configuration.Password.GetDecryptedValue();
-        _apiKey = configuration.ApiKey.GetDecryptedValue();
     }
 
     public async Task<QueryResult<string>> Send(MessageSmsRequest request)
     {
-        var client = new HttpHelper($"https://console.melipayamak.com/api/send/shared/{_apiKey}");
-        var response = await client.PostAsync<SendResponse>("", new
+        var client = new HttpHelper("https://rest.payamak-panel.com/api/");
+        var data = new
         {
+            username = _username,
+            password = _password,
             bodyId = Convert.ToInt32(request.TemplateId),
             to = request.To,
-            args = request.Args
-        });
-        return response.Result.RecId switch
+            text = string.Join(';', request.Args)
+        };
+        var response = (await client.PostAsync<SendResponse>($"SendSMS/BaseServiceNumber", data)).Result;
+        return response.Value switch
         {
             "-7" => throw new Exception(" خطایی در شماره فرستنده رخ داده است با پشتیبانی تماس بگیرید"),
             "-6" => throw new Exception(" خطای داخلی رخ داده است با پشتیبانی تماس بگیرید"),
@@ -55,8 +57,7 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
             "10" => throw new Exception("کاربر موردنظر فعال نمی‌باشد"),
             "11" => throw new Exception("ارسال نشده"),
             "12" => throw new Exception("مدارک کاربر کامل نمی‌باشد"),
-            null => throw new Exception(response.Result.Status),
-            _ => new QueryResult<string>(response.Result.RecId)
+            _ => new QueryResult<string>(response.Value) { Success = true }
         };
     }
 }

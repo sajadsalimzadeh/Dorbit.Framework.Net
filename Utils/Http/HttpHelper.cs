@@ -120,7 +120,8 @@ public class HttpHelper : IDisposable
                     {
                         if (RequestContentType == ContentType.Json)
                         {
-                            request.Content = new StringContent(JsonConvert.SerializeObject(parameter), Encoding.UTF8, "application/json");
+                            var json = JsonConvert.SerializeObject(parameter);
+                            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                         }
                         else if (RequestContentType == ContentType.Xml)
                         {
@@ -198,9 +199,15 @@ public class HttpHelper : IDisposable
     public Task<HttpModel<T>> GetAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Get, parameter));
     public Task<HttpModel<T>> PostAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Post, parameter));
     public Task<HttpModel<T>> PutAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Put, parameter));
-    public Task<HttpModel<T>> PatchAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Patch, parameter));
-    public Task<HttpModel<T>> DeleteAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Delete, parameter));
-    public Task<HttpModel<T>> OptionsAsync<T>(string url = "", object parameter = null) => SendAsync<T>(CreateRequest(url, HttpMethod.Options, parameter));
+
+    public Task<HttpModel<T>> PatchAsync<T>(string url = "", object parameter = null) =>
+        SendAsync<T>(CreateRequest(url, HttpMethod.Patch, parameter));
+
+    public Task<HttpModel<T>> DeleteAsync<T>(string url = "", object parameter = null) =>
+        SendAsync<T>(CreateRequest(url, HttpMethod.Delete, parameter));
+
+    public Task<HttpModel<T>> OptionsAsync<T>(string url = "", object parameter = null) =>
+        SendAsync<T>(CreateRequest(url, HttpMethod.Options, parameter));
 
     public Task<HttpModel> GetAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Get, parameter));
     public Task<HttpModel> PostAsync(string url = "", object parameter = null) => SendAsync(CreateRequest(url, HttpMethod.Post, parameter));
