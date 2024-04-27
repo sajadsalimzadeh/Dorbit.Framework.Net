@@ -11,45 +11,55 @@ namespace Dorbit.Framework.Extensions;
 
 public static class QueryableExtensions
 {
-    public static T GetById<T>(this IQueryable<T> query, Guid id) where T : IEntity
+    public static TEntity GetById<TEntity, TKey>(this IQueryable<TEntity> query, TKey id) where TEntity : IEntity<TKey>
     {
-        return query.FirstOrDefault(x => x.Id == id);
+        return query.FirstOrDefault(x => x.Id.Equals(id));
+    }
+    
+    public static TEntity GetById<TEntity>(this IQueryable<TEntity> query, Guid id) where TEntity : IEntity
+    {
+        return query.GetById<TEntity, Guid>(id);
     }
 
-    public static Task<T> GetByIdAsync<T>(this IQueryable<T> query, Guid id) where T : IEntity
+    public static Task<TEntity> GetByIdAsync<TEntity>(this IQueryable<TEntity> query, Guid id) where TEntity : IEntity
     {
         return query.FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public static async Task<List<T>> ToListAsyncWithCache<T>(this IQueryable<T> query, string key, TimeSpan duration)
+    public static Task<List<TEntity>> ToListAsyncBy<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate)
     {
-        if (App.MemoryCache.TryGetValue(key, out List<T> result)) return result;
+        return query.Where(predicate).ToListAsync();
+    }
+
+    public static async Task<List<TEntity>> ToListAsyncWithCache<TEntity>(this IQueryable<TEntity> query, string key, TimeSpan duration)
+    {
+        if (App.MemoryCache.TryGetValue(key, out List<TEntity> result)) return result;
         result = await query.ToListAsync();
         App.MemoryCache.Set(key, result, duration);
 
         return result;
     }
 
-    public static async Task<T> FirstOrDefaultAsyncWithCache<T>(this IQueryable<T> query, Expression<Func<T, bool>> predicate, string key, TimeSpan duration)
+    public static async Task<TEntity> FirstOrDefaultAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate, string key, TimeSpan duration)
     {
-        if (App.MemoryCache.TryGetValue(key, out T result)) return result;
+        if (App.MemoryCache.TryGetValue(key, out TEntity result)) return result;
         result = await query.FirstOrDefaultAsync(predicate);
         if (result is not null) App.MemoryCache.Set(key, result, duration);
 
         return result;
     }
 
-    public static Task<T> GetByIdAsyncWithCache<T>(this IQueryable<T> query, Guid id, string key, TimeSpan duration) where T : IEntity
+    public static Task<TEntity> GetByIdAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Guid id, string key, TimeSpan duration) where TEntity : IEntity
     {
         return query.FirstOrDefaultAsyncWithCache(x => x.Id == id, $"{key}-{id}", duration);
     }
 
-    public static IQueryable<T> WhereIf<T>(this IQueryable<T> query, Func<bool> condition, Expression<Func<T, bool>> predicate)
+    public static IQueryable<TEntity> WhereIf<TEntity>(this IQueryable<TEntity> query, Func<bool> condition, Expression<Func<TEntity, bool>> predicate)
     {
         return (condition() ? query.Where(predicate) : query);
     }
     
-    public static IQueryable<T> WhereIf<T>(this IQueryable<T> query, bool condition, Expression<Func<T, bool>> predicate)
+    public static IQueryable<TEntity> WhereIf<TEntity>(this IQueryable<TEntity> query, bool condition, Expression<Func<TEntity, bool>> predicate)
     {
         return condition ? query.Where(predicate) : query;
     }

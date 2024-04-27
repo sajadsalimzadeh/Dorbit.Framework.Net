@@ -22,7 +22,7 @@ public class Job
     {
         public AuditLogType Type { get; set; }
         public DateTime Time { get; set; } = DateTime.UtcNow;
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
         public string UserName { get; set; }
 
         public AuditLog(AuditLogType type, IUserDto userDto)
@@ -30,12 +30,12 @@ public class Job
             Type = type;
             if (userDto is not null)
             {
-                UserId = userDto.Id;
+                UserId = userDto.Id?.ToString();
                 UserName = userDto.Username;
             }
         }
 
-        public AuditLog(AuditLogType type, Guid userId, string userName)
+        public AuditLog(AuditLogType type, string userId, string userName)
         {
             Type = type;
             UserId = userId;

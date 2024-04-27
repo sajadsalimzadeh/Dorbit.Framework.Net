@@ -2,7 +2,7 @@ using System;
 
 namespace Dorbit.Framework.Entities.Abstractions;
 
-public interface ICreationTime : IEntity
+public interface ICreationTime
 {
     DateTime CreationTime { get; set; }
 }

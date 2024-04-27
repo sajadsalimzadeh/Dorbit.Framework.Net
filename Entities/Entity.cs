@@ -3,7 +3,9 @@ using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Entities;
 
-public abstract class Entity : IEntity
+public abstract class Entity<TKey> : IEntity<TKey>
 {
-    public virtual Guid Id { get; set; }
+    public virtual TKey Id { get; set; }
 }
+
+public abstract class Entity : Entity<Guid>;

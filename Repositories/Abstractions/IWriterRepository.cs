@@ -5,16 +5,18 @@ using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Repositories.Abstractions;
 
-public interface IWriterRepository<T> : IReaderRepository<T> where T : class, IEntity
+public interface IWriterRepository<TEntity, TKey> : IReaderRepository<TEntity, TKey> where TEntity : class, IEntity<TKey>
 {
-    Task<T> InsertAsync(T model);
-    Task BulkInsertAsync(List<T> enitites);
-    Task<T> UpdateAsync(T model);
-    Task BulkUpdateAsync(List<T> enitites);
-    Task<T> DeleteAsync(T model);
-    Task BulkDeleteAsync(List<T> enitites);
+    Task<TEntity> InsertAsync(TEntity entity);
+    Task BulkInsertAsync(List<TEntity> entities);
+    Task<TEntity> UpdateAsync(TEntity entity);
+    Task BulkUpdateAsync(List<TEntity> entities);
+    Task<TEntity> DeleteAsync(TEntity entity);
+    Task BulkDeleteAsync(List<TEntity> entities);
 
-    Task<T> InsertAsync<TR>(TR dto);
-    Task<T> UpdateAsync<TR>(Guid id, TR dto);
-    Task<T> DeleteAsync(Guid id);
+    Task<TEntity> InsertAsync<TR>(TR dto);
+    Task<TEntity> UpdateAsync<TR>(TKey id, TR dto);
+    Task<TEntity> DeleteAsync(TKey id);
 }
+
+public interface IWriterRepository<TEntity> : IWriterRepository<TEntity, Guid> where TEntity : class, IEntity<Guid>;

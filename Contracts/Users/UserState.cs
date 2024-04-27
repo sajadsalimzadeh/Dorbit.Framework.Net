@@ -5,7 +5,7 @@ namespace Dorbit.Framework.Contracts.Users;
 
 public class UserState
 {
-    public Guid UserId { get; }
+    public string UserId { get; }
     public string Url { get; internal set; }
     public GeoInfo GeoInfo { get; internal set; }
     public ClientInfo ClientInfo { get; internal set; }
@@ -13,7 +13,7 @@ public class UserState
     public bool IsGeoInfoInquiry { get; internal set; }
 
 
-    internal UserState(Guid userId)
+    internal UserState(string userId)
     {
         UserId = userId;
     }

@@ -2,8 +2,8 @@ using System;
 
 namespace Dorbit.Framework.Entities.Abstractions;
 
-public interface IDeletationAudit : IDeletationTime, ISoftDelete
+public interface IDeletionAudit : IDeletionTime, ISoftDelete
 {
-    Guid? DeleterId { get; set; }
+    string DeleterId { get; set; }
     string DeleterName { get; set; }
 }

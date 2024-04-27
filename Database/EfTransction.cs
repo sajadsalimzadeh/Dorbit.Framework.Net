@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Dorbit.Framework.Database.Abstractions;
 using Dorbit.Framework.Exceptions;
 using Microsoft.EntityFrameworkCore;
@@ -18,15 +19,15 @@ internal class EfPrimaryTransaction : ITransaction
         _transaction = dbContext.Database.BeginTransaction();
     }
 
-    public void Commit()
+    public async Task CommitAsync()
     {
-        _dbContext.SaveChanges();
-        _transaction.Commit();
+        await _dbContext.SaveChangesAsync();
+        await _transaction.CommitAsync();
     }
 
-    public void Rollback()
+    public Task RollbackAsync()
     {
-        _transaction.Rollback();
+        return _transaction.RollbackAsync();
     }
 
     public void Dispose()
@@ -45,12 +46,12 @@ internal class EfSecondaryTransaction : ITransaction
         _transactionContext = transactionContext;
     }
 
-    public void Commit()
+    public Task CommitAsync()
     {
-        _transactionContext.DbContext.SaveChanges();
+        return _transactionContext.DbContext.SaveChangesAsync();
     }
 
-    public void Rollback()
+    public Task RollbackAsync()
     {
         throw new OperationException(Errors.TransactionRollback);
     }
@@ -70,13 +71,14 @@ internal class InMemoryTransaction : ITransaction
         _dbContext = dbContext;
     }
 
-    public void Commit()
+    public Task CommitAsync()
     {
-        _dbContext.SaveChanges();
+        return _dbContext.SaveChangesAsync();
     }
 
-    public void Rollback()
+    public Task RollbackAsync()
     {
+        return Task.CompletedTask;
     }
 
     public void Dispose()

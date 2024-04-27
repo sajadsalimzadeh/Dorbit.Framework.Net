@@ -19,7 +19,7 @@ public abstract class BaseController : ControllerBase
 
     protected IMapper Mapper => ServiceProvider.GetService<IMapper>();
 
-    protected Guid UserId => UserResolver.User?.Id ?? throw new UnauthorizedAccessException();
+    protected T GetUserId<T>() => (T)UserResolver.User?.Id ?? throw new UnauthorizedAccessException();
     protected QueryOptions QueryOptions => new ODataQueryOptions().Parse(Request);
 
     protected CommandResult Succeed()

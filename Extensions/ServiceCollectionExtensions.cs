@@ -128,6 +128,7 @@ public static class ServiceCollectionExtensions
     {
         var basePath = Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "./";
         var environment = AppDomain.CurrentDomain.GetEnvironment()?.ToLower() ?? "development";
+        Console.WriteLine($"Bind Configuration '{typeof(T).Name}' With Environment: {environment}");
         var configurationBuilder = new ConfigurationBuilder()
             .SetBasePath(basePath)
             .AddJsonFile("appsettings.json", false, true)

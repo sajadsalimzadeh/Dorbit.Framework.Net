@@ -3,13 +3,18 @@ using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Entities;
 
-public class FullEntity : CreateEntity, IFullAudit
+public class FullEntity<TKey> : Entity<TKey>, IFullAudit
 {
-    public DateTime? ModificationTime { get; set; }
-    public Guid? ModifierId { get; set; }
-    public string ModifierName { get; set; }
-    public DateTime? DeletionTime { get; set; }
-    public bool IsDeleted { get; set; }
-    public Guid? DeleterId { get; set; }
-    public string DeleterName { get; set; }
+    public virtual DateTime CreationTime { get; set; }
+    public virtual string CreatorId { get; set; }
+    public string CreatorName { get; set; }
+    public virtual DateTime ModificationTime { get; set; }
+    public virtual string ModifierId { get; set; }
+    public virtual string ModifierName { get; set; }
+    public virtual DateTime? DeletionTime { get; set; }
+    public virtual bool IsDeleted { get; set; }
+    public virtual string DeleterId { get; set; }
+    public virtual string DeleterName { get; set; }
 }
+
+public class FullEntity : FullEntity<Guid>;

@@ -37,9 +37,9 @@ public class ExceptionMiddleware : IMiddleware
             };
 
             logger?.Error(ex, ex.Message);
-            if (context.Items.TryGetValue("UserId", out var userId) && userId is Guid userGuid)
+            if (context.Items.TryGetValue("UserId", out var userId))
             {
-                if (await authenticationService.HasAccessAsync(userGuid, "Developer"))
+                if (await authenticationService.HasAccessAsync(userId?.ToString(), "Developer"))
                 {
                     op.Data = ex.Data;
                     op.StackTrace = ex.StackTrace;
@@ -60,7 +60,7 @@ public class ExceptionMiddleware : IMiddleware
                     op.Message = Errors.UnAuthorized.ToString();
                     break;
                 case OperationException operationException:
-                    op.Code = operationException.Code;
+                    op.Code = 400;
                     op.Data = operationException.Data;
                     op.Message = operationException.Message;
                     op.Messages = operationException.Messages;

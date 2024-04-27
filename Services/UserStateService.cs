@@ -13,7 +13,7 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 internal class UserStateService : IUserStateService
 {
-    private readonly Dictionary<Guid, UserState> _states = new();
+    private readonly Dictionary<string, UserState> _states = new();
     private readonly IGeoService _geoService;
     private readonly AppSetting _appSetting;
 
@@ -23,7 +23,7 @@ internal class UserStateService : IUserStateService
         _appSetting = appSetting;
     }
 
-    public UserState GetUserState(Guid userId)
+    public UserState GetUserState(string userId)
     {
         lock (_states)
         {

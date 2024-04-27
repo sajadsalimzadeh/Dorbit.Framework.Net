@@ -72,7 +72,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         if (user is null) throw new AuthenticationException();
 
         var userStateService = sp.GetService<IUserStateService>();
-        var state = userStateService.GetUserState(user.Id);
+        var state = userStateService.GetUserState(user.Id?.ToString());
         state.Url = context.HttpContext.Request.GetDisplayUrl();
         state.LastRequestTime = DateTime.UtcNow;
         if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var agent))
@@ -94,7 +94,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
             }
 
             var authenticationService = sp.GetService<IAuthService>();
-            if (user.Username != "admin" && !await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
+            if (user.Username != "admin" && !await authenticationService.HasAccessAsync(user.Id?.ToString(), policies.ToArray()))
             {
                 throw new UnauthorizedAccessException("AccessDenied");
             }

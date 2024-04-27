@@ -6,8 +6,8 @@ namespace Dorbit.Framework.Contracts.Loggers;
 public class LogRequest
 {
     public string Module { get; set; }
-    public IEntity NewObj { get; set; }
+    public object OldObj { get; set; }
+    public object NewObj { get; set; }
     public LogAction Action { get; set; }
-    public IEntity OldObj { get; set; }
     public IUserDto User { get; set; }
 }

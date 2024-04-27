@@ -3,8 +3,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Dorbit.Framework.Entities.Abstractions;
 
-public interface IEntity
+public interface IEntity<TKey>
 {
     [Key]
-    public Guid Id { get; set; }
+    public TKey Id { get; set; }
+}
+
+public interface IEntity : IEntity<Guid>
+{
 }

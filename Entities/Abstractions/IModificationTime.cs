@@ -2,7 +2,7 @@ using System;
 
 namespace Dorbit.Framework.Entities.Abstractions;
 
-public interface IModificationTime : IEntity
+public interface IModificationTime
 {
-    DateTime? ModificationTime { get; set; }
+    DateTime ModificationTime { get; set; }
 }

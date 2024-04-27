@@ -1,11 +1,15 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Entities;
 
-public class CreateEntity : Entity, ICreationAudit
+public class CreateEntity<TKey> : Entity<TKey>, ICreationAudit
 {
-    public DateTime CreationTime { get; set; }
-    public Guid? CreatorId { get; set; }
-    public string CreatorName { get; set; }
+    public virtual DateTime CreationTime { get; set; } = DateTime.Now;
+    public virtual string CreatorId { get; set; }
+    [MaxLength(64)]
+    public virtual string CreatorName { get; set; }
 }
+
+public class CreateEntity : CreateEntity<Guid>;

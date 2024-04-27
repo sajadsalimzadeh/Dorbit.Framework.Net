@@ -61,15 +61,15 @@ internal class LoggerHostInterval : BaseHostInterval
                 }
 
                 if (diff.Count == 0) continue;
-                var entity = new EntityLog()
+                var entity = new EntityLog
                 {
                     Module = request.Module,
                     EntityType = request.NewObj.GetType().Name,
-                    ReferenceId = request.NewObj.Id.ToString(),
+                    ReferenceId = type.GetProperty("Id")?.GetValue(request.NewObj)?.ToString(),
                     Data = JsonConverterWrapper.SerializeObject(diff, 1),
                     Action = request.Action,
                     CreationTime = DateTime.UtcNow,
-                    CreatorId = request.User?.Id,
+                    CreatorId = request.User?.Id?.ToString(),
                     CreatorName = request.User?.Username,
                 };
                 logs.Add(entity);

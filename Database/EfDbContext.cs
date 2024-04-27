@@ -116,8 +116,8 @@ public abstract class EfDbContext : DbContext, IDbContext
             if (typeof(IModificationAudit).IsAssignableFrom(type))
                 entity.Property(nameof(IModificationAudit.ModifierName)).HasMaxLength(256);
 
-            if (typeof(IDeletationAudit).IsAssignableFrom(type))
-                entity.Property(nameof(IDeletationAudit.DeleterName)).HasMaxLength(256);
+            if (typeof(IDeletionAudit).IsAssignableFrom(type))
+                entity.Property(nameof(IDeletionAudit.DeleterName)).HasMaxLength(256);
 
             if (typeof(ITenantAudit).IsAssignableFrom(type))
                 entity.Property(nameof(ITenantAudit.TenantName)).HasMaxLength(256);
@@ -136,29 +136,30 @@ public abstract class EfDbContext : DbContext, IDbContext
         return _efTransactionContext.BeginTransaction();
     }
 
-    public IQueryable<T> DbSet<T>() where T : class, IEntity
+    public IQueryable<TEntity> DbSet<TEntity, TKey>(bool? excludeDeleted = null) where TEntity : class, IEntity<TKey>
     {
-        return DbSet<T>(AutoExcludeDeleted);
-    }
+        excludeDeleted ??= AutoExcludeDeleted;
+        var set = Set<TEntity>().AsNoTracking();
+        if (!excludeDeleted.Value) return set;
 
-    public IQueryable<T> DbSet<T>(bool excludeDeleted) where T : class, IEntity
-    {
-        var set = Set<T>().AsNoTracking();
-        if (!excludeDeleted) return set;
-
-        if (typeof(ISoftDelete).IsAssignableFrom(typeof(T)))
+        if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
         {
-            set = set.Cast<ISoftDelete>().Where(x => !x.IsDeleted).Cast<T>().AsQueryable();
+            set = set.Cast<ISoftDelete>().Where(x => !x.IsDeleted).Cast<TEntity>().AsQueryable();
         }
 
         return set;
     }
 
-    private void InsertEntityValidator<T>(T model) where T : class, IEntity
+    public IQueryable<TEntity> DbSet<TEntity>(bool? excludeDeleted = null) where TEntity : class, IEntity<Guid>
+    {
+        return DbSet<TEntity, Guid>(excludeDeleted);
+    }
+
+    private void InsertEntityValidator<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>
     {
         if (GetProvider() == DatabaseProviderType.InMemory)
         {
-            var type = typeof(T);
+            var type = typeof(TEntity);
             foreach (var property in type.GetProperties())
             {
                 var sequenceAttribute = property.GetCustomAttribute<SequenceAttribute>();
@@ -175,10 +176,11 @@ public abstract class EfDbContext : DbContext, IDbContext
         if (model is ICreationValidator creationValidator) creationValidator.ValidateOnCreate(e, ServiceProvider);
         e.ThrowIfHasError();
         if (model is ICreationTime creationTime) creationTime.CreationTime = DateTime.UtcNow;
+        if (model is IModificationTime modificationTime) modificationTime.ModificationTime = DateTime.UtcNow;
         if (model is ICreationAudit creationAudit)
         {
             var user = UserResolver?.User;
-            creationAudit.CreatorId = user?.Id;
+            creationAudit.CreatorId = user?.Id?.ToString();
             creationAudit.CreatorName = user?.Username;
         }
 
@@ -209,19 +211,27 @@ public abstract class EfDbContext : DbContext, IDbContext
             historical.HistoryId = Guid.NewGuid();
         }
 
-        if (model.Id == Guid.Empty) model.Id = Guid.NewGuid();
+        if (model is IEntity<Guid> guidEntity)
+        {
+            if (guidEntity.Id == Guid.Empty) guidEntity.Id = Guid.NewGuid();
+        }
     }
 
-    public async Task<T> InsertEntityAsync<T>(T model) where T : class, IEntity
+    public async Task<TEntity> InsertEntityAsync<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>
     {
-        InsertEntityValidator(model);
+        InsertEntityValidator<TEntity, TKey>(model);
         await AddAsync(model, CancellationToken);
         await SaveIfNotInTransactionAsync();
         if (model is ICreationLogging logging) Log(logging, LogAction.Insert);
         return model;
     }
 
-    private void UpdateEntityValidator<T>(T model) where T : class, IEntity
+    public Task<TEntity> InsertEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>
+    {
+        return InsertEntityAsync<TEntity, Guid>(model);
+    }
+
+    private void UpdateEntityValidator<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>
     {
         if (model is IReadonly) throw new OperationException(Errors.EntityIsReadonly);
 
@@ -235,13 +245,13 @@ public abstract class EfDbContext : DbContext, IDbContext
         if (model is IModificationAudit modificationAudit)
         {
             var user = UserResolver?.User;
-            modificationAudit.ModifierId = user?.Id;
+            modificationAudit.ModifierId = user?.Id?.ToString();
             modificationAudit.ModifierName = user?.Username;
         }
 
         if (model is not IHistorical)
         {
-            base.Update(model);
+            Entry(model).State = EntityState.Modified;
             var properties = model.GetType().GetProperties();
             foreach (var property in properties)
             {
@@ -259,14 +269,14 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
     }
 
-    public async Task<T> UpdateEntityAsync<T>(T model) where T : class, IEntity
+    public async Task<TEntity> UpdateEntityAsync<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>
     {
-        UpdateEntityValidator(model);
+        UpdateEntityValidator<TEntity, TKey>(model);
 
-        T oldModel = default;
-        if (model is IHistorical historical)
+        TEntity oldModel = default;
+        if (model is IHistorical)
         {
-            oldModel = DbSet<T>().FirstOrDefault(x => x.Id == model.Id);
+            oldModel = DbSet<TEntity, TKey>().GetById(model.Id);
             using var transaction = BeginTransaction();
             if (oldModel is IHistorical oldHistoricalModel)
             {
@@ -281,16 +291,21 @@ public abstract class EfDbContext : DbContext, IDbContext
                 Entry(creationAudit).Property(x => x.CreatorName).IsModified = false;
             }
 
-            await InsertEntityAsync(historical);
-            transaction.Commit();
+            await InsertEntityAsync<TEntity, TKey>(model);
+            await transaction.CommitAsync();
         }
 
         await SaveIfNotInTransactionAsync();
-        if (model is ILogging logging) Log(logging, LogAction.Update, oldModel);
+        if (model is ILogging) Log(model, LogAction.Update, oldModel);
         return model;
     }
 
-    private void DeleteEntityValidator<T>(T model) where T : class, IEntity
+    public Task<TEntity> UpdateEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>
+    {
+        return UpdateEntityAsync<TEntity, Guid>(model);
+    }
+
+    private void DeleteEntityValidator<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>
     {
         if (model is IUnDeletable) throw new OperationException(Errors.EntityIsUnDeletable);
 
@@ -301,17 +316,17 @@ public abstract class EfDbContext : DbContext, IDbContext
 
         if (model is ISoftDelete)
         {
-            if (DbSet<T>(false).GetById(model.Id) is ISoftDelete softDelete)
+            if (DbSet<TEntity, TKey>(false).GetById(model.Id) is ISoftDelete softDelete)
             {
                 if (!softDelete.IsDeleted)
                 {
                     softDelete.IsDeleted = true;
 
-                    if (softDelete is IDeletationTime deletionTime) deletionTime.DeletionTime = DateTime.UtcNow;
-                    if (softDelete is IDeletationAudit deletionAudit)
+                    if (softDelete is IDeletionTime deletionTime) deletionTime.DeletionTime = DateTime.UtcNow;
+                    if (softDelete is IDeletionAudit deletionAudit)
                     {
                         var user = UserResolver?.User;
-                        deletionAudit.DeleterId = user?.Id;
+                        deletionAudit.DeleterId = user?.Id?.ToString();
                         deletionAudit.DeleterName = user?.Username;
                     }
 
@@ -333,12 +348,17 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
     }
 
-    public async Task<T> DeleteEntityAsync<T>(T model) where T : class, IEntity
+    public async Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>
     {
-        DeleteEntityValidator(model);
+        DeleteEntityValidator<TEntity, TKey>(model);
         await SaveIfNotInTransactionAsync();
         if (model is ILogging logging) Log(logging, LogAction.Delete);
         return model;
+    }
+
+    public Task<TEntity> DeleteEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>
+    {
+        return DeleteEntityAsync<TEntity, Guid>(model);
     }
 
     private async Task SaveIfNotInTransactionAsync()
@@ -349,7 +369,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
     }
 
-    private void Log(IEntity newObj, LogAction action, IEntity oldObj = null)
+    private void Log<TKey>(IEntity<TKey> newObj, LogAction action, IEntity<TKey> oldObj = null)
     {
         LoggerHostInterval.Add(new LogRequest()
         {
@@ -366,11 +386,13 @@ public abstract class EfDbContext : DbContext, IDbContext
         return SaveChangesAsync(CancellationToken).Result;
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            return base.SaveChangesAsync(cancellationToken);
+            var result = await base.SaveChangesAsync(cancellationToken);
+            ChangeTracker.Clear();
+            return result;
         }
         catch (Exception ex)
         {
@@ -385,13 +407,13 @@ public abstract class EfDbContext : DbContext, IDbContext
         {
             return Database.MigrateAsync(CancellationToken);
         }
-        
+
         return Task.CompletedTask;
     }
 
-    public async Task<List<T>> QueryAsync<T>(string query, Dictionary<string, object> parameters)
+    public async Task<List<TEntity>> QueryAsync<TEntity>(string query, Dictionary<string, object> parameters)
     {
-        var result = new List<T>();
+        var result = new List<TEntity>();
         await using var command = Database.GetDbConnection().CreateCommand();
         command.CommandText = query;
         foreach (var item in parameters)
@@ -409,12 +431,12 @@ public abstract class EfDbContext : DbContext, IDbContext
         command.CommandType = CommandType.Text;
         await Database.OpenConnectionAsync(CancellationToken);
         await using var reader = await command.ExecuteReaderAsync(CancellationToken);
-        var properties = typeof(T).GetProperties();
+        var properties = typeof(TEntity).GetProperties();
         while (await reader.ReadAsync(CancellationToken))
         {
             var columns = new List<string>();
             for (var i = 0; i < reader.FieldCount; i++) columns.Add(reader.GetName(i));
-            var transaction = Activator.CreateInstance<T>();
+            var transaction = Activator.CreateInstance<TEntity>();
             foreach (var property in properties)
             {
                 if (!columns.Contains(property.Name)) continue;
@@ -429,12 +451,12 @@ public abstract class EfDbContext : DbContext, IDbContext
         return result;
     }
 
-    public async Task BulkInsertEntityAsync<T>(List<T> items) where T : class, IEntity
+    public async Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>
     {
         using var transaction = BeginTransaction();
         foreach (var item in items)
         {
-            InsertEntityValidator(item);
+            InsertEntityValidator<TEntity, TKey>(item);
         }
 
         if (GetProvider() == DatabaseProviderType.InMemory)
@@ -446,32 +468,57 @@ public abstract class EfDbContext : DbContext, IDbContext
             await this.BulkInsertAsync(items, cancellationToken: CancellationToken);
         }
 
-        transaction.Commit();
+        await transaction.CommitAsync();
     }
 
-    public async Task BulkUpdateEntityAsync<T>(List<T> items) where T : class, IEntity
+    public Task BulkInsertEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>
+    {
+        return BulkInsertEntityAsync<TEntity, Guid>(items);
+    }
+
+
+    public async Task BulkUpdateEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>
     {
         using var transaction = BeginTransaction();
         foreach (var item in items)
         {
-            UpdateEntityValidator(item);
+            UpdateEntityValidator<TEntity, TKey>(item);
         }
 
         await this.BulkUpdateAsync(items, cancellationToken: CancellationToken);
 
-        transaction.Commit();
+        await transaction.CommitAsync();
     }
 
-    public async Task BulkDeleteEntityAsync<T>(List<T> items) where T : class, IEntity
+    public Task BulkUpdateEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>
+    {
+        return BulkUpdateEntityAsync<TEntity, Guid>(items);
+    }
+
+    public async Task BulkDeleteEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>
     {
         using var transaction = BeginTransaction();
+        var isSoftDelete = false;
         foreach (var item in items)
         {
-            DeleteEntityValidator(item);
+            if (item is ISoftDelete) isSoftDelete = true;
+            DeleteEntityValidator<TEntity, TKey>(item);
         }
 
-        await this.BulkDeleteAsync(items, cancellationToken: CancellationToken);
+        if (isSoftDelete)
+        {
+            await this.BulkUpdateAsync(items, cancellationToken: CancellationToken);
+        }
+        else
+        {
+            await this.BulkDeleteAsync(items, cancellationToken: CancellationToken);
+        }
 
-        transaction.Commit();
+        await transaction.CommitAsync();
+    }
+
+    public Task BulkDeleteEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>
+    {
+        return BulkDeleteEntityAsync<TEntity, Guid>(items);
     }
 }

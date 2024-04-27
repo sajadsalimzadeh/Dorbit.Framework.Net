@@ -12,22 +12,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dorbit.Framework.Repositories;
 
-public class BaseReadRepository<T> : IReaderRepository<T> where T : class, IEntity
+public class BaseReadRepository<TEntity, TKey>(IDbContext dbContext) : IReaderRepository<TEntity, TKey>
+    where TEntity : class, IEntity<TKey>
 {
-    private readonly IDbContext _dbContext;
-    public IDbContext DbContext => _dbContext;
+    public IDbContext DbContext => dbContext;
 
-    protected IServiceProvider ServiceProvider => _dbContext.ServiceProvider;
+    protected IServiceProvider ServiceProvider => dbContext.ServiceProvider;
 
-    public BaseReadRepository(IDbContext dbContext)
+    public virtual IQueryable<TEntity> Set(bool excludeDeleted = true)
     {
-        _dbContext = dbContext;
-    }
-
-
-    public virtual IQueryable<T> Set(bool excludeDeleted = true)
-    {
-        return _dbContext.DbSet<T>(excludeDeleted);
+        return dbContext.DbSet<TEntity, TKey>(excludeDeleted);
     }
 
     public virtual Task<int> CountAsync()
@@ -35,43 +29,55 @@ public class BaseReadRepository<T> : IReaderRepository<T> where T : class, IEnti
         return Set().CountAsync();
     }
 
-    public virtual Task<int> CountAsync(Expression<Func<T, bool>> predicate)
+    public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
     {
         return Set().CountAsync(predicate);
     }
 
-    public virtual Task<List<T>> GetAllAsync()
+    public virtual Task<List<TEntity>> GetAllAsync()
     {
         return Set().ToListAsync();
     }
 
-    public virtual Task<T> GetByIdAsync(Guid id)
+    public virtual Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
     {
-        return Set().FirstOrDefaultAsync(x => x.Id == id);
+        return Set().Where(predicate).ToListAsync();
     }
 
-    public Task<T> FirstOrDefaultAsync()
+    public virtual Task<TEntity> GetByIdAsync(TKey id)
+    {
+        return Set().FirstOrDefaultAsync(x => x.Id.Equals(id));
+    }
+
+    public Task<TEntity> FirstOrDefaultAsync()
     {
         return Set().FirstOrDefaultAsync();
     }
 
-    public Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+    public Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
     {
         return Set().FirstOrDefaultAsync(predicate);
     }
 
-    public Task<T> LastOrDefaultAsync()
+    public Task<TEntity> LastOrDefaultAsync()
     {
         return Set().OrderByDescending(x => x.Id).FirstOrDefaultAsync();
     }
 
-    public Task<T> LastOrDefaultAsync(Expression<Func<T, bool>> predicate)
+    public Task<TEntity> LastOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
     {
         return Set().OrderByDescending(x => x.Id).FirstOrDefaultAsync(predicate);
     }
 
-    public virtual Task<PagedListResult<T>> SelectAsync(QueryOptions queryOptions)
+    public virtual Task<PagedListResult<TEntity>> SelectAsync(QueryOptions queryOptions)
     {
         return Set().ApplyToPagedListAsync(queryOptions);
+    }
+}
+
+public class BaseReadRepository<TEntity> : BaseReadRepository<TEntity, Guid> where TEntity : class, IEntity<Guid>
+{
+    public BaseReadRepository(IDbContext dbContext) : base(dbContext)
+    {
     }
 }

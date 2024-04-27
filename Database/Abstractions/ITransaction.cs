@@ -1,9 +1,10 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Dorbit.Framework.Database.Abstractions;
 
 public interface ITransaction : IDisposable
 {
-    void Commit();
-    void Rollback();
+    Task CommitAsync();
+    Task RollbackAsync();
 }

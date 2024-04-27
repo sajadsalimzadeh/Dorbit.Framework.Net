@@ -11,15 +11,28 @@ public interface IDbContext
     IServiceProvider ServiceProvider { get; }
     bool AutoExcludeDeleted { get; set; }
 
-    IQueryable<T> DbSet<T>() where T : class, IEntity;
-    IQueryable<T> DbSet<T>(bool excludeDeleted) where T : class, IEntity;
-    Task<T> InsertEntityAsync<T>(T model) where T : class, IEntity;
-    Task<T> UpdateEntityAsync<T>(T model) where T : class, IEntity;
-    Task<T> DeleteEntityAsync<T>(T model) where T : class, IEntity;
-    Task BulkInsertEntityAsync<T>(List<T> items) where T : class, IEntity;
-    Task BulkUpdateEntityAsync<T>(List<T> items) where T : class, IEntity;
-    Task BulkDeleteEntityAsync<T>(List<T> items) where T : class, IEntity;
-    Task<List<T>> QueryAsync<T>(string query, Dictionary<string, object> parameters);
+    IQueryable<TEntity> DbSet<TEntity, TKey>(bool? excludeDeleted = null) where TEntity : class, IEntity<TKey>;
+    IQueryable<TEntity> DbSet<TEntity>(bool? excludeDeleted = null) where TEntity : class, IEntity<Guid>;
+    
+    Task<TEntity> InsertEntityAsync<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>;
+    Task<TEntity> InsertEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>;
+    
+    Task<TEntity> UpdateEntityAsync<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>;
+    Task<TEntity> UpdateEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>;
+    
+    Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>;
+    Task<TEntity> DeleteEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>;
+    
+    Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>;
+    Task BulkInsertEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>;
+    
+    Task BulkUpdateEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>;
+    Task BulkUpdateEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>;
+    
+    Task BulkDeleteEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>;
+    Task BulkDeleteEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>;
+    
+    Task<List<TEntity>> QueryAsync<TEntity>(string query, Dictionary<string, object> parameters);
     ITransaction BeginTransaction();
     int SaveChanges();
     Task MigrateAsync();

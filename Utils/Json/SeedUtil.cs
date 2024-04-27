@@ -26,6 +26,6 @@ public static class SeedUtil
             await repository.InsertAsync(entity);
         }
 
-        transaction.Commit();
+        transaction.CommitAsync();
     }
 }
