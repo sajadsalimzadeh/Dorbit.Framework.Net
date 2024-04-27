@@ -67,6 +67,6 @@ public class MessageManager
             }
         }
 
-        throw new OperationException(Errors.NoMessageProviderFound);
+        throw new OperationException(Errors.SendMessageFailed);
     }
 }

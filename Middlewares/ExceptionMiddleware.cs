@@ -53,11 +53,11 @@ public class ExceptionMiddleware : IMiddleware
             {
                 case UnauthorizedAccessException:
                     op.Code = StatusCodes.Status403Forbidden;
-                    op.Message = Errors.AccessDenied.ToString();
+                    op.Message = Errors.UnAuthorize.ToString();
                     break;
                 case AuthenticationException:
                     op.Code = StatusCodes.Status401Unauthorized;
-                    op.Message = Errors.UnAuthorized.ToString();
+                    op.Message = Errors.AuthenticationFailed.ToString();
                     break;
                 case OperationException operationException:
                     op.Code = 400;

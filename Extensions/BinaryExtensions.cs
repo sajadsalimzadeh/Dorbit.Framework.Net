@@ -16,4 +16,12 @@ public static class BinaryExtensions
     {
         return condition ? data.AddChecksum(iv, ev) : data;
     }
+
+    public static byte[] Trim(this byte[] data)
+    {
+        var byteList = data.ToList();
+        var nullIndex = byteList.IndexOf(0);
+        if (nullIndex > -1) return data.Take(nullIndex).ToArray();
+        return data;
+    }
 }

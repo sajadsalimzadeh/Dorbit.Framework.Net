@@ -22,7 +22,7 @@ public class CaptchaService
 
     public KeyValuePair<string, string> Generate(CaptchaGenerateModel dto)
     {
-        if (dto.Width > 500 || dto.Height > 500) throw new OperationException(Errors.CaptchaSizeIsTooLarg);
+        if (dto.Width > 500 || dto.Height > 500) throw new OperationException(Errors.CaptchaSizeIsTooLarge);
 
         if (dto.Dificulty == CaptchaDificulty.None) dto.Dificulty = _appSetting.Captcha.Difficulty;
         if (dto.Length == 0) dto.Length = _appSetting.Captcha.Length;

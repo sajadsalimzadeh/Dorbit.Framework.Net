@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security.Principal;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -38,7 +39,7 @@ public static class FrameworkInstaller
             configuration.DependencyRegisterNamespaces.Add("Dorbit");
         }
 
-        services.RegisterServicesByAssembly(configuration.DependencyRegisterNamespaces.ToArray());
+        services.RegisterServicesByAssembly(configuration.EntryAssembly, configuration.DependencyRegisterNamespaces.ToArray());
 
         services.AddScoped<IPrincipal>(sp => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
 
@@ -123,6 +124,7 @@ public static class FrameworkInstaller
 
     public class Configuration
     {
+        public required Assembly EntryAssembly { get; init; }
         public required List<string> DependencyRegisterNamespaces { get; init; }
         public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; set; }
     }
