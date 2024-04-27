@@ -20,6 +20,7 @@ public abstract class BaseController : ControllerBase
     protected IMapper Mapper => ServiceProvider.GetService<IMapper>();
 
     protected T GetUserId<T>() => (T)UserResolver.User?.Id ?? throw new UnauthorizedAccessException();
+    protected Guid GetUserId() => GetUserId<Guid>();
     protected QueryOptions QueryOptions => new ODataQueryOptions().Parse(Request);
 
     protected CommandResult Succeed()
@@ -34,7 +35,4 @@ public abstract class BaseController : ControllerBase
 }
 
 [Route("api/[controller]")]
-public class BaseApiController : BaseController
-{
-    
-} 
+public class BaseApiController : BaseController;

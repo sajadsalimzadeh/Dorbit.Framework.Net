@@ -17,4 +17,4 @@ public class FullEntity<TKey> : Entity<TKey>, IFullAudit
     public virtual string DeleterName { get; set; }
 }
 
-public class FullEntity : FullEntity<Guid>;
+public class FullEntity : FullEntity<Guid>, IEntity;

@@ -10,13 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Controllers;
 
-public abstract class CrudController : BaseController
-{
-}
+public abstract class CrudController : BaseController;
 
-public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudController where TEntity : class, IEntity where TEdit : IEntity
+public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudController where TEntity : class, IEntity<TKey> where TEdit : IEntity<TKey>
 {
-    protected IBaseRepository<TEntity> Repository => ServiceProvider.GetService<IBaseRepository<TEntity>>();
+    protected IBaseRepository<TEntity, TKey> Repository => ServiceProvider.GetService<IBaseRepository<TEntity, TKey>>();
 
     [HttpGet]
     public virtual async Task<PagedListResult<TGet>> SelectAsync()
@@ -24,8 +22,8 @@ public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudControlle
         return (await Repository.Set().ApplyToPagedListAsync(QueryOptions)).Select(x => Mapper.Map<TGet>(x));
     }
 
-    [HttpGet("{id:guid}")]
-    public virtual Task<QueryResult<TGet>> GetById(Guid id)
+    [HttpGet("{id}")]
+    public virtual Task<QueryResult<TGet>> GetById(TKey id)
     {
         return Repository.GetByIdAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
@@ -36,28 +34,28 @@ public abstract class CrudController<TEntity, TGet, TAdd, TEdit> : CrudControlle
         return Repository.InsertAsync(request.MapTo<TEntity>()).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
-    [HttpPatch("{id:guid}")]
-    public virtual Task<QueryResult<TGet>> EditAsync(Guid id, [FromBody] TEdit request)
+    [HttpPatch("{id}")]
+    public virtual Task<QueryResult<TGet>> EditAsync(TKey id, [FromBody] TEdit request)
     {
         request.Id = id;
         return Repository.UpdateAsync(id, request).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
-    [HttpDelete("{id:guid}")]
-    public virtual Task<QueryResult<TGet>> Remove(Guid id)
+    [HttpDelete("{id}")]
+    public virtual Task<QueryResult<TGet>> Remove(TKey id)
     {
         return Repository.DeleteAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 }
 
-public abstract class CrudController<TEntity> : CrudController<TEntity, TEntity, TEntity, TEntity> where TEntity : class, IEntity
-{
-}
+public abstract class CrudController<TEntity> : CrudController<TEntity, Guid, TEntity, TEntity, TEntity> 
+    where TEntity : class, IEntity<Guid>;
 
-public abstract class CrudController<TEntity, TGet> : CrudController<TEntity, TGet, TEntity, TEntity> where TEntity : class, IEntity
-{
-}
+public abstract class CrudController<TEntity, TKey> : CrudController<TEntity, TKey, TEntity, TEntity, TEntity> 
+    where TEntity : class, IEntity<TKey>;
 
-public abstract class CrudController<TEntity, TGet, TAdd> : CrudController<TEntity, TGet, TAdd, TEntity> where TEntity : class, IEntity
-{
-}
+public abstract class CrudController<TEntity, TKey, TGet> : CrudController<TEntity, TKey, TGet, TEntity, TEntity>
+    where TEntity : class, IEntity<TKey>;
+
+public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController<TEntity, TKey, TGet, TAdd, TEntity> 
+    where TEntity : class, IEntity<TKey>;
