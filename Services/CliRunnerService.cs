@@ -32,39 +32,40 @@ public class CliRunnerService
         var menu = new ConsoleMenu(Array.Empty<string>(), level: 0);
         foreach (var command in commands.OrderBy(x => x.Order))
         {
-            menu.Add(command.Message, async () => {
+            menu.Add(command.Message, () => {
                 var context = new CommandContextCli();
                 var parameters = command.GetParameters(context);
                 foreach (var parameter in parameters)
                 {
-                    Console.Write(parameter.Message);
+                    context.Log(parameter.Message);
                     if (parameter.DefaultValue is not null)
                     {
-                        Console.Write($" (Default: {parameter.DefaultValue})");
+                        context.Log($" (Default: {parameter.DefaultValue})");
                     }
 
-                    Console.Write(":");
+                    context.Log(":");
                     var input = Console.ReadLine();
                     context.Arguments.Add(parameter.Key, string.IsNullOrEmpty(input) ? parameter.DefaultValue : input);
                 }
 
-                var subCommands = command.GetSubCommands(context);
+                var subCommands = command.GetSubCommands(context).ToList();
                 if (subCommands.Count() > 0)
                 {
-                    await CreateMenus(app, subCommands.ToList(), false);
+                    CreateMenus(app, subCommands, false).Wait();
                 }
 
                 try
                 {
-                    await command.InvokeAsync(context);
+                    command.InvokeAsync(context).Wait();
                 }
                 catch (Exception ex)
                 {
                     context.Error(ex.Message);
                 }
 
-                Console.Write("\nEnter any key to continue ...");
+                context.Log("\nEnter any key to continue ...");
                 Console.ReadLine();
+                command.AfterEnterAsync(context).Wait();
             });
         }
 

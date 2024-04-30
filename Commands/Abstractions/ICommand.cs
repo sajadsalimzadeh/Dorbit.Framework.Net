@@ -12,4 +12,5 @@ public interface ICommand
     IEnumerable<CommandParameter> GetParameters(ICommandContext context);
     IEnumerable<ICommand> GetSubCommands(ICommandContext context);
     Task InvokeAsync(ICommandContext context);
+    Task AfterEnterAsync(ICommandContext context);
 }
