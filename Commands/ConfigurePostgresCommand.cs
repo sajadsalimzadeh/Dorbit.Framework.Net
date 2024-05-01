@@ -50,6 +50,7 @@ public class ConfigurePostgresCommand : Command
         File.WriteAllText(appSettingPath, appSettings.ToString(Formatting.Indented));
         
 
+        context.Log($"\n\"{appSettingPath}\" changed.");
         context.Log("\nTo apply changes, you need to run the program again\n");
         
         return Task.CompletedTask;
