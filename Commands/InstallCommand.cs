@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
+using Dorbit.Framework.Utils;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Commands;
@@ -25,12 +26,26 @@ public class InstallCommand : Command
 
     public override async Task InvokeAsync(ICommandContext context)
     {
-        var migrationCommandAll = _serviceProvider.GetService<MigrationCommandAll>();
-        await migrationCommandAll.InvokeAsync(context);
-
         var assemblyName = Assembly.GetEntryAssembly()?.GetName().Name;
         var entryFilename = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, assemblyName + ".exe");
 
+        var stopProcess = Process.Start(new ProcessStartInfo("sc", $"stop {assemblyName}")
+        {
+            Verb = "runas",
+            RedirectStandardInput = false,
+        });
+        await stopProcess?.WaitForExitAsync()!;
+        
+        var deleteProcess = Process.Start(new ProcessStartInfo("sc", $"delete {assemblyName}")
+        {
+            Verb = "runas",
+            RedirectStandardInput = false,
+        });
+        await deleteProcess?.WaitForExitAsync()!;
+        
+        var migrationCommandAll = _serviceProvider.GetService<MigrationCommandAll>();
+        await migrationCommandAll.InvokeAsync(context);
+        
         var createProcess = Process.Start(new ProcessStartInfo("sc", $"create {assemblyName} binpath= \"{entryFilename} run\" start= auto")
         {
             Verb = "runas",
@@ -46,13 +61,5 @@ public class InstallCommand : Command
         });
         context.Log($"\n==========Starting Service==========\n");
         await startProcess?.WaitForExitAsync()!;
-
-        context.Log("\nRestart need for changes affected\n");
-    }
-
-    public override Task AfterEnterAsync(ICommandContext context)
-    {
-        Environment.Exit(0);
-        return base.AfterEnterAsync(context);
     }
 }

@@ -49,6 +49,15 @@ public class ConfigurePostgresCommand : Command
         appSettings["PostgresConnection"] = JToken.FromObject(connectionString.GetEncryptedValue());
         File.WriteAllText(appSettingPath, appSettings.ToString(Formatting.Indented));
         
+
+        context.Log("\nTo apply changes, you need to run the program again\n");
+        
         return Task.CompletedTask;
+    }
+
+    public override Task AfterEnterAsync(ICommandContext context)
+    {
+        Environment.Exit(0);
+        return base.AfterEnterAsync(context);
     }
 }
