@@ -126,11 +126,10 @@ public static class ServiceCollectionExtensions
 
     public static T BindConfiguration<T>(this IServiceCollection services, params string[] additionalEnvironments) where T : class
     {
-        var basePath = Directory.GetParent(AppContext.BaseDirectory)?.FullName ?? "./";
         var environment = AppDomain.CurrentDomain.GetEnvironment()?.ToLower() ?? "development";
-        Console.WriteLine($"Bind Configuration '{typeof(T).Name}' With Environment: {environment}");
+        Console.WriteLine($"Bind Configuration '{typeof(T).Name}' With Environment: {environment} {Path.Combine(AppDomain.CurrentDomain.BaseDirectory)}");
         var configurationBuilder = new ConfigurationBuilder()
-            .SetBasePath(basePath)
+            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
             .AddJsonFile("appsettings.json", false, true)
             .AddJsonFile($"appsettings.{environment}.json", true, true);
 
