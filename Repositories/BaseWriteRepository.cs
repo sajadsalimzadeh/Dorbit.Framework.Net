@@ -65,20 +65,20 @@ public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TK
         return _dbContext.BulkDeleteEntityAsync<TEntity, TKey>(entities);
     }
 
-    public virtual Task<TEntity> SaveAsync(TEntity model)
+    public virtual Task<TEntity> SaveAsync(TEntity entity)
     {
-        if (model.Id is Guid guid)
+        if (entity.Id is Guid guid)
         {
-            return guid != Guid.Empty ? UpdateAsync(model) : InsertAsync(model);
+            return guid != Guid.Empty ? UpdateAsync(entity) : InsertAsync(entity);
         }
         
-        if (model.Id.IsNumericType())
+        if (entity.Id.IsNumericType())
         {
-            var longValue = Convert.ToInt64(model.Id);
-            return longValue > 0 ? UpdateAsync(model) : InsertAsync(model);
+            var longValue = Convert.ToInt64(entity.Id);
+            return longValue > 0 ? UpdateAsync(entity) : InsertAsync(entity);
         }
 
-        return InsertAsync(model);
+        return InsertAsync(entity);
     }
 
     //================== Extended Methods ==================\\
@@ -100,12 +100,22 @@ public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TK
 
     public async Task<TEntity> SaveAsync<TR>(TKey id, TR dto)
     {
-        return await SaveAsync(dto.MapTo(await GetByIdAsync(id) ?? Activator.CreateInstance<TEntity>()));
+        return await SaveAsync(await GetByIdAsync(id), dto);
     }
 
-    public async Task<TEntity> SaveAsync<TR>(TEntity model, TR dto)
+    public async Task<TEntity> SaveAsync<TR>(TEntity entity, TR dto)
     {
-        return await SaveAsync(dto.MapTo(model ?? Activator.CreateInstance<TEntity>()));
+        if (entity is not null)
+        {
+            var id = entity.Id;
+            entity = dto.MapTo(Activator.CreateInstance<TEntity>());
+            entity.Id = id;
+        }
+        else
+        {
+            entity = dto.MapTo(Activator.CreateInstance<TEntity>());
+        }
+        return await SaveAsync(entity);
     }
 }
 
