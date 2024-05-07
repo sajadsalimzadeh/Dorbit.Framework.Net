@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -126,7 +127,7 @@ public static class ServiceCollectionExtensions
 
     public static T BindConfiguration<T>(this IServiceCollection services, params string[] additionalEnvironments) where T : class
     {
-        var environment = AppDomain.CurrentDomain.GetEnvironment()?.ToLower() ?? "development";
+        var environment = EnvironmentUtil.GetEnvironment();
         Console.WriteLine($"Bind Configuration '{typeof(T).Name}' With Environment: {environment} {Path.Combine(AppDomain.CurrentDomain.BaseDirectory)}");
         var configurationBuilder = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
