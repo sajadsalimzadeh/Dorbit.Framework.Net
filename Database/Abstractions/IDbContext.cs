@@ -20,7 +20,7 @@ public interface IDbContext
     Task<TEntity> UpdateEntityAsync<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>;
     Task<TEntity> UpdateEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>;
     
-    Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>;
+    Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity entity) where TEntity : class, IEntity<TKey>;
     Task<TEntity> DeleteEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>;
     
     Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>;

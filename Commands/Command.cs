@@ -22,4 +22,9 @@ public abstract class Command : ICommand
     }
 
     public abstract Task InvokeAsync(ICommandContext context);
+
+    public virtual Task AfterEnterAsync(ICommandContext context)
+    {
+        return Task.CompletedTask;
+    }
 }

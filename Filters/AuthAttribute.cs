@@ -94,7 +94,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
             }
 
             var authenticationService = sp.GetService<IAuthService>();
-            if (user.Username != "admin" && !await authenticationService.HasAccessAsync(user.Id?.ToString(), policies.ToArray()))
+            if (user.Username != "admin" && !await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
             {
                 throw new UnauthorizedAccessException("AccessDenied");
             }

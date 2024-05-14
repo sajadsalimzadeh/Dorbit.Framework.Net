@@ -182,15 +182,22 @@ public class HttpHelper : IDisposable
             Response = httpModel.Response,
         };
 
-        if (ResponseContentType == ContentType.Json)
+        try
         {
-            await using var jsonTextReader = new JsonTextReader(reader);
-            httpModelType.Result = new JsonSerializer().Deserialize<T>(jsonTextReader);
+            if (ResponseContentType == ContentType.Json)
+            {
+                await using var jsonTextReader = new JsonTextReader(reader);
+                httpModelType.Result = new JsonSerializer().Deserialize<T>(jsonTextReader);
+            }
+            else if (ResponseContentType == ContentType.Xml)
+            {
+                var serializer = new XmlSerializer(typeof(T));
+                httpModelType.Result = (T)serializer.Deserialize(reader);
+            }
         }
-        else if (ResponseContentType == ContentType.Xml)
+        catch (Exception ex)
         {
-            var serializer = new XmlSerializer(typeof(T));
-            httpModelType.Result = (T)serializer.Deserialize(reader);
+            throw new Exception(await reader.ReadToEndAsync(), ex);
         }
 
         return httpModelType;

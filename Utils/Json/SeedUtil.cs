@@ -12,12 +12,12 @@ namespace Dorbit.Framework.Utils.Json;
 
 public static class SeedUtil
 {
-    public static async Task SeedAsync<T>(this IWriterRepository<T> repository, string filename, Action<T> beforeInsert = default)
-        where T : class, IEntity
+    public static async Task SeedAsync<TEntity, TKey>(this IWriterRepository<TEntity,TKey> repository, string filename, Action<TEntity> beforeInsert = default)
+        where TEntity : class, IEntity<TKey>
     {
         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
         var content = await File.ReadAllTextAsync(path);
-        var items = JsonConvert.DeserializeObject<List<T>>(content);
+        var items = JsonConvert.DeserializeObject<List<TEntity>>(content);
         var existsItems = await repository.Set().ToListAsync();
         using var transaction = repository.DbContext.BeginTransaction();
         foreach (var entity in items.Where(x => !existsItems.Contains(x)))
@@ -26,6 +26,6 @@ public static class SeedUtil
             await repository.InsertAsync(entity);
         }
 
-        transaction.CommitAsync();
+        await transaction.CommitAsync();
     }
 }

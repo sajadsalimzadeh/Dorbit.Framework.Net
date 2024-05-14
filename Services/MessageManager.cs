@@ -38,6 +38,12 @@ public class MessageManager
             return Process(providers, emailRequest);
         }
 
+        if (request is MessageNotificationRequest notificationRequest)
+        {
+            var providers = _serviceProvider.GetServices<IMessageProvider<MessageNotificationRequest>>();
+            return Process(providers, notificationRequest);
+        }
+
         return Task.FromResult(new CommandResult(false));
     }
 
