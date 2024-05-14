@@ -169,6 +169,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
                 var counter = SequenceCounter.GetOrAdd(sequenceAttribute.Name, _ => sequenceAttribute.StartAt);
                 counter += sequenceAttribute.IncrementsBy;
+                SequenceCounter[sequenceAttribute.Name] = counter;
                 property.SetValue(model, counter);
             }
         }
