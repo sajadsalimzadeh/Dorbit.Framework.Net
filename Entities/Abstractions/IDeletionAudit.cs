@@ -1,5 +1,3 @@
-using System;
-
 namespace Dorbit.Framework.Entities.Abstractions;
 
 public interface IDeletionAudit : IDeletionTime, ISoftDelete
