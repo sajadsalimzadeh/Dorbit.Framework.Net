@@ -1,5 +1,4 @@
-﻿using System;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Dorbit.Framework.Contracts.Abstractions;
 
 namespace Dorbit.Framework.Contracts.Users;

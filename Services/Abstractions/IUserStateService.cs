@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Dorbit.Framework.Contracts.Users;
 
 namespace Dorbit.Framework.Services.Abstractions;

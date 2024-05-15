@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Dorbit.Framework.Extensions;
+﻿namespace Dorbit.Framework.Extensions;
 
 public static class NullableExtensions
 {

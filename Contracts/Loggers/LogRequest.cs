@@ -1,5 +1,4 @@
 ﻿using Dorbit.Framework.Contracts.Abstractions;
-using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Contracts.Loggers;
 
