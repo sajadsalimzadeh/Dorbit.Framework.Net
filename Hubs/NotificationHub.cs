@@ -50,7 +50,10 @@ public sealed class HubStore
         if (ConnectionToUsers.TryGetValue(connectionId, out var userId))
         {
             ConnectionToUsers.TryRemove(connectionId, out _);
-            UserToConnections.TryRemove(userId, out _);
+            if (UserToConnections.TryGetValue(userId, out var connections))
+            {
+                connections.Remove(connectionId);
+            }
         }
     }
 }
