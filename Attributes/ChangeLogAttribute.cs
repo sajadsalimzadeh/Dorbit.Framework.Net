@@ -3,6 +3,7 @@
 namespace Dorbit.Framework.Attributes;
 
 [AttributeUsage(AttributeTargets.Property)]
-public class IgnoreLoggingAttribute : Attribute
+public class ChangeLogAttribute : Attribute
 {
+    
 }
