@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,17 +17,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Hosts;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-internal class LoggerHostInterval : BaseHostInterval
+internal class EntityLogHostInterval : BaseHostInterval
 {
     private readonly IServiceProvider _serviceProvider;
     private static readonly ConcurrentQueue<LogRequest> Requests = new();
 
-    public LoggerHostInterval(IServiceProvider serviceProvider) : base(serviceProvider)
+    public EntityLogHostInterval(IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
-    public LoggerHostInterval Add(LogRequest request)
+    public EntityLogHostInterval Add(LogRequest request)
     {
         Requests.Enqueue(request);
 
@@ -44,10 +45,9 @@ internal class LoggerHostInterval : BaseHostInterval
             {
                 var type = request.NewObj.GetType();
                 var diff = new Dictionary<string, object>();
-                foreach (var property in type.GetProperties())
+                foreach (var property in type.GetProperties().Where(x => x.GetCustomAttribute<EntityLogAttribute>() is not null))
                 {
                     if (!property.PropertyType.IsPrimitive) continue;
-                    if (property.GetCustomAttribute<IgnoreLoggingAttribute>() is not null) continue;
                     var newValue = property.GetValue(request.NewObj);
                     if (request.Action == LogAction.Update)
                     {

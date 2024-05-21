@@ -197,7 +197,7 @@ public class HttpHelper : IDisposable
         }
         catch (Exception ex)
         {
-            throw new Exception(await reader.ReadToEndAsync(), ex);
+            throw new Exception($"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}", ex);
         }
 
         return httpModelType;

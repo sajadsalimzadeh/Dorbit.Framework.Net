@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Database.Abstractions;
@@ -11,17 +12,19 @@ public interface IDbContext
     IServiceProvider ServiceProvider { get; }
     bool AutoExcludeDeleted { get; set; }
 
+    DatabaseProviderType GetProvider();
+    
     IQueryable<TEntity> DbSet<TEntity, TKey>(bool? excludeDeleted = null) where TEntity : class, IEntity<TKey>;
     IQueryable<TEntity> DbSet<TEntity>(bool? excludeDeleted = null) where TEntity : class, IEntity<Guid>;
     
-    Task<TEntity> InsertEntityAsync<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>;
-    Task<TEntity> InsertEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>;
+    Task<TEntity> InsertEntityAsync<TEntity, TKey>(TEntity entity) where TEntity : class, IEntity<TKey>;
+    Task<TEntity> InsertEntityAsync<TEntity>(TEntity entity) where TEntity : class, IEntity<Guid>;
     
-    Task<TEntity> UpdateEntityAsync<TEntity, TKey>(TEntity model) where TEntity : class, IEntity<TKey>;
-    Task<TEntity> UpdateEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>;
+    Task<TEntity> UpdateEntityAsync<TEntity, TKey>(TEntity entity) where TEntity : class, IEntity<TKey>;
+    Task<TEntity> UpdateEntityAsync<TEntity>(TEntity entity) where TEntity : class, IEntity<Guid>;
     
     Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity entity) where TEntity : class, IEntity<TKey>;
-    Task<TEntity> DeleteEntityAsync<TEntity>(TEntity model) where TEntity : class, IEntity<Guid>;
+    Task<TEntity> DeleteEntityAsync<TEntity>(TEntity entity) where TEntity : class, IEntity<Guid>;
     
     Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>;
     Task BulkInsertEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>;
