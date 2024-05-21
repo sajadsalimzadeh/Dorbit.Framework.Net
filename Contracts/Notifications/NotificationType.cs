@@ -1,10 +1,11 @@
 namespace Dorbit.Framework.Contracts;
 
-public enum NotificatioType
+public enum NotificationType
 {
+    Normal = 0,
     Success = 1,
-    Danger = 2,
-    Warning = 3,
+    Warning = 2,
+    Danger = 3,
     Link = 4,
     Primary = 5,
     Secondary = 6,

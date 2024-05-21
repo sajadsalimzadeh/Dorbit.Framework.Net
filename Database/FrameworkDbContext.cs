@@ -16,8 +16,9 @@ public class FrameworkDbContext : EfDbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.HasDefaultSchema("log");
+        modelBuilder.HasDefaultSchema("frm");
     }
 
     public DbSet<EntityLog> Logs { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 }
