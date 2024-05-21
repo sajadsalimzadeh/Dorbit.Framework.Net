@@ -10,4 +10,6 @@ public class NotificationDto
     public NotificationType Type { get; set; }
     public string Icon { get; set; }
     public string Image { get; set; }
+
+    public DateTime CreationTime { get; set; }
 }

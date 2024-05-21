@@ -12,6 +12,8 @@ public class Profiles : Profile
         CreateMap<Job, JobDto>()
             .ForMember(x => x.Downloadable, o => o.MapFrom(x => x.Download != null));
         CreateMap<JobLog, JobLogDto>();
+        
+        CreateMap<NotificationDto, Notification>();
         CreateMap<Notification, NotificationDto>();
     }
 }
