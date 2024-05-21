@@ -23,6 +23,8 @@ public class Notification : CreateEntity
 
     public DateTime? ExpireTime { get; set; }
 
+    public bool IsArchive { get; set; } = false;
+
     [JsonField]
     public List<Guid> UserIds { get; set; }
 }

@@ -7,5 +7,4 @@ public class NotificationRequest
 {
     public List<Guid> UserIds { get; set; }
     public NotificationDto Notification { get; set; }
-    public bool Test { get; set; }
 }

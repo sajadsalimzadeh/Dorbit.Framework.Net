@@ -20,41 +20,64 @@ namespace Dorbit.Framework.Controllers;
 public class NotificationsController(NotificationRepository notificationRepository, INotificationService notificationService) : BaseApiController
 {
     [HttpGet]
-    [HttpGet("{take:int}")]
-    public async Task<QueryResult<List<NotificationDto>>> GetAllAsync([FromQuery] DateTime? from, [FromRoute] int? take)
+    public async Task<QueryResult<List<NotificationDto>>> GetAllAsync()
     {
-        var query = notificationRepository.Set().Where(x => x.ExpireTime == null || x.ExpireTime > DateTime.UtcNow);
-        if (from.HasValue) query = query.Where(x => x.CreationTime > from);
-
-        var notifications = await query.Take(take ?? 10).ToListAsync();
+        var notifications = await notificationRepository.Set()
+            .Where(x => x.ExpireTime == null || x.ExpireTime > DateTime.UtcNow)
+            .Where(x => x.IsArchive)
+            .Take(50).ToListAsync();
         var userId = GetUserId();
         notifications = notifications.Where(x => x.UserIds == null || x.UserIds.Count == 0 || x.UserIds.Contains(userId)).ToList();
         return notifications.MapTo<List<NotificationDto>>().ToQueryResult();
     }
 
+    [HttpGet("Last")]
+    public async Task<QueryResult<NotificationDto>> GetLastAsync()
+    {
+        var notifications = await notificationRepository.Set()
+            .Where(x => x.ExpireTime == null || x.ExpireTime > DateTime.UtcNow)
+            .Take(50).ToListAsync();
+        var userId = GetUserId();
+        var notification = notifications.Where(x => x.UserIds == null || x.UserIds.Count == 0 || x.UserIds.Contains(userId))
+            .MaxBy(x => x.CreationTime);
+        return notification.MapTo<NotificationDto>().ToQueryResult();
+    }
+
     [HttpPost, Auth("Notification")]
     public async Task<CommandResult> NotifyAsync([FromBody] NotificationRequest request)
     {
-        if (request.Test)
+        var entity = request.Notification.MapTo<Notification>();
+        entity.UserIds = request.UserIds;
+        var model = await notificationRepository.InsertAsync(entity).MapToAsync<Notification, NotificationDto>();
+
+        if (request.UserIds is not null && request.UserIds.Count > 0)
         {
-            await notificationService.NotifyAsync(GetUserId(), request.Notification);
+            await notificationService.NotifyAsync(request.UserIds, model);
         }
         else
         {
-            var entity = request.Notification.MapTo<Notification>();
-            entity.UserIds = request.UserIds;
-            var model = await notificationRepository.InsertAsync(entity).MapToAsync<Notification, NotificationDto>();
-
-            if (request.UserIds is not null && request.UserIds.Count > 0)
-            {
-                await notificationService.NotifyAsync(request.UserIds, model);
-            }
-            else
-            {
-                await notificationService.NotifyAsync(model);
-            }
+            await notificationService.NotifyAsync(model);
         }
 
         return Succeed();
+    }
+
+    [HttpPost("Empty"), Auth("Notification")]
+    public Task<CommandResult> NotifyAsync()
+    {
+        return NotifyAsync(new NotificationRequest()
+        {
+            Notification = new NotificationDto()
+            {
+                Title = "",
+                Body = ""
+            }
+        });
+    }
+
+    [HttpDelete("{id:guid}")]
+    public Task<QueryResult<NotificationDto>> DeleteAsync([FromRoute] Guid id)
+    {
+        return notificationRepository.DeleteAsync(id).MapToAsync<Notification, NotificationDto>().ToQueryResultAsync();
     }
 }
