@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Cryptograpy;
 
@@ -49,4 +50,16 @@ internal class AppSettingSecurity
     public string Issuer { get; set; }
     public string Audience { get; set; }
     public int TimeoutInSecond { get; set; }
+    public int TimeoutInMinute
+    {
+        set => TimeoutInSecond = value * 60;
+    }
+    public int TimeoutInHour
+    {
+        set => TimeoutInMinute = value * 60;
+    }
+    public int TimeoutInDay
+    {
+        set => TimeoutInHour = value * 24;
+    }
 }
