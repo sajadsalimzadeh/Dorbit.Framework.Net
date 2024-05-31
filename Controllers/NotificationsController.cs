@@ -23,9 +23,8 @@ public class NotificationsController(NotificationRepository notificationReposito
     public async Task<QueryResult<List<NotificationDto>>> GetAllAsync()
     {
         var notifications = await notificationRepository.Set()
-            .Where(x => x.ExpireTime == null || x.ExpireTime > DateTime.UtcNow)
-            .Where(x => x.IsArchive)
-            .Take(50).ToListAsync();
+            .Where(x => x.IsArchive && (x.ExpireTime == null || x.ExpireTime > DateTime.UtcNow))
+            .Take(50).OrderByDescending(x => x.CreationTime).ToListAsync();
         var userId = GetUserId();
         notifications = notifications.Where(x => x.UserIds == null || x.UserIds.Count == 0 || x.UserIds.Contains(userId)).ToList();
         return notifications.MapTo<List<NotificationDto>>().ToQueryResult();
@@ -36,10 +35,9 @@ public class NotificationsController(NotificationRepository notificationReposito
     {
         var notifications = await notificationRepository.Set()
             .Where(x => x.ExpireTime == null || x.ExpireTime > DateTime.UtcNow)
-            .Take(50).ToListAsync();
+            .Take(50).OrderByDescending(x => x.CreationTime).ToListAsync();
         var userId = GetUserId();
-        var notification = notifications.Where(x => x.UserIds == null || x.UserIds.Count == 0 || x.UserIds.Contains(userId))
-            .MaxBy(x => x.CreationTime);
+        var notification = notifications.FirstOrDefault(x => x.UserIds == null || x.UserIds.Count == 0 || x.UserIds.Contains(userId));
         return notification.MapTo<NotificationDto>().ToQueryResult();
     }
 
