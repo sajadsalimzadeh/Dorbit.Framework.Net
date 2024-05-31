@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Notifications;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Extensions;
@@ -24,7 +25,7 @@ public class NotificationsController(NotificationRepository notificationReposito
     {
         var notifications = await notificationRepository.Set()
             .Where(x => x.IsArchive && (x.ExpireTime == null || x.ExpireTime > DateTime.UtcNow))
-            .Take(50).OrderByDescending(x => x.CreationTime).ToListAsync();
+            .OrderByDescending(x => x.CreationTime).Take(50).ToListAsync();
         var userId = GetUserId();
         notifications = notifications.Where(x => x.UserIds == null || x.UserIds.Count == 0 || x.UserIds.Contains(userId)).ToList();
         return notifications.MapTo<List<NotificationDto>>().ToQueryResult();
@@ -35,7 +36,7 @@ public class NotificationsController(NotificationRepository notificationReposito
     {
         var notifications = await notificationRepository.Set()
             .Where(x => x.ExpireTime == null || x.ExpireTime > DateTime.UtcNow)
-            .Take(50).OrderByDescending(x => x.CreationTime).ToListAsync();
+            .OrderByDescending(x => x.CreationTime).Take(50).ToListAsync();
         var userId = GetUserId();
         var notification = notifications.FirstOrDefault(x => x.UserIds == null || x.UserIds.Count == 0 || x.UserIds.Contains(userId));
         return notification.MapTo<NotificationDto>().ToQueryResult();
