@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Cryptograpy;
 
@@ -26,21 +27,7 @@ internal class AppSettingCaptcha
 
 internal class AppSettingMessage
 {
-    public AppSettingMessageProvider[] Providers { get; set; }
-}
-
-public class AppSettingMessageProvider
-{
-    public string Name { get; set; }
-    public string Sender { get; set; }
-    public string Username { get; set; }
-    public ProtectedProperty ApiKey { get; set; }
-    public ProtectedProperty Password { get; set; }
-    public Dictionary<string, string> Templates { get; set; }
-
-    //Email
-    public string Server { get; set; }
-    public short Port { get; set; }
+    public ConfigMessageProvider[] Providers { get; set; }
 }
 
 internal class AppSettingSecurity

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Messages;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Extensions;
@@ -10,7 +11,7 @@ using Kavenegar.Models;
 namespace Dorbit.Framework.Services.MessageProviders;
 
 [ServiceRegister]
-public class KavenegarProvider : IMessageProvider<MessageSmsRequest>
+public class KavenegarProvider : IMessageProvider<MessageSmsRequest, ConfigMessageSmsProvider>
 {
     public string Name => "Kavenegar";
     private string _apKey;
@@ -27,7 +28,7 @@ public class KavenegarProvider : IMessageProvider<MessageSmsRequest>
         public int Cost { get; set; }
     }
 
-    public void Configure(AppSettingMessageProvider configuration)
+    public void Configure(ConfigMessageSmsProvider configuration)
     {
         _sender = configuration.Sender;
         _apKey = configuration.ApiKey.GetDecryptedValue();

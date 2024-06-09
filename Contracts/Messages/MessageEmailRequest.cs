@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Dorbit.Framework.Configs;
+using Dorbit.Framework.Contracts.Cryptograpy;
 
 namespace Dorbit.Framework.Contracts.Messages;
 
@@ -19,4 +21,14 @@ public class MessageEmailRequestAttachment
     public string Name { get; set; }
     public string ContentType { get; set; }
     public Stream Stream { get; set; }
+}
+
+public class ConfigMessageEmailProvider : ConfigMessageProvider
+{
+    public string Sender { get; set; }
+    public string Username { get; set; }
+    public ProtectedProperty ApiKey { get; set; }
+    public ProtectedProperty Password { get; set; }
+    public string Server { get; set; }
+    public short Port { get; set; }
 }

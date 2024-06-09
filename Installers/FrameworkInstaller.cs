@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Security.Principal;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Dorbit.Framework.Configs;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Middlewares;
@@ -12,6 +13,7 @@ using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -21,7 +23,7 @@ namespace Dorbit.Framework.Installers;
 
 public static class FrameworkInstaller
 {
-    public static IServiceCollection AddDorbitFramework(this IServiceCollection services, Configuration configuration)
+    public static IServiceCollection AddDorbitFramework(this IServiceCollection services, Configs configs)
     {
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
@@ -34,12 +36,12 @@ public static class FrameworkInstaller
         services.AddDistributedMemoryCache();
         services.AddSerilog();
 
-        if (!configuration.DependencyRegisterNamespaces.Contains("Dorbit"))
+        if (!configs.DependencyRegisterNamespaces.Contains("Dorbit"))
         {
-            configuration.DependencyRegisterNamespaces.Add("Dorbit");
+            configs.DependencyRegisterNamespaces.Add("Dorbit");
         }
 
-        services.RegisterServicesByAssembly(configuration.EntryAssembly, configuration.DependencyRegisterNamespaces.ToArray());
+        services.RegisterServicesByAssembly(configs.EntryAssembly, configs.DependencyRegisterNamespaces.ToArray());
 
         services.AddScoped<IPrincipal>(sp => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
 
@@ -48,7 +50,12 @@ public static class FrameworkInstaller
         services.AddControllers(typeof(FrameworkInstaller).Assembly)
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
-        services.AddDbContext<FrameworkDbContext>(configuration.FrameworkDbContextConfiguration);
+        services.AddDbContext<FrameworkDbContext>(configs.FrameworkDbContextConfiguration);
+
+        if (configs.MessageConfig is not null)
+        {
+            services.Configure<ConfigMessage>(configs.MessageConfig);
+        }
 
         App.ServiceProvider = services.BuildServiceProvider();
 
@@ -137,10 +144,12 @@ public static class FrameworkInstaller
         }
     }
 
-    public class Configuration
+    public class Configs
     {
         public required Assembly EntryAssembly { get; init; }
         public required List<string> DependencyRegisterNamespaces { get; init; }
         public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; set; }
+        
+        public IConfigurationSection MessageConfig { get; init; }
     }
 }

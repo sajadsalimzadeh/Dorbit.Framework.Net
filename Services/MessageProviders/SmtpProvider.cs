@@ -11,7 +11,7 @@ using MimeKit;
 namespace Dorbit.Framework.Services.MessageProviders;
 
 [ServiceRegister]
-public class SmtpProvider : IMessageProvider<MessageEmailRequest>
+public class SmtpProvider : IMessageProvider<MessageEmailRequest, ConfigMessageEmailProvider>
 {
     public string Name => "Smtp";
 
@@ -21,7 +21,7 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest>
     private string _username;
     private string _password;
 
-    public void Configure(AppSettingMessageProvider configuration)
+    public void Configure(ConfigMessageEmailProvider configuration)
     {
         _server = configuration.Server;
         _port = configuration.Port;

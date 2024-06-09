@@ -10,7 +10,7 @@ using Dorbit.Framework.Utils.Http;
 namespace Dorbit.Framework.Services.MessageProviders;
 
 [ServiceRegister]
-public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
+public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest, ConfigMessageSmsProvider>
 {
     public string Name => "MeliPayamak";
     private string _username;
@@ -23,7 +23,7 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest>
         public string StrRetStatus { get; set; }
     }
 
-    public void Configure(AppSettingMessageProvider configuration)
+    public void Configure(ConfigMessageSmsProvider configuration)
     {
         _username = configuration.Username;
         _password = configuration.Password.GetDecryptedValue();
