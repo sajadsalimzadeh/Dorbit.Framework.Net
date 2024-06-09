@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Notifications;
 
 namespace Dorbit.Framework.Services.Abstractions;
 
