@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Entities.Abstractions;
@@ -11,6 +12,7 @@ public interface IDbContext
 {
     IServiceProvider ServiceProvider { get; }
     bool AutoExcludeDeleted { get; set; }
+    CancellationToken CancellationToken { get; set; }
 
     DatabaseProviderType GetProvider();
     

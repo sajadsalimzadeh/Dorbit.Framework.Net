@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Google.Protobuf;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -43,5 +44,10 @@ public static class EncodingExtensions
     public static string ToHexString(this byte[] bytes)
     {
         return BitConverter.ToString(bytes).Replace("-", "");
+    }
+
+    public static string ToHexString(this ByteString bytes)
+    {
+        return bytes.ToByteArray().ToHexString();
     }
 }

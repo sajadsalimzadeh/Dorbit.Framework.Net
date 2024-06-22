@@ -82,9 +82,15 @@ public abstract class EfDbContext : DbContext, IDbContext
             {
                 var sequenceAttribute = property.GetCustomAttribute<SequenceAttribute>();
                 if (sequenceAttribute is null) continue;
-                if (!Sequences.Contains(sequenceAttribute.Name))
+                
+                modelBuilder.HasSequence<int>("seq_translation_index", schema: "public").StartsAt(1).IncrementsBy(1);
+                
+                var propertyBuilder = modelBuilder.Entity(type.ClrType).Property(property.Name);
+                propertyBuilder.ValueGeneratedOnAdd();
+
+                if (GetProvider() == DatabaseProviderType.Postgres)
                 {
-                    modelBuilder.Entity(type.ClrType).Property(property.Name).ValueGeneratedOnAdd();
+                    propertyBuilder.HasDefaultValueSql($"nextval('{sequenceAttribute.Name}')");
                 }
             }
         }
@@ -97,7 +103,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         if (providerName.Contains("inmemory")) return DatabaseProviderType.InMemory;
         if (providerName.Contains("mysql")) return DatabaseProviderType.MySql;
         if (providerName.Contains("sqlserver")) return DatabaseProviderType.SqlServer;
-        if (providerName.Contains("postgressql")) return DatabaseProviderType.Postgres;
+        if (providerName.Contains("postgresql")) return DatabaseProviderType.Postgres;
         return DatabaseProviderType.Unknown;
     }
 
@@ -212,7 +218,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         {
             if (guidEntity.Id == Guid.Empty) guidEntity.Id = Guid.NewGuid();
         }
-        
+
         if (entity is IChangeLog changeLog)
         {
             changeLog.ChangeLogs ??= new List<ChangeLog>();
@@ -227,7 +233,7 @@ public abstract class EfDbContext : DbContext, IDbContext
                 });
             }
         }
-        
+
         await AddAsync(entity, CancellationToken);
         await SaveIfNotInTransactionAsync();
         if (entity is ICreationLogging logging) Log(logging, LogAction.Insert);
@@ -275,7 +281,7 @@ public abstract class EfDbContext : DbContext, IDbContext
                 Entry(creationAudit).Property(x => x.CreatorName).IsModified = false;
             }
         }
-        
+
         TEntity oldModel = default;
         if (entity is IHistorical)
         {
@@ -297,7 +303,7 @@ public abstract class EfDbContext : DbContext, IDbContext
             await InsertEntityAsync<TEntity, TKey>(entity);
             await transaction.CommitAsync();
         }
-        
+
         if (entity is IChangeLog changeLog)
         {
             changeLog.ChangeLogs ??= new List<ChangeLog>();
@@ -324,7 +330,7 @@ public abstract class EfDbContext : DbContext, IDbContext
     {
         return UpdateEntityAsync<TEntity, Guid>(entity);
     }
-    
+
     public async Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity entity) where TEntity : class, IEntity<TKey>
     {
         if (entity is IUnDeletable) throw new OperationException(Errors.EntityIsUnDeletable);
@@ -359,7 +365,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         {
             Entry(entity).State = EntityState.Deleted;
         }
-        
+
         await SaveIfNotInTransactionAsync();
         if (entity is ILogging logging) Log(logging, LogAction.Delete);
         return entity;
@@ -458,15 +464,16 @@ public abstract class EfDbContext : DbContext, IDbContext
         return result;
     }
 
-    public Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>
+    public async Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>
     {
-
         if (GetProvider() == DatabaseProviderType.InMemory)
         {
-            return AddRangeAsync(items, CancellationToken);
+            await AddRangeAsync(items, CancellationToken);
+            await SaveChangesAsync(CancellationToken);
+            return;
         }
 
-        return this.BulkInsertAsync(items, cancellationToken: CancellationToken);
+        await this.BulkInsertAsync(items, cancellationToken: CancellationToken);
     }
 
     public Task BulkInsertEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>
@@ -477,7 +484,6 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public Task BulkUpdateEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>
     {
-
         return this.BulkUpdateAsync(items, cancellationToken: CancellationToken);
     }
 
@@ -488,7 +494,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public Task BulkDeleteEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>
     {
-            return this.BulkDeleteAsync(items, cancellationToken: CancellationToken);
+        return this.BulkDeleteAsync(items, cancellationToken: CancellationToken);
     }
 
     public Task BulkDeleteEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>
