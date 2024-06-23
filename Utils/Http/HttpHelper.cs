@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Serialization;
+using Dorbit.Framework.Contracts.Results;
 using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Utils.Http;
@@ -236,6 +237,11 @@ public class HttpHelper : IDisposable
 
 public static class HttpHelperExtensions
 {
+    public static async Task<QueryResult<T>> ToResultAsync<T>(this Task<HttpModel<QueryResult<T>>> httpModel)
+    {
+        return (await httpModel).Result ?? new QueryResult<T> {Success = false};
+    }
+    
     public static async Task<T> ToResultAsync<T>(this Task<HttpModel<T>> httpModel)
     {
         return (await httpModel).Result;

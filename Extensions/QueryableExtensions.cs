@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Entities.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -26,32 +27,32 @@ public static class QueryableExtensions
         return query.FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public static Task<List<TEntity>> ToListAsyncBy<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate)
+    public static Task<List<TEntity>> ToListAsyncBy<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return query.Where(predicate).ToListAsync();
+        return query.Where(predicate).ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public static async Task<List<TEntity>> ToListAsyncWithCache<TEntity>(this IQueryable<TEntity> query, string key, TimeSpan duration)
+    public static async Task<List<TEntity>> ToListAsyncWithCache<TEntity>(this IQueryable<TEntity> query, string key, TimeSpan duration, CancellationToken cancellationToken = default)
     {
         if (App.MemoryCache.TryGetValue(key, out List<TEntity> result)) return result;
-        result = await query.ToListAsync();
+        result = await query.ToListAsync(cancellationToken: cancellationToken);
         App.MemoryCache.Set(key, result, duration);
 
         return result;
     }
 
-    public static async Task<TEntity> FirstOrDefaultAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate, string key, TimeSpan duration)
+    public static async Task<TEntity> FirstOrDefaultAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate, string key, TimeSpan duration, CancellationToken cancellationToken = default)
     {
         if (App.MemoryCache.TryGetValue(key, out TEntity result)) return result;
-        result = await query.FirstOrDefaultAsync(predicate);
+        result = await query.FirstOrDefaultAsync(predicate, cancellationToken: cancellationToken);
         if (result is not null) App.MemoryCache.Set(key, result, duration);
 
         return result;
     }
 
-    public static Task<TEntity> GetByIdAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Guid id, string key, TimeSpan duration) where TEntity : IEntity
+    public static Task<TEntity> GetByIdAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Guid id, string key, TimeSpan duration, CancellationToken cancellationToken = default) where TEntity : IEntity
     {
-        return query.FirstOrDefaultAsyncWithCache(x => x.Id == id, $"{key}-{id}", duration);
+        return query.FirstOrDefaultAsyncWithCache(x => x.Id == id, $"{key}-{id}", duration, cancellationToken: cancellationToken);
     }
 
     public static IQueryable<TEntity> WhereIf<TEntity>(this IQueryable<TEntity> query, Func<bool> condition, Expression<Func<TEntity, bool>> predicate)

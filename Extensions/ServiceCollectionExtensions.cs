@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         var descriptors = new List<Descriptor>();
         foreach (var assembly in assemblies)
         {
+            services.AddControllers(assembly);
             try
             {
                 foreach (var type in assembly.GetTypes())

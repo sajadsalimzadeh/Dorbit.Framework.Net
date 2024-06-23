@@ -47,7 +47,7 @@ public static class FrameworkInstaller
 
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
 
-        services.AddControllers(typeof(FrameworkInstaller).Assembly)
+        services.AddControllers()
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
         services.AddDbContext<FrameworkDbContext>(configs.FrameworkDbContextConfiguration);
@@ -149,7 +149,7 @@ public static class FrameworkInstaller
         public required Assembly EntryAssembly { get; init; }
         public required List<string> DependencyRegisterNamespaces { get; init; }
         public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; set; }
-        
-        public IConfigurationSection MessageConfig { get; init; }
+
+        public IConfiguration MessageConfig { get; init; }
     }
 }
