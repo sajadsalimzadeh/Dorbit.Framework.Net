@@ -13,6 +13,17 @@ public static class StringExtensions
     {
         return string.Concat(str[..1].ToLower(), str.AsSpan(1));
     }
+    
+    public static byte[] HexToByteArray(this string str)
+    {
+        var arr = str.Replace("-", "");
+        var array = new byte[arr.Length / 2];
+        for (var i = 0; i < array.Length; i++)
+        {
+            array[i] = Convert.ToByte(arr.Substring(i * 2, 2), 16);
+        }
+        return array;
+    }
 
     public static int ToInt32(this string input, bool hex = false)
     {
@@ -143,6 +154,6 @@ public static class StringExtensions
     
     public static bool IsNotNullOrEmpty(this string value)
     {
-        return !string.IsNullOrEmpty(value);
+        return !string.IsNullOrEmpty(value?.Trim());
     }
 }

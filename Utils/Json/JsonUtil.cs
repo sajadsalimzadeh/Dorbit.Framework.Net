@@ -9,6 +9,7 @@ public static class JsonUtil
     {
         return JsonConvert.SerializeObject(obj, new JsonSerializerSettings()
         {
+            DefaultValueHandling = DefaultValueHandling.Ignore,
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         });
     }
