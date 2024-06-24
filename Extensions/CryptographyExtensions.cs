@@ -8,7 +8,12 @@ public static class CryptographyExtensions
 {
     public static string GetDecryptedValue(this ProtectedProperty property)
     {
-        return GetDecryptedValue(property, App.Key);
+        if (App.Security.Decrypt is not null)
+        {
+            return App.Security.Decrypt(property.Value);
+        }
+        
+        return GetDecryptedValue(property, App.Security.Key);
     }
 
     public static string GetDecryptedValue(this ProtectedProperty property, byte[] key)
@@ -31,7 +36,16 @@ public static class CryptographyExtensions
 
     public static ProtectedProperty GetEncryptedValue(this string value, Aes aes = null)
     {
-        return GetEncryptedValue(value, App.Key, aes);
+        if (App.Security.Encrypt is not null)
+        {
+            var cipherText = App.Security.Encrypt(value);
+            return new ProtectedProperty(cipherText)
+            {
+                Algorithm = "Custom"
+            };
+        }
+        
+        return GetEncryptedValue(value, App.Security.Key, aes);
     }
 
     public static ProtectedProperty GetEncryptedValue(this string value, byte[] key, Aes aes = null)

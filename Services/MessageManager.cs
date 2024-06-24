@@ -54,32 +54,29 @@ public class MessageManager
     private async Task<CommandResult> Process<T, TC>(List<IMessageProvider<T, TC>> providers, T request, List<TC> configurations)
         where T : MessageRequest where TC : ConfigMessageProvider
     {
-        if (App.Setting.Message is not null)
+        if (!string.IsNullOrEmpty(request.ProviderName))
         {
-            if (!string.IsNullOrEmpty(request.ProviderName))
+            configurations = configurations.Where(x => x.Name == request.ProviderName).ToList();
+        }
+
+        foreach (var configuration in configurations)
+        {
+            try
             {
-                configurations = configurations.Where(x => x.Name == request.ProviderName).ToList();
+                var provider = providers.FirstOrDefault(x => x.Name == configuration.Name);
+                if (provider is null) continue;
+                provider.Configure(configuration);
+                if (!string.IsNullOrEmpty(request.TemplateType))
+                {
+                    request.TemplateId = configuration.Templates[request.TemplateType];
+                }
+
+                var op = await provider.Send(request);
+                if (op.Success) return op;
             }
-
-            foreach (var configuration in configurations)
+            catch (Exception ex)
             {
-                try
-                {
-                    var provider = providers.FirstOrDefault(x => x.Name == configuration.Name);
-                    if (provider is null) continue;
-                    provider.Configure(configuration);
-                    if (!string.IsNullOrEmpty(request.TemplateType))
-                    {
-                        request.TemplateId = configuration.Templates[request.TemplateType];
-                    }
-
-                    var op = await provider.Send(request);
-                    if (op.Success) return op;
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex.Message, ex);
-                }
+                _logger.Error(ex.Message, ex);
             }
         }
 

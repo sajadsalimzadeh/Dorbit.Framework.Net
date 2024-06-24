@@ -5,8 +5,10 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Jwts;
 using Dorbit.Framework.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Dorbit.Framework.Services;
@@ -14,16 +16,22 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 public class JwtService
 {
+    private readonly ConfigSecurity _configSecurity;
+    public JwtService(IOptions<ConfigSecurity> securityOptions)
+    {
+        _configSecurity = securityOptions.Value;
+    }
+
     public Task<JwtCreateTokenResponse> CreateTokenAsync(JwtCreateTokenRequest request)
     {
-        var secret = App.Setting.Security.Secret.GetDecryptedValue();
+        var secret = _configSecurity.Secret.GetDecryptedValue();
         var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
             Claims = new Dictionary<string, object>(),
-            Issuer = App.Setting.Security.Issuer,
-            Audience = App.Setting.Security.Audience,
+            Issuer = _configSecurity.Issuer,
+            Audience = _configSecurity.Audience,
             Expires = request.Expires,
             SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
         };
@@ -55,7 +63,7 @@ public class JwtService
 
     public Task<bool> TryValidateTokenAsync(string token, out SecurityToken securityToken, out ClaimsPrincipal claimsPrincipal)
     {
-        var secret = App.Setting.Security.Secret.GetDecryptedValue();
+        var secret = _configSecurity.Secret.GetDecryptedValue();
         var tokenHandler = new JwtSecurityTokenHandler();
         try
         {
