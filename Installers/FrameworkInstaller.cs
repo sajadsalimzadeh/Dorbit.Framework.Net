@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace Dorbit.Framework.Installers;
@@ -60,7 +61,7 @@ public static class FrameworkInstaller
         {
             services.Configure<ConfigMessage>(configs.MessageConfig);
         }
-
+        Console.Write(JsonConvert.SerializeObject(configs.ConfigSecurity));
         services.Configure<ConfigSecurity>(configs.ConfigSecurity);
 
         var securityAssembly = configs.ConfigSecurity["Assembly"];
