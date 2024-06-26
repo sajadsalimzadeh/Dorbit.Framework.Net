@@ -25,7 +25,6 @@ public class JwtService
 
     public Task<JwtCreateTokenResponse> CreateTokenAsync(JwtCreateTokenRequest request)
     {
-        Console.Write(JsonConvert.SerializeObject(_configSecurity));
         var secret = _configSecurity.Secret.GetDecryptedValue();
         var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
         var tokenHandler = new JwtSecurityTokenHandler();
