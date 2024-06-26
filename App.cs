@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using AutoMapper;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
@@ -8,6 +9,7 @@ namespace Dorbit.Framework;
 
 public static class App
 {
+    public static Thread MainThread { get; internal set; }
     public static IServiceProvider ServiceProvider { get; internal set; }
     
     private static IApplication _current;

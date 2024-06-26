@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Database;
@@ -26,6 +27,8 @@ public static class FrameworkInstaller
 {
     public static IServiceCollection AddDorbitFramework(this IServiceCollection services, Configs configs)
     {
+        App.MainThread = Thread.CurrentThread;
+        
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 

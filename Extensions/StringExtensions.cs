@@ -13,7 +13,7 @@ public static class StringExtensions
     {
         return string.Concat(str[..1].ToLower(), str.AsSpan(1));
     }
-    
+
     public static byte[] HexToByteArray(this string str)
     {
         var arr = str.Replace("-", "");
@@ -22,6 +22,7 @@ public static class StringExtensions
         {
             array[i] = Convert.ToByte(arr.Substring(i * 2, 2), 16);
         }
+
         return array;
     }
 
@@ -42,12 +43,19 @@ public static class StringExtensions
             return (int)new System.ComponentModel.Int32Converter().ConvertFromString(input)!;
         }
 
-        if (hex || HexChars.Any(input.Contains))
+        try
         {
-            return Convert.ToInt32(input, 16);
-        }
+            if (hex || HexChars.Any(input.Contains))
+            {
+                return Convert.ToInt32(input, 16);
+            }
 
-        return Convert.ToInt32(input);
+            return Convert.ToInt32(input);
+        }
+        catch
+        {
+            return -1;
+        }
     }
 
     public static string ToStringBy(this string format, params object[] args)
@@ -151,9 +159,15 @@ public static class StringExtensions
     {
         return string.IsNullOrEmpty(value);
     }
-    
+
     public static bool IsNotNullOrEmpty(this string value)
     {
         return !string.IsNullOrEmpty(value?.Trim());
+    }
+
+    public static string Truncate(this string value, int maxLength)
+    {
+        if (string.IsNullOrEmpty(value)) return value;
+        return value.Length <= maxLength ? value : value.Substring(0, maxLength);
     }
 }
