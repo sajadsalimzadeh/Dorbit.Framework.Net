@@ -61,7 +61,7 @@ public static class FrameworkInstaller
         {
             services.Configure<ConfigMessage>(configs.MessageConfig);
         }
-        Console.Write(JsonConvert.SerializeObject(configs.ConfigSecurity));
+        
         services.Configure<ConfigSecurity>(configs.ConfigSecurity);
 
         var securityAssembly = configs.ConfigSecurity["Assembly"];
