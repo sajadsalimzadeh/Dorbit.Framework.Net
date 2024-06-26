@@ -8,11 +8,6 @@ public class ProtectedProperty
     public string Algorithm { get; set; } = "SHA1";
     public string Value { get; set; }
 
-    public HashAlgorithmName GetHashAlgorithmName()
-    {
-        return new HashAlgorithmName(Algorithm);
-    }
-
     public ProtectedProperty()
     {
     }
@@ -20,5 +15,10 @@ public class ProtectedProperty
     public ProtectedProperty(string value)
     {
         Value = value;
+    }
+
+    public HashAlgorithmName GetHashAlgorithmName()
+    {
+        return new HashAlgorithmName(Algorithm);
     }
 }

@@ -183,9 +183,9 @@ public static class FrameworkInstaller
     {
         public required Assembly EntryAssembly { get; init; }
         public required List<string> DependencyRegisterNamespaces { get; init; }
-        public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; set; }
+        public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; init; }
 
         public IConfiguration MessageConfig { get; init; }
-        public IConfiguration ConfigSecurity { get; set; }
+        public IConfiguration ConfigSecurity { get; init; }
     }
 }
