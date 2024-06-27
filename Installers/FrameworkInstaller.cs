@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace Dorbit.Framework.Installers;
@@ -60,7 +61,7 @@ public static class FrameworkInstaller
         {
             services.Configure<ConfigMessage>(configs.MessageConfig);
         }
-
+        
         services.Configure<ConfigSecurity>(configs.ConfigSecurity);
 
         var securityAssembly = configs.ConfigSecurity["Assembly"];
@@ -182,9 +183,9 @@ public static class FrameworkInstaller
     {
         public required Assembly EntryAssembly { get; init; }
         public required List<string> DependencyRegisterNamespaces { get; init; }
-        public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; set; }
+        public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; init; }
 
         public IConfiguration MessageConfig { get; init; }
-        public IConfiguration ConfigSecurity { get; set; }
+        public IConfiguration ConfigSecurity { get; init; }
     }
 }

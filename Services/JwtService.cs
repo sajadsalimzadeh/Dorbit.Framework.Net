@@ -10,6 +10,7 @@ using Dorbit.Framework.Contracts.Jwts;
 using Dorbit.Framework.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Services;
 
