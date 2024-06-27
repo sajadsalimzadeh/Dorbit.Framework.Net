@@ -54,7 +54,7 @@ public static class StringExtensions
         }
         catch
         {
-            return -1;
+            return 0;
         }
     }
 
