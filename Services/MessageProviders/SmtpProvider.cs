@@ -30,7 +30,7 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest, ConfigMessageE
         _password = configuration.Password.GetDecryptedValue();
     }
 
-    public async Task<QueryResult<string>> Send(MessageEmailRequest request)
+    public async Task<QueryResult<string>> SendAsync(MessageEmailRequest request)
     {
         var email = new MimeMessage();
         email.Sender = MailboxAddress.Parse(_senderEmail);

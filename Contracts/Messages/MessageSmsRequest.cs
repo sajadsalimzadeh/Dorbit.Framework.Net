@@ -17,4 +17,13 @@ public class ConfigMessageSmsProvider : ConfigMessageProvider
     public string Username { get; set; }
     public ProtectedProperty ApiKey { get; set; }
     public ProtectedProperty Password { get; set; }
+
+    public ConfigMessageSmsProviderMonitoring Monitoring { get; set; }
+}
+
+public class ConfigMessageSmsProviderMonitoring
+{
+    public List<long> Limits { get; set; }
+    public string TemplateId { get; set; }
+    public List<string> Numbers { get; set; } = new();
 }

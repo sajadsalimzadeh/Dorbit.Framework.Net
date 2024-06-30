@@ -6,15 +6,17 @@ using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Http;
+using mpNuget;
 
 namespace Dorbit.Framework.Services.MessageProviders;
 
 [ServiceRegister]
-public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest, ConfigMessageSmsProvider>
+public class MeliPayamakProvider : IMessageProviderSms
 {
     public string Name => "MeliPayamak";
     private string _username;
     private string _password;
+    private readonly HttpHelper _client;
 
     private class SendResponse
     {
@@ -23,15 +25,19 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest, ConfigMes
         public string StrRetStatus { get; set; }
     }
 
+    public MeliPayamakProvider()
+    {
+        _client = new HttpHelper("https://rest.payamak-panel.com/api/");
+    }
+
     public void Configure(ConfigMessageSmsProvider configuration)
     {
         _username = configuration.Username;
         _password = configuration.Password.GetDecryptedValue();
     }
 
-    public async Task<QueryResult<string>> Send(MessageSmsRequest request)
+    public async Task<QueryResult<string>> SendAsync(MessageSmsRequest request)
     {
-        var client = new HttpHelper("https://rest.payamak-panel.com/api/");
         var data = new
         {
             username = _username,
@@ -40,7 +46,7 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest, ConfigMes
             to = request.To,
             text = string.Join(';', request.Args)
         };
-        var response = (await client.PostAsync<SendResponse>($"SendSMS/BaseServiceNumber", data)).Result;
+        var response = (await _client.PostAsync<SendResponse>($"SendSMS/BaseServiceNumber", data)).Result;
         return response.Value switch
         {
             "-7" => throw new Exception(" خطایی در شماره فرستنده رخ داده است با پشتیبانی تماس بگیرید"),
@@ -59,5 +65,16 @@ public class MeliPayamakProvider : IMessageProvider<MessageSmsRequest, ConfigMes
             "12" => throw new Exception("مدارک کاربر کامل نمی‌باشد"),
             _ => new QueryResult<string>(response.Value) { Success = true }
         };
+    }
+
+    public async Task<long> GetCreditMessageCountAsync()
+    {
+        var response = await _client.PostAsync<SendResponse>($"SendSMS/GetCredit", new
+        {
+            username = _username,
+            password = _password,
+        }).ToResultAsync();
+        if (double.TryParse(response.Value, out var messageCount)) return (long)messageCount;
+        return -1;
     }
 }

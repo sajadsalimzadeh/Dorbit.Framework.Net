@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,11 +18,13 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 public class MessageManager
 {
+    private static List<string> _remainCreditNotifies = new();
+
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger _logger;
-    private readonly ConfigMessage _configs;
+    private readonly ConfigMessageProviders _configs;
 
-    public MessageManager(IServiceProvider serviceProvider, ILogger logger, IOptions<ConfigMessage> options)
+    public MessageManager(IServiceProvider serviceProvider, ILogger logger, IOptions<ConfigMessageProviders> options)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -51,6 +54,15 @@ public class MessageManager
         return Task.FromResult(new CommandResult(false));
     }
 
+    private IMessageProvider<T, TC> GetProvider<T, TC>(List<IMessageProvider<T, TC>> providers, TC configuration)
+        where T : MessageRequest where TC : ConfigMessageProvider
+    {
+        var provider = providers.FirstOrDefault(x => x.Name == configuration.Name);
+        if (provider is null) return default;
+        provider.Configure(configuration);
+        return provider;
+    }
+
     private async Task<CommandResult> Process<T, TC>(List<IMessageProvider<T, TC>> providers, T request, List<TC> configurations)
         where T : MessageRequest where TC : ConfigMessageProvider
     {
@@ -63,15 +75,14 @@ public class MessageManager
         {
             try
             {
-                var provider = providers.FirstOrDefault(x => x.Name == configuration.Name);
-                if (provider is null) continue;
-                provider.Configure(configuration);
                 if (!string.IsNullOrEmpty(request.TemplateType))
                 {
                     request.TemplateId = configuration.Templates[request.TemplateType];
                 }
 
-                var op = await provider.Send(request);
+                var provider = GetProvider(providers, configuration);
+                if (provider is null) continue;
+                var op = await provider.SendAsync(request);
                 if (op.Success) return op;
             }
             catch (Exception ex)
@@ -81,5 +92,46 @@ public class MessageManager
         }
 
         throw new OperationException(Errors.SendMessageFailed);
+    }
+
+    public async Task CheckSmsProviderCredit()
+    {
+        var providers = _serviceProvider.GetServices<IMessageProviderSms>().ToList();
+
+        foreach (var configuration in _configs.Sms)
+        {
+            try
+            {
+                if (configuration.Monitoring is null || configuration.Monitoring.Numbers.Count == 0) continue;
+                var provider = providers.FirstOrDefault(x => x.Name == configuration.Name);
+                if (provider is null) continue;
+                provider.Configure(configuration);
+
+                var credit = await provider.GetCreditMessageCountAsync();
+                foreach (var limit in configuration.Monitoring.Limits)
+                {
+                    if (credit < 0 || credit > limit) continue;
+                    var key = configuration.Name + limit;
+                    if (_remainCreditNotifies.Contains(key)) continue;
+
+                    foreach (var number in configuration.Monitoring.Numbers)
+                    {
+                        await provider.SendAsync(new MessageSmsRequest()
+                        {
+                            TemplateId = configuration.Monitoring.TemplateId,
+                            Args = [credit.ToString()],
+                            To = number
+                        });
+                    }
+                    _remainCreditNotifies.Add(key);
+
+                    return;
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+        }
     }
 }

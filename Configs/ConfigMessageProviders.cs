@@ -3,7 +3,7 @@ using Dorbit.Framework.Contracts.Messages;
 
 namespace Dorbit.Framework.Configs;
 
-public class ConfigMessage
+public class ConfigMessageProviders
 {
     public List<ConfigMessageSmsProvider> Sms { get; set; }
     public List<ConfigMessageEmailProvider> Email { get; set; }

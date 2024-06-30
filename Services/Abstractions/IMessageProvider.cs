@@ -8,5 +8,5 @@ public interface IMessageProvider<T, TC> where T : MessageRequest
 {
     public string Name { get; }
     void Configure(TC configuration);
-    Task<QueryResult<string>> Send(T request);
+    Task<QueryResult<string>> SendAsync(T request);
 }
