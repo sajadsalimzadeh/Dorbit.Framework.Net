@@ -5,5 +5,5 @@ namespace Dorbit.Framework.Entities.Abstractions;
 
 public interface IValidator
 {
-    void Validate(ModelValidationException e, IServiceProvider sp);
+    void Validate(ModelValidationException e);
 }

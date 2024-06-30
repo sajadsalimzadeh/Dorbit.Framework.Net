@@ -3,7 +3,7 @@ using Dorbit.Framework.Exceptions;
 
 namespace Dorbit.Framework.Entities.Abstractions;
 
-public interface ICreationValidator
+public interface IDeletionValidator
 {
-    void ValidateOnCreate(ModelValidationException e);
+    void ValidateOnDelete(ModelValidationException e);
 }

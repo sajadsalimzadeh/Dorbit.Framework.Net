@@ -24,7 +24,7 @@ public static class HttpExtensions
             if (!string.IsNullOrEmpty(token)) break;
         }
 
-        if (token is not null) token = token.Replace("Bearer ", "");
+        if (token is not null) token = token.Replace("Bearer", "").Trim();
 
         return token;
     }

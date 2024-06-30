@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Reflection;
@@ -28,7 +27,6 @@ namespace Dorbit.Framework.Database;
 
 public abstract class EfDbContext : DbContext, IDbContext
 {
-    private static readonly List<string> Sequences = [];
     private static readonly ConcurrentDictionary<string, int> SequenceCounter = [];
     private readonly EfTransactionContext _efTransactionContext;
 
@@ -53,6 +51,24 @@ public abstract class EfDbContext : DbContext, IDbContext
     public IServiceProvider ServiceProvider { get; }
     public CancellationToken CancellationToken { get; set; }
     public bool AutoExcludeDeleted { get; set; } = true;
+
+    private DatabaseProviderType? _providerType;
+
+    public DatabaseProviderType ProviderType
+    {
+        get
+        {
+            if (_providerType.HasValue) return _providerType.Value;
+            var providerName = Database.ProviderName?.ToLower();
+            if (providerName == null) _providerType = DatabaseProviderType.Unknown;
+            else if (providerName.Contains("inmemory")) _providerType = DatabaseProviderType.InMemory;
+            else if (providerName.Contains("mysql")) _providerType = DatabaseProviderType.MySql;
+            else if (providerName.Contains("sqlserver")) _providerType = DatabaseProviderType.SqlServer;
+            else if (providerName.Contains("postgresql")) _providerType = DatabaseProviderType.Postgres;
+            else _providerType = DatabaseProviderType.Unknown;
+            return _providerType.Value;
+        }
+    }
 
     protected EfDbContext(DbContextOptions options, IServiceProvider serviceProvider) : base(options)
     {
@@ -82,29 +98,18 @@ public abstract class EfDbContext : DbContext, IDbContext
             {
                 var sequenceAttribute = property.GetCustomAttribute<SequenceAttribute>();
                 if (sequenceAttribute is null) continue;
-                
+
                 modelBuilder.HasSequence<int>("seq_translation_index", schema: "public").StartsAt(1).IncrementsBy(1);
-                
+
                 var propertyBuilder = modelBuilder.Entity(type.ClrType).Property(property.Name);
                 propertyBuilder.ValueGeneratedOnAdd();
 
-                if (GetProvider() == DatabaseProviderType.Postgres)
+                if (ProviderType == DatabaseProviderType.Postgres)
                 {
                     propertyBuilder.HasDefaultValueSql($"nextval('{sequenceAttribute.Name}')");
                 }
             }
         }
-    }
-
-    public DatabaseProviderType GetProvider()
-    {
-        var providerName = Database.ProviderName?.ToLower();
-        if (providerName == null) return DatabaseProviderType.Unknown;
-        if (providerName.Contains("inmemory")) return DatabaseProviderType.InMemory;
-        if (providerName.Contains("mysql")) return DatabaseProviderType.MySql;
-        if (providerName.Contains("sqlserver")) return DatabaseProviderType.SqlServer;
-        if (providerName.Contains("postgresql")) return DatabaseProviderType.Postgres;
-        return DatabaseProviderType.Unknown;
     }
 
     private void RegisterAuditProperties(ModelBuilder modelBuilder)
@@ -134,7 +139,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public ITransaction BeginTransaction()
     {
-        if (GetProvider() == DatabaseProviderType.InMemory) return new InMemoryTransaction(this);
+        if (ProviderType == DatabaseProviderType.InMemory) return new InMemoryTransaction(this);
         return _efTransactionContext.BeginTransaction();
     }
 
@@ -159,7 +164,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public async Task<TEntity> InsertEntityAsync<TEntity, TKey>(TEntity entity) where TEntity : class, IEntity<TKey>
     {
-        if (GetProvider() == DatabaseProviderType.InMemory)
+        if (ProviderType == DatabaseProviderType.InMemory)
         {
             var type = typeof(TEntity);
             foreach (var property in type.GetProperties())
@@ -174,65 +179,14 @@ public abstract class EfDbContext : DbContext, IDbContext
             }
         }
 
-        var e = new ModelValidationException();
-        if (entity is IValidator validator) validator.Validate(e, ServiceProvider);
-        if (entity is ICreationValidator creationValidator) creationValidator.ValidateOnCreate(e, ServiceProvider);
-        e.ThrowIfHasError();
-        if (entity is ICreationTime creationTime) creationTime.CreationTime = DateTime.UtcNow;
-        if (entity is IModificationTime modificationTime) modificationTime.ModificationTime = DateTime.UtcNow;
-        if (entity is ICreationAudit creationAudit)
-        {
-            var user = UserResolver?.User;
-            creationAudit.CreatorId = user?.Id?.ToString();
-            creationAudit.CreatorName = user?.Username;
-        }
-
-        if (entity is ITenantAudit tenantAudit)
-        {
-            var tenant = TenantResolver?.GetTenant();
-            tenantAudit.TenantId = tenant?.Id;
-            tenantAudit.TenantName = tenant?.Name;
-        }
-
-        if (entity is IServerAudit serverAudit)
-        {
-            var server = ServerResolver?.GetServer();
-            serverAudit.ServerId = server?.Id;
-            serverAudit.ServerName = server?.Name;
-        }
-
-        if (entity is ISoftwareAudit softwareAudit)
-        {
-            var software = SoftwareResolver?.GetSoftware();
-            softwareAudit.SoftwareId = software?.Id;
-            softwareAudit.SoftwareName = software?.Name;
-        }
-
-        if (entity is IHistorical historical)
-        {
-            historical.IsHistorical = false;
-            historical.HistoryId = Guid.NewGuid();
-        }
-
-        if (entity is IEntity<Guid> guidEntity)
-        {
-            if (guidEntity.Id == Guid.Empty) guidEntity.Id = Guid.NewGuid();
-        }
-
-        if (entity is IChangeLog changeLog)
-        {
-            changeLog.ChangeLogs ??= new List<ChangeLog>();
-            var properties = entity.GetType().GetProperties();
-            foreach (var propertyInfo in properties.Where(x => x.GetCustomAttribute<ChangeLogAttribute>() is not null))
-            {
-                changeLog.ChangeLogs.Add(new ChangeLog()
-                {
-                    Timestamp = DateTime.UtcNow,
-                    Property = propertyInfo.Name,
-                    NewValue = propertyInfo.GetValue(entity)?.ToString(),
-                });
-            }
-        }
+        entity.ValidateCreation<TEntity, TKey>();
+        entity.IncludeCreationAudit<TEntity, TKey>(UserResolver?.User);
+        entity.IncludeTenantAudit<TEntity, TKey>(TenantResolver?.GetTenant());
+        entity.IncludeServerAudit<TEntity, TKey>(ServerResolver?.GetServer());
+        entity.IncludeSoftwareAudit<TEntity, TKey>(SoftwareResolver?.GetSoftware());
+        entity.IncludeChangeLogs<TEntity, TKey>();
+        entity.GenerateKey<TEntity, TKey>();
+        entity.GenerateHistoricalId<TEntity, TKey>();
 
         await AddAsync(entity, CancellationToken);
         await SaveIfNotInTransactionAsync();
@@ -249,30 +203,37 @@ public abstract class EfDbContext : DbContext, IDbContext
     {
         if (entity is IReadonly) throw new OperationException(Errors.EntityIsReadonly);
 
-        var e = new ModelValidationException();
-        if (entity is IValidator validator) validator.Validate(e, ServiceProvider);
-        if (entity is IModificationValidator modificationValidator) modificationValidator.ValidateOnModify(e, ServiceProvider);
-        e.ThrowIfHasError();
+        entity.ValidateModification<TEntity, TKey>();
+        entity.IncludeVersionAudit<TEntity, TKey>();
+        entity.IncludeModificationAudit<TEntity, TKey>(UserResolver?.User);
 
-        if (entity is IVersionAudit versionAudit) versionAudit.Version++;
-        if (entity is IModificationTime modificationTime) modificationTime.ModificationTime = DateTime.UtcNow;
-        if (entity is IModificationAudit modificationAudit)
+        var readonlyProperties = entity.GetReadonlyProperties<TEntity, TKey>();
+        readonlyProperties.ForEach(property => Entry(entity).Property(property.Name).IsModified = false);
+
+        TEntity oldEntity = default;
+        if (entity is IHistorical)
         {
-            var user = UserResolver?.User;
-            modificationAudit.ModifierId = user?.Id?.ToString();
-            modificationAudit.ModifierName = user?.Username;
-        }
+            oldEntity = DbSet<TEntity, TKey>().GetById(entity.Id);
+            using var transaction = BeginTransaction();
+            if (oldEntity is IHistorical oldHistoricalModel)
+            {
+                oldHistoricalModel.IsHistorical = true;
+                Entry(oldHistoricalModel).State = EntityState.Modified;
+            }
 
-        if (entity is not IHistorical)
+            if (oldEntity is ICreationTime creationTime) Entry(creationTime).Property(x => x.CreationTime).IsModified = false;
+            if (oldEntity is ICreationAudit creationAudit)
+            {
+                Entry(creationAudit).Property(x => x.CreatorId).IsModified = false;
+                Entry(creationAudit).Property(x => x.CreatorName).IsModified = false;
+            }
+
+            await InsertEntityAsync<TEntity, TKey>(entity);
+            await transaction.CommitAsync();
+        }
+        else
         {
             Entry(entity).State = EntityState.Modified;
-            var properties = entity.GetType().GetProperties();
-            foreach (var property in properties)
-            {
-                var readonlyAttr = property.GetCustomAttribute<ReadOnlyAttribute>();
-                if (readonlyAttr is null || !readonlyAttr.IsReadOnly) continue;
-                Entry(entity).Property(property.Name).IsModified = false;
-            }
 
             if (entity is ICreationTime creationTime) Entry(creationTime).Property(x => x.CreationTime).IsModified = false;
             if (entity is ICreationAudit creationAudit)
@@ -282,47 +243,14 @@ public abstract class EfDbContext : DbContext, IDbContext
             }
         }
 
-        TEntity oldModel = default;
-        if (entity is IHistorical)
+        if (entity is IChangeLog)
         {
-            oldModel = DbSet<TEntity, TKey>().GetById(entity.Id);
-            using var transaction = BeginTransaction();
-            if (oldModel is IHistorical oldHistoricalModel)
-            {
-                oldHistoricalModel.IsHistorical = true;
-                Entry(oldHistoricalModel).State = EntityState.Modified;
-            }
-
-            if (oldModel is ICreationTime creationTime) Entry(creationTime).Property(x => x.CreationTime).IsModified = false;
-            if (oldModel is ICreationAudit creationAudit)
-            {
-                Entry(creationAudit).Property(x => x.CreatorId).IsModified = false;
-                Entry(creationAudit).Property(x => x.CreatorName).IsModified = false;
-            }
-
-            await InsertEntityAsync<TEntity, TKey>(entity);
-            await transaction.CommitAsync();
-        }
-
-        if (entity is IChangeLog changeLog)
-        {
-            changeLog.ChangeLogs ??= new List<ChangeLog>();
-            var properties = entity.GetType().GetProperties();
-            foreach (var propertyInfo in properties.Where(x => x.GetCustomAttribute<ChangeLogAttribute>() is not null))
-            {
-                oldModel ??= DbSet<TEntity, TKey>().GetById(entity.Id);
-                changeLog.ChangeLogs.Add(new ChangeLog()
-                {
-                    Timestamp = DateTime.UtcNow,
-                    Property = propertyInfo.Name,
-                    OldValue = propertyInfo.GetValue(oldModel)?.ToString(),
-                    NewValue = propertyInfo.GetValue(entity)?.ToString(),
-                });
-            }
+            oldEntity ??= DbSet<TEntity, TKey>().GetById(entity.Id);
+            entity.IncludeChangeLogs<TEntity, TKey>(oldEntity);
         }
 
         await SaveIfNotInTransactionAsync();
-        if (entity is ILogging) Log(entity, LogAction.Update, oldModel);
+        if (entity is ILogging) Log(entity, LogAction.Update, oldEntity);
         return entity;
     }
 
@@ -335,25 +263,14 @@ public abstract class EfDbContext : DbContext, IDbContext
     {
         if (entity is IUnDeletable) throw new OperationException(Errors.EntityIsUnDeletable);
 
-        var e = new ModelValidationException();
-        if (entity is IValidator validator) validator.Validate(e, ServiceProvider);
-        if (entity is IDeletationValidator deletionValidator) deletionValidator.ValidateOnDelete(e, ServiceProvider);
-        e.ThrowIfHasError();
+        entity.ValidateDeletion<TEntity, TKey>();
 
         if (entity is ISoftDelete softDelete)
         {
             if (!softDelete.IsDeleted)
             {
                 softDelete.IsDeleted = true;
-
-                if (softDelete is IDeletionTime deletionTime) deletionTime.DeletionTime = DateTime.UtcNow;
-                if (softDelete is IDeletionAudit deletionAudit)
-                {
-                    var user = UserResolver?.User;
-                    deletionAudit.DeleterId = user?.Id?.ToString();
-                    deletionAudit.DeleterName = user?.Username;
-                }
-
+                entity.IncludeDeletionAudit<TEntity, TKey>(UserResolver?.User);
                 Entry(softDelete).State = EntityState.Modified;
             }
             else
@@ -416,7 +333,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public Task MigrateAsync()
     {
-        if (GetProvider() != DatabaseProviderType.InMemory)
+        if (ProviderType != DatabaseProviderType.InMemory)
         {
             return Database.MigrateAsync(CancellationToken);
         }
@@ -464,41 +381,64 @@ public abstract class EfDbContext : DbContext, IDbContext
         return result;
     }
 
-    public async Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>
+    public async Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> entities) where TEntity : class, IEntity<TKey>
     {
-        if (GetProvider() == DatabaseProviderType.InMemory)
+        var user = UserResolver?.User;
+        var tenant = TenantResolver?.GetTenant();
+        var server = ServerResolver?.GetServer();
+        var software = SoftwareResolver?.GetSoftware();
+        entities.ForEach(entity =>
         {
-            await AddRangeAsync(items, CancellationToken);
+            entity.ValidateCreation<TEntity, TKey>();
+            entity.IncludeCreationAudit<TEntity, TKey>(user);
+            entity.IncludeTenantAudit<TEntity, TKey>(tenant);
+            entity.IncludeServerAudit<TEntity, TKey>(server);
+            entity.IncludeSoftwareAudit<TEntity, TKey>(software);
+            entity.IncludeChangeLogs<TEntity, TKey>();
+            entity.GenerateKey<TEntity, TKey>();
+        });
+        
+        if (ProviderType == DatabaseProviderType.InMemory)
+        {
+            await AddRangeAsync(entities, CancellationToken);
             await SaveChangesAsync(CancellationToken);
             return;
         }
 
-        await this.BulkInsertAsync(items, cancellationToken: CancellationToken);
+        await this.BulkInsertAsync(entities, cancellationToken: CancellationToken);
     }
 
-    public Task BulkInsertEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>
+    public Task BulkInsertEntityAsync<TEntity>(List<TEntity> entities) where TEntity : class, IEntity<Guid>
     {
-        return BulkInsertEntityAsync<TEntity, Guid>(items);
+        return BulkInsertEntityAsync<TEntity, Guid>(entities);
+    }
+    
+    public Task BulkUpdateEntityAsync<TEntity, TKey>(List<TEntity> entities) where TEntity : class, IEntity<TKey>
+    {
+        var user = UserResolver?.User;
+        entities.ForEach(item => item.IncludeModificationAudit<TEntity, TKey>(user));
+
+        if (ProviderType == DatabaseProviderType.InMemory)
+        {
+            UpdateRange(entities, CancellationToken);
+            return SaveChangesAsync(CancellationToken);
+        }
+
+        return this.BulkUpdateAsync(entities, cancellationToken: CancellationToken);
     }
 
-
-    public Task BulkUpdateEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>
+    public Task BulkUpdateEntityAsync<TEntity>(List<TEntity> entities) where TEntity : class, IEntity<Guid>
     {
-        return this.BulkUpdateAsync(items, cancellationToken: CancellationToken);
+        return BulkUpdateEntityAsync<TEntity, Guid>(entities);
     }
 
-    public Task BulkUpdateEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>
+    public Task BulkDeleteEntityAsync<TEntity, TKey>(List<TEntity> entities) where TEntity : class, IEntity<TKey>
     {
-        return BulkUpdateEntityAsync<TEntity, Guid>(items);
+        return this.BulkDeleteAsync(entities, cancellationToken: CancellationToken);
     }
 
-    public Task BulkDeleteEntityAsync<TEntity, TKey>(List<TEntity> items) where TEntity : class, IEntity<TKey>
+    public Task BulkDeleteEntityAsync<TEntity>(List<TEntity> entities) where TEntity : class, IEntity<Guid>
     {
-        return this.BulkDeleteAsync(items, cancellationToken: CancellationToken);
-    }
-
-    public Task BulkDeleteEntityAsync<TEntity>(List<TEntity> items) where TEntity : class, IEntity<Guid>
-    {
-        return BulkDeleteEntityAsync<TEntity, Guid>(items);
+        return BulkDeleteEntityAsync<TEntity, Guid>(entities);
     }
 }
