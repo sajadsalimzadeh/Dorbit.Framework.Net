@@ -98,9 +98,9 @@ public abstract class EfDbContext : DbContext, IDbContext
             {
                 var sequenceAttribute = property.GetCustomAttribute<SequenceAttribute>();
                 if (sequenceAttribute is null) continue;
-
-                modelBuilder.HasSequence<int>("seq_translation_index", schema: "public").StartsAt(1).IncrementsBy(1);
-
+                
+                modelBuilder.HasSequence<int>(sequenceAttribute.Name, schema: "public").StartsAt(1).IncrementsBy(1);
+                
                 var propertyBuilder = modelBuilder.Entity(type.ClrType).Property(property.Name);
                 propertyBuilder.ValueGeneratedOnAdd();
 
@@ -139,7 +139,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public ITransaction BeginTransaction()
     {
-        if (ProviderType == DatabaseProviderType.InMemory) return new InMemoryTransaction(this);
+        if (Provider == DatabaseProviderType.InMemory) return new InMemoryTransaction(_efTransactionContext);
         return _efTransactionContext.BeginTransaction();
     }
 
@@ -318,11 +318,13 @@ public abstract class EfDbContext : DbContext, IDbContext
         return SaveChangesAsync(CancellationToken).Result;
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            return base.SaveChangesAsync(cancellationToken);
+            var result = await base.SaveChangesAsync(cancellationToken);
+            ChangeTracker.Clear();
+            return result;
         }
         catch (Exception ex)
         {

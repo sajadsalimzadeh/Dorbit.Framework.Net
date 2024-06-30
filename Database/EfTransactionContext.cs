@@ -14,8 +14,8 @@ public enum TransactionState
 internal class EfTransactionContext
 {
     internal readonly DbContext DbContext;
-    internal List<ITransaction> Transactions = new();
-    internal TransactionState State = TransactionState.NotSet;
+    internal readonly List<ITransaction> Transactions = new();
+    private TransactionState _state = TransactionState.NotSet;
 
     public EfTransactionContext(DbContext dbContext)
     {

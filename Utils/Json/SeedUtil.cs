@@ -13,7 +13,7 @@ namespace Dorbit.Framework.Utils.Json;
 public static class SeedUtil
 {
     public static async Task SeedAsync<TEntity, TKey>(this IWriterRepository<TEntity,TKey> repository, string filename, 
-        Action<TEntity> beforeInsertAction = default,
+        Func<TEntity, Task> beforeInsertAction = default,
         Func<TEntity, TEntity, bool> ignorePredicate = default)
         where TEntity : class, IEntity<TKey>
     {
@@ -25,7 +25,7 @@ public static class SeedUtil
         using var transaction = repository.DbContext.BeginTransaction();
         foreach (var entity in items.Where(x => !existsItems.Contains(x)))
         {
-            if (beforeInsertAction is not null) beforeInsertAction(entity);
+            if (beforeInsertAction is not null) await beforeInsertAction(entity);
             await repository.InsertAsync(entity);
         }
 

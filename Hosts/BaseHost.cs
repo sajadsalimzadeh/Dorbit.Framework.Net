@@ -11,7 +11,17 @@ public abstract class BaseHost : BackgroundService
 {
     protected readonly ILogger Logger;
     protected readonly IServiceProvider ServiceProvider;
+    private static readonly CancellationTokenSource MainCancellationTokenSource = new();
 
+    static BaseHost()
+    {
+        new Thread(() =>
+        {
+            while (App.MainThread.IsAlive) Thread.Sleep(1000);
+            MainCancellationTokenSource.Cancel();
+        }).Start();
+    }
+    
     public BaseHost(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider.CreateScope().ServiceProvider;
@@ -24,7 +34,7 @@ public abstract class BaseHost : BackgroundService
         {
             try
             {
-                await InvokeAsync(ServiceProvider.CreateScope().ServiceProvider, stoppingToken);
+                await InvokeAsync(ServiceProvider.CreateScope().ServiceProvider, MainCancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
