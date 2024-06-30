@@ -98,9 +98,9 @@ public abstract class EfDbContext : DbContext, IDbContext
             {
                 var sequenceAttribute = property.GetCustomAttribute<SequenceAttribute>();
                 if (sequenceAttribute is null) continue;
-                
+
                 modelBuilder.HasSequence<int>(sequenceAttribute.Name, schema: "public").StartsAt(1).IncrementsBy(1);
-                
+
                 var propertyBuilder = modelBuilder.Entity(type.ClrType).Property(property.Name);
                 propertyBuilder.ValueGeneratedOnAdd();
 
@@ -139,7 +139,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public ITransaction BeginTransaction()
     {
-        if (Provider == DatabaseProviderType.InMemory) return new InMemoryTransaction(_efTransactionContext);
+        if (ProviderType == DatabaseProviderType.InMemory) return new InMemoryTransaction(_efTransactionContext);
         return _efTransactionContext.BeginTransaction();
     }
 
@@ -399,7 +399,7 @@ public abstract class EfDbContext : DbContext, IDbContext
             entity.IncludeChangeLogs<TEntity, TKey>();
             entity.GenerateKey<TEntity, TKey>();
         });
-        
+
         if (ProviderType == DatabaseProviderType.InMemory)
         {
             await AddRangeAsync(entities, CancellationToken);
@@ -414,7 +414,7 @@ public abstract class EfDbContext : DbContext, IDbContext
     {
         return BulkInsertEntityAsync<TEntity, Guid>(entities);
     }
-    
+
     public Task BulkUpdateEntityAsync<TEntity, TKey>(List<TEntity> entities) where TEntity : class, IEntity<TKey>
     {
         var user = UserResolver?.User;

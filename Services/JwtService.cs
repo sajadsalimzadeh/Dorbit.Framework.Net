@@ -18,6 +18,7 @@ namespace Dorbit.Framework.Services;
 public class JwtService
 {
     private readonly ConfigSecurity _configSecurity;
+
     public JwtService(IOptions<ConfigSecurity> securityOptions)
     {
         _configSecurity = securityOptions.Value;

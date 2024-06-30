@@ -11,7 +11,7 @@ namespace Dorbit.Framework.Services;
 public abstract class NotificationService(HubService hubService) : INotificationService
 {
     private const string OnNotify = nameof(OnNotify);
-    
+
     protected abstract IHubClients Clients { get; }
 
     public async Task NotifyAsync(NotificationDto notificationDto)

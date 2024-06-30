@@ -32,7 +32,8 @@ public class CliRunnerService
         var menu = new ConsoleMenu(Array.Empty<string>(), level: 0);
         foreach (var command in commands.OrderBy(x => x.Order))
         {
-            menu.Add(command.Message, () => {
+            menu.Add(command.Message, () =>
+            {
                 var context = new CommandContextCli();
                 var parameters = command.GetParameters(context);
                 foreach (var parameter in parameters)

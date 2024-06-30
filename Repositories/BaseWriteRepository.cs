@@ -71,7 +71,7 @@ public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TK
         {
             return guid != Guid.Empty ? UpdateAsync(entity) : InsertAsync(entity);
         }
-        
+
         if (entity.Id.IsNumericType())
         {
             var longValue = Convert.ToInt64(entity.Id);
@@ -115,13 +115,14 @@ public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TK
         {
             entity = dto.MapTo(Activator.CreateInstance<TEntity>());
         }
+
         return await SaveAsync(entity);
     }
 }
 
-public class BaseWriteRepository<TEntity> : BaseWriteRepository<TEntity, Guid>  where TEntity : class, IEntity<Guid>
+public class BaseWriteRepository<TEntity> : BaseWriteRepository<TEntity, Guid> where TEntity : class, IEntity<Guid>
 {
     public BaseWriteRepository(IDbContext dbContext) : base(dbContext)
     {
     }
-} 
+}

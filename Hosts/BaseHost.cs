@@ -21,7 +21,7 @@ public abstract class BaseHost : BackgroundService
             MainCancellationTokenSource.Cancel();
         }).Start();
     }
-    
+
     public BaseHost(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider.CreateScope().ServiceProvider;

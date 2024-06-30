@@ -32,7 +32,7 @@ public class ConfigurePostgresCommand : Command
         var db = context.GetArgAsString("DB");
         var username = context.GetArgAsString("Username");
         var password = context.GetArgAsString("Password");
-        
+
         var connectionString =
             $"host={host};port={port};database={db};user id={username};password={password};pooling=true;minimum Pool Size=1;Maximum Pool Size=20;";
 
@@ -41,18 +41,18 @@ public class ConfigurePostgresCommand : Command
         if (!File.Exists(appSettingPath))
         {
             context.Error("appsetting.json not found");
-            
+
             return Task.CompletedTask;
         }
 
         var appSettings = JObject.Parse(File.ReadAllText(appSettingPath));
         appSettings["PostgresConnection"] = JToken.FromObject(connectionString.GetEncryptedValue());
         File.WriteAllText(appSettingPath, appSettings.ToString(Formatting.Indented));
-        
+
 
         context.Log($"\n\"{appSettingPath}\" changed.");
         context.Log("\nTo apply changes, you need to run the program again\n");
-        
+
         return Task.CompletedTask;
     }
 

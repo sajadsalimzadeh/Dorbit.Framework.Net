@@ -30,7 +30,7 @@ public abstract class NotificationHub : Hub
             var userId = (Guid)userResolver.User.Id;
             HubService.Add(userId, Context.ConnectionId);
         }
-        
+
         await base.OnConnectedAsync();
     }
 

@@ -13,4 +13,6 @@ internal enum Errors
     EntityIsUnDeletable,
     TransactionRollback,
     SendMessageFailed,
+    AesKeySizeIsInvalid,
+    AesKeySizeMostEqualIvSize
 }

@@ -13,9 +13,8 @@ namespace Dorbit.Framework.Extensions;
 
 public static class EntityExtensions
 {
-    
     private static readonly ConcurrentDictionary<Type, List<PropertyInfo>> _allReadonlyProperties = new();
-    
+
     public static TEntity IncludeCreationTime<TEntity>(this TEntity entity) where TEntity : ICreationTime
     {
         entity.CreationTime = DateTime.UtcNow;
@@ -136,7 +135,7 @@ public static class EntityExtensions
         if (entity is IChangeLog changeLog) changeLog.IncludeChangeLogs(oldEntity as IChangeLog);
         return entity;
     }
-    
+
     public static TEntity GenerateHistoricalId<TEntity, TKey>(this TEntity entity) where TEntity : IEntity<TKey>
     {
         if (entity is IHistorical historical)
@@ -147,7 +146,7 @@ public static class EntityExtensions
 
         return entity;
     }
-    
+
     public static TEntity IncludeVersionAudit<TEntity, TKey>(this TEntity entity) where TEntity : IEntity<TKey>
     {
         if (entity is IVersionAudit versionAudit)
@@ -209,6 +208,6 @@ public static class EntityExtensions
             }
 
             return items;
-        });       
+        });
     }
 }

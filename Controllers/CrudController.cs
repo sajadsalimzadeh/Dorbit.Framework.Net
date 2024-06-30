@@ -48,14 +48,14 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
     }
 }
 
-public abstract class CrudController<TEntity> : CrudController<TEntity, Guid, TEntity, TEntity, TEntity> 
+public abstract class CrudController<TEntity> : CrudController<TEntity, Guid, TEntity, TEntity, TEntity>
     where TEntity : class, IEntity<Guid>;
 
-public abstract class CrudController<TEntity, TKey> : CrudController<TEntity, TKey, TEntity, TEntity, TEntity> 
+public abstract class CrudController<TEntity, TKey> : CrudController<TEntity, TKey, TEntity, TEntity, TEntity>
     where TEntity : class, IEntity<TKey>;
 
 public abstract class CrudController<TEntity, TKey, TGet> : CrudController<TEntity, TKey, TGet, TEntity, TEntity>
     where TEntity : class, IEntity<TKey>;
 
-public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController<TEntity, TKey, TGet, TAdd, TEntity> 
+public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController<TEntity, TKey, TGet, TAdd, TEntity>
     where TEntity : class, IEntity<TKey>;

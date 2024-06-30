@@ -11,11 +11,10 @@ public static class ProtobufExtensions
         await using var stream = new FileStream(path, FileMode.OpenOrCreate);
         message.WriteTo(stream);
     }
-    
+
 
     public static string ToHexString(this ByteString bytes)
     {
         return bytes.ToByteArray().ToHexString();
     }
-    
 }

@@ -12,13 +12,15 @@ public class Notification : CreateEntity
 {
     [MaxLength(128), Required]
     public string Title { get; set; }
+
     [MaxLength(1024), Required]
     public string Body { get; set; }
 
     public NotificationType Type { get; set; } = NotificationType.Normal;
-    
+
     [MaxLength(128)]
     public string Icon { get; set; }
+
     [MaxLength(128)]
     public string Image { get; set; }
 

@@ -21,7 +21,7 @@ public class UninstallCommand : Command
             RedirectStandardInput = false,
         });
         await stopProcess?.WaitForExitAsync()!;
-        
+
         var deleteProcess = Process.Start(new ProcessStartInfo("sc", $"delete {assemblyName}")
         {
             Verb = "runas",

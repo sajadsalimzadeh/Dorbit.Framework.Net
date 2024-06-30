@@ -11,7 +11,8 @@ public class BaseRepository<TEntity, TKey> : BaseWriteRepository<TEntity, TKey>,
     {
     }
 }
-public class BaseRepository<TEntity> : BaseRepository<TEntity, Guid>  where TEntity : class, IEntity<Guid>
+
+public class BaseRepository<TEntity> : BaseRepository<TEntity, Guid> where TEntity : class, IEntity<Guid>
 {
     public BaseRepository(IDbContext dbContext) : base(dbContext)
     {

@@ -12,7 +12,7 @@ namespace Dorbit.Framework.Utils.Json;
 
 public static class SeedUtil
 {
-    public static async Task SeedAsync<TEntity, TKey>(this IWriterRepository<TEntity,TKey> repository, string filename, 
+    public static async Task SeedAsync<TEntity, TKey>(this IWriterRepository<TEntity, TKey> repository, string filename,
         Func<TEntity, Task> beforeInsertAction = default,
         Func<TEntity, TEntity, bool> ignorePredicate = default)
         where TEntity : class, IEntity<TKey>

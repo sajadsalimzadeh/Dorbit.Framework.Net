@@ -24,4 +24,4 @@ public interface IReaderRepository<TEntity, TKey> where TEntity : class, IEntity
     Task<int> CountAsync();
 }
 
-public interface IReaderRepository<TEntity> : IReaderRepository<TEntity, Guid>  where TEntity : class, IEntity<Guid>;
+public interface IReaderRepository<TEntity> : IReaderRepository<TEntity, Guid> where TEntity : class, IEntity<Guid>;

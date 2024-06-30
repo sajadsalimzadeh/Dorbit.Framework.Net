@@ -35,17 +35,17 @@ public class InstallCommand : Command
             RedirectStandardInput = false,
         });
         await stopProcess?.WaitForExitAsync()!;
-        
+
         var deleteProcess = Process.Start(new ProcessStartInfo("sc", $"delete {assemblyName}")
         {
             Verb = "runas",
             RedirectStandardInput = false,
         });
         await deleteProcess?.WaitForExitAsync()!;
-        
+
         var migrationCommandAll = _serviceProvider.GetService<MigrationCommandAll>();
         await migrationCommandAll.InvokeAsync(context);
-        
+
         var createProcess = Process.Start(new ProcessStartInfo("sc", $"create {assemblyName} binpath= \"{entryFilename} run\" start= auto")
         {
             Verb = "runas",
