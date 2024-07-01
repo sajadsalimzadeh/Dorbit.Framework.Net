@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Jobs;
 using Dorbit.Framework.Contracts.Notifications;
 using Dorbit.Framework.Entities;

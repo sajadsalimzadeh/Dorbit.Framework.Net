@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
-using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Notifications;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Filters;
 using Dorbit.Framework.Repositories;
-using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

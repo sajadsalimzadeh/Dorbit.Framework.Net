@@ -22,7 +22,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace Dorbit.Framework.Installers;
@@ -31,6 +30,7 @@ public static class FrameworkInstaller
 {
     public static IServiceCollection AddDorbitFramework(this IServiceCollection services, Configs configs)
     {
+        Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
         App.MainThread = Thread.CurrentThread;
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);

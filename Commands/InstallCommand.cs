@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
-using Dorbit.Framework.Utils;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Commands;

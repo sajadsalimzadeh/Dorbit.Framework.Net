@@ -6,7 +6,6 @@ using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Http;
-using mpNuget;
 
 namespace Dorbit.Framework.Services.MessageProviders;
 
