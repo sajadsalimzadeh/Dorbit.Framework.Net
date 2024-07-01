@@ -3,6 +3,6 @@
 public interface IAppSecurity
 {
     byte[] GetKey();
-    string Encrypt(string value);
-    string Decrypt(string value);
+    byte[] Encrypt(string value);
+    string Decrypt(byte[] value);
 }

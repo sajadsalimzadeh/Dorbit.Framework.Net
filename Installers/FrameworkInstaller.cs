@@ -35,6 +35,13 @@ public static class FrameworkInstaller
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+        
+        var appSettingPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json");
+        
+        if (!File.Exists(appSettingPath))
+        {
+            File.WriteAllText(appSettingPath, "{}");
+        }
 
         services.BindConfiguration<AppSetting>();
         services.TryAddSingleton(services);
@@ -74,8 +81,6 @@ public static class FrameworkInstaller
             }
         }
 
-        App.ServiceProvider = services.BuildServiceProvider();
-
         return services;
     }
 
@@ -95,14 +100,18 @@ public static class FrameworkInstaller
         return services;
     }
 
+    public static WebApplication BuildDorbit(this WebApplicationBuilder builder)
+    {
+        App.ServiceProvider = builder.Services.BuildServiceProvider();
+        App.Current = App.ServiceProvider.GetRequiredService<IApplication>();
+        App.MemoryCache = App.ServiceProvider.GetRequiredService<IMemoryCache>();
+        App.Mapper = App.ServiceProvider.GetRequiredService<IMapper>();
+        App.Security ??= new AppSecurityInternal(App.Current.EncryptionKey);
+        return builder.Build();
+    }
+
     public static WebApplication UseDorbit(this WebApplication app)
     {
-        App.ServiceProvider = app.Services;
-        App.Current = app.Services.GetRequiredService<IApplication>();
-        App.MemoryCache = app.Services.GetRequiredService<IMemoryCache>();
-        App.Mapper = app.Services.GetRequiredService<IMapper>();
-        App.Security ??= new AppSecurityInternal(App.Current.Key);
-
         var defaultFilesOptions = new DefaultFilesOptions();
         defaultFilesOptions.DefaultFileNames.Add("index.html");
         app.UseDefaultFiles(defaultFilesOptions);

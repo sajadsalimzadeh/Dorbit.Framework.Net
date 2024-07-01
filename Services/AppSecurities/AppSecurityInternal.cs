@@ -18,12 +18,12 @@ public class AppSecurityInternal : IAppSecurity
         return _aes.Key;
     }
 
-    public string Encrypt(string value)
+    public byte[] Encrypt(string value)
     {
-        return _aes?.Encrypt(value).ToStringUtf8();
+        return _aes?.Encrypt(value);
     }
 
-    public string Decrypt(string value)
+    public string Decrypt(byte[] value)
     {
         return _aes?.Decrypt(value).ToStringUtf8();
     }
