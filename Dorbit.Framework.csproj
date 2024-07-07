@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <PackageId>Dorbit.Framework</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>sajad salimzadeh</Authors>
+        <Company>dorbit</Company>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <TargetFramework>net8.0</TargetFramework>
         <RootNamespace>Dorbit.Framework</RootNamespace>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+    
     <ItemGroup>
         <PackageReference Include="ConsoleMenu-simple" Version="2.7.0"/>
         <PackageReference Include="Google.Protobuf" Version="3.27.2"/>
