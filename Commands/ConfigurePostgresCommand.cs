@@ -38,7 +38,7 @@ public class ConfigurePostgresCommand : Command
 
         var appSettingPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json");
         var appSettings = JObject.Parse(File.ReadAllText(appSettingPath));
-        appSettings["PostgresConnection"] = JToken.FromObject(connectionString.GetEncryptedValue());
+        appSettings["Connection"] = JToken.FromObject(connectionString.GetEncryptedValue());
         File.WriteAllText(appSettingPath, appSettings.ToString(Formatting.Indented));
         
         context.Log($"\n\"{appSettingPath}\" changed.");

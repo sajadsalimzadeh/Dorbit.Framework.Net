@@ -39,7 +39,10 @@ public static class CryptographyExtensions
     public static ProtectedProperty GetEncryptedValue(this string value)
     {
         var bytes = App.Security.Encrypt(value);
-        return new ProtectedProperty(Convert.ToBase64String(bytes));
+        return new ProtectedProperty(Convert.ToBase64String(bytes))
+        {
+            Algorithm = "SHA1"
+        };
     }
 
     public static ProtectedProperty GetEncryptedValue(this string value, byte[] key)
