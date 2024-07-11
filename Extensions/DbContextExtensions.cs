@@ -26,13 +26,10 @@ public static class DbContextExtensions
         foreach (var property in dbContext.GetType().GetProperties())
         {
             var ignoreMigration = property.GetCustomAttribute<ExcludeMigrationAttribute>();
-            if(ignoreMigration is null) continue;
+            if (ignoreMigration is null) continue;
             var clrType = property.PropertyType.GenericTypeArguments.FirstOrDefault();
-            if(clrType is null) continue;
-            modelBuilder.Entity(clrType).ToTable(x =>
-            {
-                x.ExcludeFromMigrations();
-            });
+            if (clrType is null) continue;
+            modelBuilder.Entity(clrType).ToTable(property.Name, x => x.ExcludeFromMigrations());
         }
     }
 }
