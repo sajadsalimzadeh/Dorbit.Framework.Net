@@ -182,31 +182,40 @@ public class HttpHelper : IDisposable
             return default;
         }
 
-        await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
-        using var reader = new StreamReader(stream);
-
         var httpModelType = new HttpModel<T>()
         {
             Request = httpModel.Request,
             Response = httpModel.Response,
         };
-
-        try
+        
+        if (httpModel.Response.IsSuccessStatusCode)
         {
-            if (ResponseContentType == ContentType.Json)
+
+            await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
+            using var reader = new StreamReader(stream);
+
+
+            try
             {
-                await using var jsonTextReader = new JsonTextReader(reader);
-                httpModelType.Result = new JsonSerializer().Deserialize<T>(jsonTextReader);
+                if (ResponseContentType == ContentType.Json)
+                {
+                    await using var jsonTextReader = new JsonTextReader(reader);
+                    httpModelType.Result = new JsonSerializer().Deserialize<T>(jsonTextReader);
+                }
+                else if (ResponseContentType == ContentType.Xml)
+                {
+                    var serializer = new XmlSerializer(typeof(T));
+                    httpModelType.Result = (T)serializer.Deserialize(reader);
+                }
             }
-            else if (ResponseContentType == ContentType.Xml)
+            catch (Exception ex)
             {
-                var serializer = new XmlSerializer(typeof(T));
-                httpModelType.Result = (T)serializer.Deserialize(reader);
+                throw new Exception($"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}", ex);
             }
         }
-        catch (Exception ex)
+        else
         {
-            throw new Exception($"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}", ex);
+            OnException?.Invoke(new Exception($"[{httpModel.Response.StatusCode}]"), httpModel.Request, httpModel.Response);
         }
 
         return httpModelType;

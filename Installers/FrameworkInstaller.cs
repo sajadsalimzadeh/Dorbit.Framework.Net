@@ -50,6 +50,7 @@ public static class FrameworkInstaller
         services.AddHttpContextAccessor();
         services.AddDistributedMemoryCache();
         services.AddSerilog();
+        services.AddSwaggerGen();
 
         if (!configs.DependencyRegisterNamespaces.Contains("Dorbit"))
         {
