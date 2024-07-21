@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Dorbit.Framework.Contracts.Jobs;
 
@@ -113,6 +114,7 @@ public class Job
             catch (Exception ex)
             {
                 Exception = ex;
+                Logger.LogError($"{ex.Message} {ex.InnerException?.Message}");
             }
             finally
             {

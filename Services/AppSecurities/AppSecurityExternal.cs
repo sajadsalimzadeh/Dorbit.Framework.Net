@@ -24,12 +24,12 @@ public class AppSecurityExternal : IAppSecurity
         return _getKeyMethodInfo.Invoke(null, []) as byte[];
     }
 
-    public string Encrypt(string value)
+    public byte[] Encrypt(string value)
     {
-        return _encryptMethodInfo.Invoke(null, [value]) as string;
+        return _encryptMethodInfo.Invoke(null, [value]) as byte[];
     }
 
-    public string Decrypt(string value)
+    public string Decrypt(byte[] value)
     {
         return _decryptMethodInfo.Invoke(null, [value]) as string;
     }

@@ -20,5 +20,5 @@ public class MessageProviderCreditMonitorHost : BaseHostInterval
         return messageManager.CheckSmsProviderCredit();
     }
 
-    protected override TimeSpan Interval { get; } = TimeSpan.FromSeconds(5);
+    protected override TimeSpan Interval { get; } = TimeSpan.FromMinutes(15);
 }

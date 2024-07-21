@@ -7,7 +7,6 @@ using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using Org.BouncyCastle.Asn1.Cms;
 
 namespace Dorbit.Framework.Filters;
 

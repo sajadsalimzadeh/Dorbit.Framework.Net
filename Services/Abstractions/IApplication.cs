@@ -2,5 +2,5 @@
 
 public interface IApplication
 {
-    byte[] Key { get; }
+    byte[] EncryptionKey { get; }
 }

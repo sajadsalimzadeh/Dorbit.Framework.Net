@@ -4,7 +4,6 @@ using AutoMapper;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework;
 

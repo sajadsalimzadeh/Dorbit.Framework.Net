@@ -36,20 +36,11 @@ public class ConfigurePostgresCommand : Command
         var connectionString =
             $"host={host};port={port};database={db};user id={username};password={password};pooling=true;minimum Pool Size=1;Maximum Pool Size=20;";
 
-        var appSettingPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
-
-        if (!File.Exists(appSettingPath))
-        {
-            context.Error("appsetting.json not found");
-
-            return Task.CompletedTask;
-        }
-
+        var appSettingPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json");
         var appSettings = JObject.Parse(File.ReadAllText(appSettingPath));
-        appSettings["PostgresConnection"] = JToken.FromObject(connectionString.GetEncryptedValue());
+        appSettings["Connection"] = JToken.FromObject(connectionString.GetEncryptedValue());
         File.WriteAllText(appSettingPath, appSettings.ToString(Formatting.Indented));
-
-
+        
         context.Log($"\n\"{appSettingPath}\" changed.");
         context.Log("\nTo apply changes, you need to run the program again\n");
 

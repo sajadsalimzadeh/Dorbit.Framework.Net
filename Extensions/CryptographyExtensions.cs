@@ -14,7 +14,8 @@ public static class CryptographyExtensions
             return property.Value;
         }
 
-        return App.Security.Decrypt(property.Value);
+        var encryptedText = Convert.FromBase64String(property.Value);
+        return App.Security.Decrypt(encryptedText);
     }
 
     public static string GetDecryptedValue(this ProtectedProperty property, byte[] key)
@@ -38,7 +39,10 @@ public static class CryptographyExtensions
     public static ProtectedProperty GetEncryptedValue(this string value)
     {
         var bytes = App.Security.Encrypt(value);
-        return new ProtectedProperty(bytes);
+        return new ProtectedProperty(Convert.ToBase64String(bytes))
+        {
+            Algorithm = "SHA1"
+        };
     }
 
     public static ProtectedProperty GetEncryptedValue(this string value, byte[] key)

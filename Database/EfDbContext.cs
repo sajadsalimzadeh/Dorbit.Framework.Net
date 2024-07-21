@@ -110,6 +110,8 @@ public abstract class EfDbContext : DbContext, IDbContext
                 }
             }
         }
+        
+        this.ExcludeMigrationByAttribute(modelBuilder);
     }
 
     private void RegisterAuditProperties(ModelBuilder modelBuilder)

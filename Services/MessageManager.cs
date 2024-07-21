@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -96,8 +95,9 @@ public class MessageManager
 
     public async Task CheckSmsProviderCredit()
     {
+        if (_configs?.Sms is null) return;
+        
         var providers = _serviceProvider.GetServices<IMessageProviderSms>().ToList();
-
         foreach (var configuration in _configs.Sms)
         {
             try

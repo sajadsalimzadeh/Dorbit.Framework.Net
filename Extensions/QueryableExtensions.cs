@@ -43,7 +43,8 @@ public static class QueryableExtensions
         return result;
     }
 
-    public static async Task<TEntity> FirstOrDefaultAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate, string key,
+    public static async Task<TEntity> FirstOrDefaultAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate,
+        string key,
         TimeSpan duration, CancellationToken cancellationToken = default)
     {
         if (App.MemoryCache.TryGetValue(key, out TEntity result)) return result;
@@ -53,13 +54,21 @@ public static class QueryableExtensions
         return result;
     }
 
+
+    public static Task<TEntity> FirstOrDefaultAsyncWithCache<TEntity>(this IQueryable<TEntity> query, string key, TimeSpan duration,
+        CancellationToken cancellationToken = default)
+    {
+        return query.FirstOrDefaultAsyncWithCache(x => true, key, duration, cancellationToken);
+    }
+
     public static Task<TEntity> GetByIdAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Guid id, string key, TimeSpan duration,
         CancellationToken cancellationToken = default) where TEntity : IEntity
     {
         return query.FirstOrDefaultAsyncWithCache(x => x.Id == id, $"{key}-{id}", duration, cancellationToken: cancellationToken);
     }
 
-    public static IQueryable<TEntity> WhereIf<TEntity>(this IQueryable<TEntity> query, Func<bool> condition, Expression<Func<TEntity, bool>> predicate)
+    public static IQueryable<TEntity> WhereIf<TEntity>(this IQueryable<TEntity> query, Func<bool> condition,
+        Expression<Func<TEntity, bool>> predicate)
     {
         return (condition() ? query.Where(predicate) : query);
     }

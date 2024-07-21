@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-public class DorbitApplication : IApplication
+internal class Application : IApplication
 {
-    public byte[] Key { get; } = "xZncxnz4Kct2UEVJdF1oisdVZOYb6KGqiHO2t9RROMQa5a5C1a"u8.ToArray();
+    public byte[] EncryptionKey { get; } = "xZncxnz4Kct2UEVJdF1oisdVZOYb6KGqiHO2t9RROMQa5a5C1a"u8.ToArray();
 }

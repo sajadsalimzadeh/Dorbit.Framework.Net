@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Notifications;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.SignalR;

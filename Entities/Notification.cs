@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Notifications;
-using Dorbit.Framework.Entities.Abstractions;
 using Innofactor.EfCoreJsonValueConverter;
 
 namespace Dorbit.Framework.Entities;
