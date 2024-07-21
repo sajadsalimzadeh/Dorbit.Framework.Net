@@ -14,6 +14,9 @@ namespace Dorbit.Framework.Hubs;
 
 public abstract class NotificationHub : Hub
 {
+    public const string GroupUserOnline = "User-Online";
+    public const string OnOnlineUserUpdated = nameof(OnOnlineUserUpdated);
+    
     protected HubService HubService;
 
     protected NotificationHub(HubService hubService)
@@ -30,6 +33,8 @@ public abstract class NotificationHub : Hub
             var userId = (Guid)userResolver.User.Id;
             HubService.Add(userId, Context.ConnectionId);
         }
+
+        await Clients.Group(GroupUserOnline).SendCoreAsync(OnOnlineUserUpdated, [HubService.GetAllUserId()]);
 
         await base.OnConnectedAsync();
     }
