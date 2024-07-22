@@ -64,6 +64,11 @@ public class ExceptionMiddleware : IMiddleware
                     op.Data = operationException.Data;
                     op.Message = operationException.Message;
                     op.Messages = operationException.Messages;
+                    if (logger is not null && operationException.ExceptionLog is not null)
+                    {
+                        logger.Write(operationException.ExceptionLog.Level, operationException.ExceptionLog.Message, operationException.ExceptionLog.Params);
+                    }
+
                     break;
                 case ModelValidationException modelValidationException:
                     op.Code = (int)HttpStatusCode.BadRequest;
