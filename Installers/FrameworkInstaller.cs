@@ -122,7 +122,7 @@ public static class FrameworkInstaller
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI(o => o.UseDefaultOptions("Mobicar.Shared.Core API v1"));
+            app.UseSwaggerUI(o => o.UseDefaultOptions("Mobicar.Shared.CoreServer API v1"));
         }
         else
         {
