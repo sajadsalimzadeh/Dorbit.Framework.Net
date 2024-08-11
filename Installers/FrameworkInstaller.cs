@@ -35,9 +35,9 @@ public static class FrameworkInstaller
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
-        
+
         var appSettingPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json");
-        
+
         if (!File.Exists(appSettingPath))
         {
             File.WriteAllText(appSettingPath, "{}");
@@ -69,6 +69,7 @@ public static class FrameworkInstaller
         services.AddDbContext<FrameworkDbContext>(configs.FrameworkDbContextConfiguration);
 
         if (configs.ConfigMessageProvider is not null) services.Configure<ConfigMessageProviders>(configs.ConfigMessageProvider);
+        if (configs.ConfigLogRequest is not null) services.Configure<ConfigLogRequest>(configs.ConfigLogRequest);
         if (configs.ConfigSecurity is not null)
         {
             services.Configure<ConfigSecurity>(configs.ConfigSecurity);
@@ -83,6 +84,17 @@ public static class FrameworkInstaller
         }
 
         return services;
+    }
+
+    public class Configs
+    {
+        public required Assembly EntryAssembly { get; init; }
+        public required List<string> DependencyRegisterNamespaces { get; init; }
+        public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; init; }
+
+        public IConfiguration ConfigMessageProvider { get; init; }
+        public IConfiguration ConfigSecurity { get; init; }
+        public IConfiguration ConfigLogRequest { get; init; }
     }
 
     public static IHostBuilder UseDorbitSerilog(this IHostBuilder builder)
@@ -119,16 +131,12 @@ public static class FrameworkInstaller
         app.UseStaticFiles();
         app.UseCors();
         app.UseRouting();
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI(o => o.UseDefaultOptions("Mobicar.Shared.CoreServer API v1"));
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-            app.UseHsts();
-        }
+
+        app.UseSwagger();
+        app.UseSwaggerUI(o => o.UseDefaultOptions("Mobicar.Shared.CoreServer API v1"));
+
+        app.UseExceptionHandler("/Error");
+        app.UseHsts();
 
         app.UseMiddleware<AuthMiddleware>();
         app.UseMiddleware<ExceptionMiddleware>();
@@ -174,15 +182,5 @@ public static class FrameworkInstaller
                 await app.RunWithStartupsAsync();
             }
         }
-    }
-
-    public class Configs
-    {
-        public required Assembly EntryAssembly { get; init; }
-        public required List<string> DependencyRegisterNamespaces { get; init; }
-        public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; init; }
-
-        public IConfiguration ConfigMessageProvider { get; init; }
-        public IConfiguration ConfigSecurity { get; init; }
     }
 }

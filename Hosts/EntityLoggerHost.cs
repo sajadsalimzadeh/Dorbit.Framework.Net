@@ -17,17 +17,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Hosts;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-internal class EntityLogHostInterval : BaseHostInterval
+internal class EntityLoggerHost : BaseHostInterval
 {
     private readonly IServiceProvider _serviceProvider;
     private static readonly ConcurrentQueue<LogRequest> Requests = new();
 
-    public EntityLogHostInterval(IServiceProvider serviceProvider) : base(serviceProvider)
+    public EntityLoggerHost(IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
-    public EntityLogHostInterval Add(LogRequest request)
+    public EntityLoggerHost Add(LogRequest request)
     {
         Requests.Enqueue(request);
 

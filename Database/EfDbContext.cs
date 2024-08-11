@@ -45,8 +45,8 @@ public abstract class EfDbContext : DbContext, IDbContext
     private ILogger _logger;
     private ILogger Logger => _logger ??= ServiceProvider.GetService<ILogger>();
 
-    private EntityLogHostInterval _entityLogHostInterval;
-    private EntityLogHostInterval EntityLogHostInterval => _entityLogHostInterval ??= ServiceProvider.GetService<EntityLogHostInterval>();
+    private EntityLoggerHost _entityLoggerHost;
+    private EntityLoggerHost EntityLoggerHost => _entityLoggerHost ??= ServiceProvider.GetService<EntityLoggerHost>();
 
     public IServiceProvider ServiceProvider { get; }
     public CancellationToken CancellationToken { get; set; }
@@ -305,7 +305,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     private void Log<TKey>(IEntity<TKey> newEntity, LogAction action, IEntity<TKey> oldEntity = null)
     {
-        EntityLogHostInterval.Add(new LogRequest()
+        EntityLoggerHost.Add(new LogRequest()
         {
             NewObj = newEntity,
             OldObj = oldEntity,
