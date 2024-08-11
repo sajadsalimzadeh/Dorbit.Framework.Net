@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
@@ -29,8 +30,7 @@ public abstract class NotificationHub : Hub
             HubService.Add(userId, Context.ConnectionId);
         }
 
-        await Clients.Group(GroupUserOnline).SendCoreAsync(OnOnlineUserUpdated, [HubService.GetAllUserId()]);
-
+        await updateOnlineUsers();
         await base.OnConnectedAsync();
     }
 
@@ -38,5 +38,10 @@ public abstract class NotificationHub : Hub
     {
         HubService.Remove(Context.ConnectionId);
         return base.OnDisconnectedAsync(exception);
+    }
+
+    public async Task updateOnlineUsers()
+    {
+        await Clients.Group(GroupUserOnline).SendCoreAsync(OnOnlineUserUpdated, [HubService.GetAllUserId()]);
     }
 }
