@@ -125,12 +125,11 @@ public static class FrameworkInstaller
 
     public static void UseDorbitLetsEncrypt(this WebApplicationBuilder builder)
     {
-        builder.WebHost.UseKestrel(k =>
+        builder.WebHost.UseKestrel(options =>
         {
-            var appServices = k.ApplicationServices;
-            k.Listen(
-                IPAddress.Any, 443,
-                o => o.UseHttps(h => { h.UseLettuceEncrypt(appServices); }));
+            var appServices = options.ApplicationServices;
+            options.Listen(IPAddress.Any, 80);
+            options.Listen(IPAddress.Any, 443, o => o.UseHttps(h => { h.UseLettuceEncrypt(appServices); }));
         });
     }
 
