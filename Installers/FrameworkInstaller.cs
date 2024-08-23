@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text.Json;
@@ -15,6 +16,7 @@ using Dorbit.Framework.Middlewares;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Services.AppSecurities;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -23,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using IStartup = Dorbit.Framework.Services.Abstractions.IStartup;
 
 namespace Dorbit.Framework.Installers;
 
@@ -73,7 +76,7 @@ public static class FrameworkInstaller
         {
             services.Configure<ConfigFile>(configs.ConfigFile);
         }
-        
+
         if (configs.ConfigMessageProvider is not null)
         {
             services.Configure<ConfigMessageProviders>(configs.ConfigMessageProvider);
@@ -83,7 +86,7 @@ public static class FrameworkInstaller
         {
             services.Configure<ConfigLogRequest>(configs.ConfigLogRequest);
         }
-        
+
         if (configs.ConfigSecurity is not null)
         {
             services.Configure<ConfigSecurity>(configs.ConfigSecurity);
@@ -118,6 +121,17 @@ public static class FrameworkInstaller
             loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration));
 
         return builder;
+    }
+
+    public static void UseDorbitLetsEncrypt(this WebApplicationBuilder builder)
+    {
+        builder.WebHost.UseKestrel(k =>
+        {
+            var appServices = k.ApplicationServices;
+            k.Listen(
+                IPAddress.Any, 443,
+                o => o.UseHttps(h => { h.UseLettuceEncrypt(appServices); }));
+        });
     }
 
     public static IServiceCollection AddOData(IServiceCollection services)
