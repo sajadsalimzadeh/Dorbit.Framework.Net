@@ -68,7 +68,15 @@ public static class FrameworkInstaller
 
         services.AddDbContext<FrameworkDbContext>(configs.FrameworkDbContextConfiguration);
 
-        if (configs.ConfigMessageProvider is not null) services.Configure<ConfigMessageProviders>(configs.ConfigMessageProvider);
+
+        if (configs.ConfigFile is not null)
+        {
+            services.Configure<ConfigFile>(configs.ConfigFile);
+        }
+        if (configs.ConfigMessageProvider is not null)
+        {
+            services.Configure<ConfigMessageProviders>(configs.ConfigMessageProvider);
+        }
         if (configs.ConfigSecurity is not null)
         {
             services.Configure<ConfigSecurity>(configs.ConfigSecurity);
@@ -182,6 +190,7 @@ public static class FrameworkInstaller
         public required List<string> DependencyRegisterNamespaces { get; init; }
         public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; init; }
 
+        public IConfiguration ConfigFile { get; init; }
         public IConfiguration ConfigMessageProvider { get; init; }
         public IConfiguration ConfigSecurity { get; init; }
     }

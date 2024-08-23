@@ -19,6 +19,7 @@
         <PackageReference Include="Google.Protobuf" Version="3.27.2"/>
         <PackageReference Include="Innofactor.EfCoreJsonValueConverter" Version="6.0.0"/>
         <PackageReference Include="kavenegar" Version="1.2.4"/>
+        <PackageReference Include="LettuceEncrypt" Version="1.3.3" />
         <PackageReference Include="Melipayamak.RestClient" Version="1.0.0"/>
         <PackageReference Include="MessagePack" Version="2.5.168"/>
         <PackageReference Include="Fare" Version="2.2.1"/>
