@@ -18,6 +18,7 @@ using Dorbit.Framework.Services.AppSecurities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -121,16 +122,6 @@ public static class FrameworkInstaller
             loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration));
 
         return builder;
-    }
-
-    public static void UseDorbitLetsEncrypt(this WebApplicationBuilder builder)
-    {
-        builder.WebHost.UseKestrel(options =>
-        {
-            var appServices = options.ApplicationServices;
-            options.Listen(IPAddress.Any, 80);
-            options.Listen(IPAddress.Any, 443, o => o.UseHttps(h => { h.UseLettuceEncrypt(appServices); }));
-        });
     }
 
     public static IServiceCollection AddOData(IServiceCollection services)
