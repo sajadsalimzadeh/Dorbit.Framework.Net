@@ -25,7 +25,7 @@
         <PackageReference Include="Fare" Version="2.2.1" />
         <PackageReference Include="GoogleReCaptcha.V3" Version="1.3.1" />
         <PackageReference Include="MailKit" Version="4.7.1.1" />
-        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.5" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.8" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.8" />
@@ -45,15 +45,16 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
         <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
         <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.1.1" />
-        <PackageReference Include="Serilog.Settings.AppSettings" Version="2.2.2" />
+        <PackageReference Include="Serilog.Settings.AppSettings" Version="3.0.0" />
+        <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="5.0.0" />
         <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.7.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.7.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.7.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.7.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.7.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.7.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.7.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.7.3" />
         <PackageReference Include="System.Drawing.Common" Version="8.0.8" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.7.1" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
         <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.5" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
         <PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="8.1.0" />
@@ -69,9 +70,5 @@
         <None Update="setup.ps1">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
-    
-    <ItemGroup>
-      <Folder Include="Assets\" />
     </ItemGroup>
 </Project>
