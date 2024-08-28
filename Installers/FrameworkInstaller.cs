@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text.Json;
@@ -16,9 +15,7 @@ using Dorbit.Framework.Middlewares;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Services.AppSecurities;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -108,7 +105,7 @@ public static class FrameworkInstaller
     {
         public required Assembly EntryAssembly { get; init; }
         public required List<string> DependencyRegisterNamespaces { get; init; }
-        public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; init; }
+        public required Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; init; }
 
         public IConfiguration ConfigFile { get; init; }
         public IConfiguration ConfigMessageProvider { get; init; }
