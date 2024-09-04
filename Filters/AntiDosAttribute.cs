@@ -52,8 +52,7 @@ public class AntiDosAttribute : ActionFilterAttribute
         var now = DateTime.UtcNow;
         var requests = AllUserRequests.GetOrAdd(key, []);
         requests.Add(new RequestModel { Time = now });
-        var timespan =
-            AllUserRequests[key] = requests = requests.Where(x => x.Time.Add(_time) > now).ToList();
+        requests.RemoveAll(x => x.Time.Add(_time) < now);
         if (requests.Count > Count) throw new OperationException(Errors.TooMuchRequest);
     }
 }
