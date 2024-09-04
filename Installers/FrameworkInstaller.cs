@@ -67,8 +67,8 @@ public static class FrameworkInstaller
         services.AddControllers()
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
-        services.AddDbContext<FrameworkDbContext>(configs.DbContextConfiguration);
-
+        var frameworkDbContextConfiguration = configs.FrameworkDbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
+        services.AddDbContext<FrameworkDbContext>(frameworkDbContextConfiguration);
 
         configs.ConfigFile?.Configure(services);
         configs.ConfigMessageProvider?.Configure(services);
