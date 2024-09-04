@@ -2,7 +2,7 @@ using Dorbit.Framework.Contracts.Cryptograpy;
 
 namespace Dorbit.Framework.Configs;
 
-public class ConfigSecurity
+public class ConfigFrameworkSecurity
 {
     public string Assembly { get; set; }
     public ProtectedProperty Secret { get; set; }

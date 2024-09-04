@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Utils.Captcha;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Dorbit.Framework.Services;
 
@@ -13,20 +15,20 @@ namespace Dorbit.Framework.Services;
 public class CaptchaService
 {
     private static Dictionary<string, string> _captchas = new();
-    private readonly AppSetting _appSetting;
+    private readonly ConfigCaptcha _configCaptcha;
 
-    public CaptchaService(IServiceProvider serviceProvider)
+    public CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
     {
-        _appSetting = serviceProvider.GetService<AppSetting>();
+        _configCaptcha = configCaptchaOptions.Value;
     }
 
     public KeyValuePair<string, string> Generate(CaptchaGenerateModel dto)
     {
         if (dto.Width > 500 || dto.Height > 500) throw new OperationException(Errors.CaptchaSizeIsTooLarge);
 
-        if (dto.Dificulty == CaptchaDificulty.None) dto.Dificulty = _appSetting.Captcha.Difficulty;
-        if (dto.Length == 0) dto.Length = _appSetting.Captcha.Length;
-        if (string.IsNullOrEmpty(dto.Pattern)) dto.Pattern = _appSetting.Captcha.Pattern;
+        if (dto.Dificulty == CaptchaDificulty.None) dto.Dificulty = _configCaptcha.Difficulty;
+        if (dto.Length == 0) dto.Length = _configCaptcha.Length;
+        if (string.IsNullOrEmpty(dto.Pattern)) dto.Pattern = _configCaptcha.Pattern;
 
         var generator = new CaptchaGenerator
         {

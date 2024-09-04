@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Dorbit.Framework.Configs;
+using Dorbit.Framework.Configs.Abstractions;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Middlewares;
@@ -44,7 +45,6 @@ public static class FrameworkInstaller
             File.WriteAllText(appSettingPath, "{}");
         }
 
-        services.BindConfiguration<AppSetting>();
         services.TryAddSingleton(services);
         services.AddResponseCaching();
         services.AddMemoryCache();
@@ -67,29 +67,20 @@ public static class FrameworkInstaller
         services.AddControllers()
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
-        services.AddDbContext<FrameworkDbContext>(configs.FrameworkDbContextConfiguration);
+        services.AddDbContext<FrameworkDbContext>(configs.DbContextConfiguration);
 
 
-        if (configs.ConfigFile is not null)
-        {
-            services.Configure<ConfigFile>(configs.ConfigFile);
-        }
-
-        if (configs.ConfigMessageProvider is not null)
-        {
-            services.Configure<ConfigMessageProviders>(configs.ConfigMessageProvider);
-        }
-
-        if (configs.ConfigLogRequest is not null)
-        {
-            services.Configure<ConfigLogRequest>(configs.ConfigLogRequest);
-        }
+        configs.ConfigFile?.Configure(services);
+        configs.ConfigMessageProvider?.Configure(services);
+        configs.ConfigLogRequest?.Configure(services);
+        configs.ConfigCaptcha?.Configure(services);
+        configs.ConfigGeo?.Configure(services);
 
         if (configs.ConfigSecurity is not null)
         {
-            services.Configure<ConfigSecurity>(configs.ConfigSecurity);
+            configs.ConfigSecurity.Configure(services);
 
-            var securityAssembly = configs.ConfigSecurity["Assembly"];
+            var securityAssembly = configs.ConfigSecurity.Configuration["Assembly"];
             if (!string.IsNullOrEmpty(securityAssembly))
             {
                 var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, securityAssembly);
@@ -105,12 +96,14 @@ public static class FrameworkInstaller
     {
         public required Assembly EntryAssembly { get; init; }
         public required List<string> DependencyRegisterNamespaces { get; init; }
-        public required Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; init; }
+        public required Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
 
-        public IConfiguration ConfigFile { get; init; }
-        public IConfiguration ConfigMessageProvider { get; init; }
-        public IConfiguration ConfigSecurity { get; init; }
-        public IConfiguration ConfigLogRequest { get; init; }
+        public IConfig<ConfigFile> ConfigFile { get; init; }
+        public IConfig<ConfigMessageProvider> ConfigMessageProvider { get; init; }
+        public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; }
+        public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; }
+        public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; }
+        public IConfig<ConfigGeo> ConfigGeo { get; init; }
     }
 
     public static IHostBuilder UseDorbitSerilog(this IHostBuilder builder)

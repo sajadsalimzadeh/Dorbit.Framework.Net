@@ -16,23 +16,23 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 public class JwtService
 {
-    private readonly ConfigSecurity _configSecurity;
+    private readonly ConfigFrameworkSecurity _configFrameworkSecurity;
 
-    public JwtService(IOptions<ConfigSecurity> securityOptions)
+    public JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
     {
-        _configSecurity = securityOptions.Value;
+        _configFrameworkSecurity = securityOptions.Value;
     }
 
     public Task<JwtCreateTokenResponse> CreateTokenAsync(JwtCreateTokenRequest request)
     {
-        var secret = _configSecurity.Secret.GetDecryptedValue();
+        var secret = _configFrameworkSecurity.Secret.GetDecryptedValue();
         var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
             Claims = new Dictionary<string, object>(),
-            Issuer = _configSecurity.Issuer,
-            Audience = _configSecurity.Audience,
+            Issuer = _configFrameworkSecurity.Issuer,
+            Audience = _configFrameworkSecurity.Audience,
             Expires = request.Expires,
             SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
         };
@@ -64,7 +64,7 @@ public class JwtService
 
     public Task<bool> TryValidateTokenAsync(string token, out SecurityToken securityToken, out ClaimsPrincipal claimsPrincipal)
     {
-        var secret = _configSecurity.Secret.GetDecryptedValue();
+        var secret = _configFrameworkSecurity.Secret.GetDecryptedValue();
         var tokenHandler = new JwtSecurityTokenHandler();
         try
         {
