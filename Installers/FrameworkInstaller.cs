@@ -67,7 +67,7 @@ public static class FrameworkInstaller
         services.AddControllers()
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
-        var frameworkDbContextConfiguration = configs.FrameworkDbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
+        var frameworkDbContextConfiguration = configs.DbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
         services.AddDbContext<FrameworkDbContext>(frameworkDbContextConfiguration);
 
         configs.ConfigFile?.Configure(services);
@@ -96,7 +96,6 @@ public static class FrameworkInstaller
     {
         public required Assembly EntryAssembly { get; init; }
         public required List<string> DependencyRegisterNamespaces { get; init; }
-        public required Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
 
         public IConfig<ConfigFile> ConfigFile { get; init; }
         public IConfig<ConfigMessageProvider> ConfigMessageProvider { get; init; }
@@ -104,6 +103,18 @@ public static class FrameworkInstaller
         public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; }
         public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; }
         public IConfig<ConfigGeo> ConfigGeo { get; init; }
+        
+        public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
+
+        public Configs(IConfiguration configuration)
+        {
+            ConfigFile = configuration.GetConfig<ConfigFile>("File");
+            ConfigMessageProvider = configuration.GetConfig<ConfigMessageProvider>("MessageProvider");
+            ConfigSecurity = configuration.GetConfig<ConfigFrameworkSecurity>("Security");
+            ConfigLogRequest = configuration.GetConfig<ConfigLogRequest>("LogRequest");
+            ConfigCaptcha = configuration.GetConfig<ConfigCaptcha>("Captcha");
+            ConfigGeo = configuration.GetConfig<ConfigGeo>("Geo");
+        }
     }
 
     public static IHostBuilder UseDorbitSerilog(this IHostBuilder builder)
