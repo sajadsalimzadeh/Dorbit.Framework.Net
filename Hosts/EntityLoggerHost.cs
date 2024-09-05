@@ -12,22 +12,23 @@ using Dorbit.Framework.Database;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Utils.Json;
+using EFCore.BulkExtensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Hosts;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-internal class EntityLogHostInterval : BaseHostInterval
+internal class EntityLoggerHost : BaseHostInterval
 {
     private readonly IServiceProvider _serviceProvider;
     private static readonly ConcurrentQueue<LogRequest> Requests = new();
 
-    public EntityLogHostInterval(IServiceProvider serviceProvider) : base(serviceProvider)
+    public EntityLoggerHost(IServiceProvider serviceProvider) : base(serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
 
-    public EntityLogHostInterval Add(LogRequest request)
+    public EntityLoggerHost Add(LogRequest request)
     {
         Requests.Enqueue(request);
 
@@ -79,9 +80,7 @@ internal class EntityLogHostInterval : BaseHostInterval
             {
                 using var scope = _serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetService<FrameworkDbContext>();
-                var set = dbContext.Set<EntityLog>();
-                await set.AddRangeAsync(logs, cancellationToken);
-                await dbContext.SaveChangesAsync(cancellationToken);
+                await dbContext.BulkInsertAsync(logs, cancellationToken: cancellationToken);
             }
         }
         catch (Exception ex)

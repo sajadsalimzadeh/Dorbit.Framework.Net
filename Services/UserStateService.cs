@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Users;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using UAParser;
 
 namespace Dorbit.Framework.Services;
@@ -15,12 +17,12 @@ internal class UserStateService : IUserStateService
 {
     private readonly Dictionary<string, UserState> _states = new();
     private readonly IGeoService _geoService;
-    private readonly AppSetting _appSetting;
+    private readonly ConfigGeo _configGeo;
 
-    public UserStateService(IGeoService geoService, AppSetting appSetting)
+    public UserStateService(IGeoService geoService, IOptions<ConfigGeo> configGeoOptions)
     {
         _geoService = geoService;
-        _appSetting = appSetting;
+        _configGeo = configGeoOptions.Value;
     }
 
     public UserState GetUserState(string userId)
@@ -66,7 +68,7 @@ internal class UserStateService : IUserStateService
 
     public void LoadGeoInfo(UserState state, string ip)
     {
-        if (!_appSetting.Geo.Enable) return;
+        if (!_configGeo.Enable) return;
         lock (state)
         {
             if (state.IsGeoInfoInquiry) return;

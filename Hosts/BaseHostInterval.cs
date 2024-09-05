@@ -5,17 +5,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Hosts;
 
-public abstract class BaseHostInterval : BaseHost
+public abstract class BaseHostInterval(IServiceProvider serviceProvider) : BaseHost(serviceProvider)
 {
-    protected BaseHostInterval(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     protected abstract TimeSpan Interval { get; }
-
-
+    
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        new Thread(Start).Start();
+        return Task.CompletedTask;
+
         async void Start()
         {
             using var timer = new PeriodicTimer(Interval);
@@ -23,7 +21,8 @@ public abstract class BaseHostInterval : BaseHost
             {
                 try
                 {
-                    await InvokeAsync(ServiceProvider.CreateScope().ServiceProvider, stoppingToken);
+                    using var scope = serviceProvider.CreateScope();
+                    await InvokeAsync(scope.ServiceProvider, stoppingToken);
                 }
                 catch (Exception ex)
                 {
@@ -31,8 +30,5 @@ public abstract class BaseHostInterval : BaseHost
                 }
             }
         }
-
-        new Thread(Start).Start();
-        return Task.CompletedTask;
     }
 }

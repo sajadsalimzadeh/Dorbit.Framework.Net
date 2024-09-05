@@ -173,13 +173,6 @@ public class HttpHelper : IDisposable
         if (httpModel.Response.StatusCode == HttpStatusCode.Forbidden)
         {
             OnForbiddenHandler?.Invoke();
-            if (IsRetryAfterUnAuthorized && RemainRetryCount > 0)
-            {
-                RemainRetryCount--;
-                return await SendAsync<T>(request);
-            }
-
-            return default;
         }
 
         var httpModelType = new HttpModel<T>()

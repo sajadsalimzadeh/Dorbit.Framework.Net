@@ -9,7 +9,8 @@ public static class CommandExtensions
 {
     public static Task RunCliAsync(this WebApplication app)
     {
-        var serviceProvider = app.Services.CreateScope().ServiceProvider;
+        using var scope = app.Services.CreateScope();
+        var serviceProvider = scope.ServiceProvider;
         var cliRunnerService = serviceProvider.GetService<CliRunnerService>();
         return cliRunnerService.RunAsync(app);
     }

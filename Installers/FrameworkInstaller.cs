@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Dorbit.Framework.Configs;
+using Dorbit.Framework.Configs.Abstractions;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Middlewares;
@@ -23,6 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using IStartup = Dorbit.Framework.Services.Abstractions.IStartup;
 
 namespace Dorbit.Framework.Installers;
 
@@ -35,15 +37,14 @@ public static class FrameworkInstaller
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
-        
+
         var appSettingPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json");
-        
+
         if (!File.Exists(appSettingPath))
         {
             File.WriteAllText(appSettingPath, "{}");
         }
 
-        services.BindConfiguration<AppSetting>();
         services.TryAddSingleton(services);
         services.AddResponseCaching();
         services.AddMemoryCache();
@@ -66,14 +67,20 @@ public static class FrameworkInstaller
         services.AddControllers()
             .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
-        services.AddDbContext<FrameworkDbContext>(configs.FrameworkDbContextConfiguration);
+        var frameworkDbContextConfiguration = configs.DbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
+        services.AddDbContext<FrameworkDbContext>(frameworkDbContextConfiguration);
 
-        if (configs.ConfigMessageProvider is not null) services.Configure<ConfigMessageProviders>(configs.ConfigMessageProvider);
+        configs.ConfigFile?.Configure(services);
+        configs.ConfigMessageProvider?.Configure(services);
+        configs.ConfigLogRequest?.Configure(services);
+        configs.ConfigCaptcha?.Configure(services);
+        configs.ConfigGeo?.Configure(services);
+
         if (configs.ConfigSecurity is not null)
         {
-            services.Configure<ConfigSecurity>(configs.ConfigSecurity);
+            configs.ConfigSecurity.Configure(services);
 
-            var securityAssembly = configs.ConfigSecurity["Assembly"];
+            var securityAssembly = configs.ConfigSecurity.Configuration["Assembly"];
             if (!string.IsNullOrEmpty(securityAssembly))
             {
                 var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, securityAssembly);
@@ -83,6 +90,31 @@ public static class FrameworkInstaller
         }
 
         return services;
+    }
+
+    public class Configs
+    {
+        public required Assembly EntryAssembly { get; init; }
+        public required List<string> DependencyRegisterNamespaces { get; init; }
+
+        public IConfig<ConfigFile> ConfigFile { get; init; }
+        public IConfig<ConfigMessageProvider> ConfigMessageProvider { get; init; }
+        public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; }
+        public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; }
+        public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; }
+        public IConfig<ConfigGeo> ConfigGeo { get; init; }
+        
+        public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
+
+        public Configs(IConfiguration configuration)
+        {
+            ConfigFile = configuration.GetConfig<ConfigFile>("File");
+            ConfigMessageProvider = configuration.GetConfig<ConfigMessageProvider>("MessageProvider");
+            ConfigSecurity = configuration.GetConfig<ConfigFrameworkSecurity>("Security");
+            ConfigLogRequest = configuration.GetConfig<ConfigLogRequest>("LogRequest");
+            ConfigCaptcha = configuration.GetConfig<ConfigCaptcha>("Captcha");
+            ConfigGeo = configuration.GetConfig<ConfigGeo>("Geo");
+        }
     }
 
     public static IHostBuilder UseDorbitSerilog(this IHostBuilder builder)
@@ -119,16 +151,12 @@ public static class FrameworkInstaller
         app.UseStaticFiles();
         app.UseCors();
         app.UseRouting();
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI(o => o.UseDefaultOptions("Mobicar.Shared.Core API v1"));
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-            app.UseHsts();
-        }
+
+        app.UseSwagger();
+        app.UseSwaggerUI(o => o.UseDefaultOptions("Mobicar.Shared.CoreServer API v1"));
+
+        app.UseExceptionHandler("/Error");
+        app.UseHsts();
 
         app.UseMiddleware<AuthMiddleware>();
         app.UseMiddleware<ExceptionMiddleware>();
@@ -174,15 +202,5 @@ public static class FrameworkInstaller
                 await app.RunWithStartupsAsync();
             }
         }
-    }
-
-    public class Configs
-    {
-        public required Assembly EntryAssembly { get; init; }
-        public required List<string> DependencyRegisterNamespaces { get; init; }
-        public Action<DbContextOptionsBuilder> FrameworkDbContextConfiguration { get; init; }
-
-        public IConfiguration ConfigMessageProvider { get; init; }
-        public IConfiguration ConfigSecurity { get; init; }
     }
 }

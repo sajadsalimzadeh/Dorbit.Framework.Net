@@ -22,7 +22,7 @@ public class DecryptCommand : Command
 
     public override Task InvokeAsync(ICommandContext context)
     {
-        var protectedProperty = new ProtectedProperty(context.GetArgAsString("Input"));
+        var protectedProperty = new ProtectedProperty(context.GetArgAsString("Input")) { Algorithm = "SHA1" };
         context.Log($"{protectedProperty.GetDecryptedValue(context.GetArgAsString("Key").ToBytesUtf8())}\n");
         return Task.CompletedTask;
     }

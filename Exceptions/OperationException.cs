@@ -2,38 +2,44 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Serilog.Events;
 
 namespace Dorbit.Framework.Exceptions;
 
 public class OperationException : Exception
 {
-    public int Code { get; set; }
-    public dynamic Entities { get; }
-    public IEnumerable<Enum> Messages { get; set; }
-
+    public int Code { get; init; }
+    public dynamic Entities { get; init; }
+    public IEnumerable<Enum> Messages { get; init; }
+    public ExceptionLogDto ExceptionLog { get; init; }
+    
     public OperationException(string message) : base(message)
     {
     }
 
-    public OperationException(params Enum[] messages) : base(messages.First().ToString())
+    public OperationException(Enum message, ExceptionLogDto exceptionLog = null) : base(message.ToString())
     {
-        Code = Convert.ToInt32(messages.First());
-        Messages = messages;
+        Code = Convert.ToInt32(message);
+        Messages = [message];
+        ExceptionLog = exceptionLog;
     }
-
-    public OperationException(dynamic data, params Enum[] messages) : this(messages)
-    {
-        Entities = data;
-    }
-
-    public OperationException(HttpStatusCode code, params Enum[] messages) : this(messages)
+    
+    public OperationException(HttpStatusCode code, Enum message, ExceptionLogDto exceptionLog = null) : this(message, exceptionLog)
     {
         Code = (int)code;
     }
+}
 
-    public OperationException(HttpStatusCode code, dynamic data, params Enum[] messages) : this(messages)
+public class ExceptionLogDto
+{
+    public LogEventLevel Level { get; set; } = LogEventLevel.Error;
+    public string Message { get; set; }
+    public object[] Params { get; set; }
+
+
+    public ExceptionLogDto(string message, params object[] @params)
     {
-        Code = (int)code;
-        Entities = data;
+        Message = message;
+        Params = @params;
     }
 }

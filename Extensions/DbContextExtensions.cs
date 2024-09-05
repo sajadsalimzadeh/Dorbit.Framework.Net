@@ -13,7 +13,8 @@ public static class DbContextExtensions
 {
     public static async Task RunMigrations(this WebApplication app)
     {
-        var serviceProvider = app.Services.CreateScope().ServiceProvider;
+        using var scope = app.Services.CreateScope();
+        var serviceProvider = scope.ServiceProvider;
         var dbContexts = serviceProvider.GetServices<IDbContext>();
         foreach (var dbContext in dbContexts)
         {
