@@ -11,7 +11,8 @@ public static class MigrationExtensions
 {
     public static async Task MigrateAll(this WebApplication app)
     {
-        var sp = app.Services.CreateScope().ServiceProvider;
+        using var scope = app.Services.CreateScope();
+        var sp = scope.ServiceProvider;
         await sp.MigrateAll();
     }
 

@@ -8,7 +8,9 @@ public static class EnvironmentUtil
     public static string GetEnvironment()
     {
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-#if !DEBUG
+#if DEBUG
+        if (string.IsNullOrEmpty(environment)) environment = Environments.Development;
+#else
         if(string.IsNullOrEmpty(environment)) environment = Environments.Production;
 #endif
         return environment?.ToLower() ?? "development";

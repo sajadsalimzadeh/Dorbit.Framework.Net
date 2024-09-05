@@ -12,6 +12,7 @@ using Dorbit.Framework.Database;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Utils.Json;
+using EFCore.BulkExtensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Hosts;
@@ -79,9 +80,7 @@ internal class EntityLoggerHost : BaseHostInterval
             {
                 using var scope = _serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetService<FrameworkDbContext>();
-                var set = dbContext.Set<EntityLog>();
-                await set.AddRangeAsync(logs, cancellationToken);
-                await dbContext.SaveChangesAsync(cancellationToken);
+                await dbContext.BulkInsertAsync(logs, cancellationToken: cancellationToken);
             }
         }
         catch (Exception ex)
