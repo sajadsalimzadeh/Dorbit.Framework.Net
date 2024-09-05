@@ -99,14 +99,16 @@ public abstract class EfDbContext : DbContext, IDbContext
                 var sequenceAttribute = property.GetCustomAttribute<SequenceAttribute>();
                 if (sequenceAttribute is null) continue;
 
-                modelBuilder.HasSequence<int>(sequenceAttribute.Name, schema: "public").StartsAt(1).IncrementsBy(1);
+                modelBuilder.HasSequence<int>(sequenceAttribute.Name, schema: sequenceAttribute.Schema)
+                    .StartsAt(sequenceAttribute.StartAt)
+                    .IncrementsBy(sequenceAttribute.IncrementsBy);
 
                 var propertyBuilder = modelBuilder.Entity(type.ClrType).Property(property.Name);
                 propertyBuilder.ValueGeneratedOnAdd();
 
                 if (ProviderType == DatabaseProviderType.Postgres)
                 {
-                    propertyBuilder.HasDefaultValueSql($"nextval('{sequenceAttribute.Name}')");
+                    propertyBuilder.HasDefaultValueSql($"nextval('{sequenceAttribute.Schema}.{sequenceAttribute.Name}')");
                 }
             }
         }
