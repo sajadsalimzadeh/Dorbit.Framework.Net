@@ -1,35 +1,37 @@
+using System;
 using System.IO;
+using System.Net;
 using LettuceEncrypt;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Dorbit.Framework.Installers;
 
 public static class LetsEncryptInstaller
 {
-    public static IServiceCollection AddDorbitLetsEncrypt(this IServiceCollection services)
-    {
-        var path = Path.Combine("../Certificates/");
-        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-        services.AddLettuceEncrypt()
-            .PersistDataToDirectory(new DirectoryInfo(path), "123456");;
-        return services;
-    }
-
     public static void UseDorbitLetsEncrypt(this WebApplicationBuilder builder)
     {
-        builder.WebHost.UseKestrel(options =>
+        if (builder.Environment.IsProduction())
         {
-            var appServices = options.ApplicationServices;
-            options.ConfigureHttpsDefaults(h =>
+            var path = Path.Combine("../Certificates/");
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            builder.Services.AddLettuceEncrypt(options => { options.RenewalCheckPeriod = TimeSpan.FromDays(30); })
+                .PersistDataToDirectory(new DirectoryInfo(path), "123456");
+
+            builder.WebHost.UseKestrel(options =>
             {
-                h.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-                h.UseLettuceEncrypt(appServices);
+                var appServices = options.ApplicationServices;
+                options.Listen(IPAddress.Any, 80);
+
+                options.ConfigureHttpsDefaults(h =>
+                {
+                    h.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                    h.UseLettuceEncrypt(appServices);
+                });
             });
-            // options.Listen(IPAddress.Any, 80);
-            // options.Listen(IPAddress.Any, 443, o => o.UseHttps(h => { h.UseLettuceEncrypt(appServices); }));
-        });
+        }
     }
 }
