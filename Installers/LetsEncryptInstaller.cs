@@ -20,7 +20,7 @@ public static class LetsEncryptInstaller
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             builder.Services.AddLettuceEncrypt(options =>
                 {
-                    options.RenewalCheckPeriod = TimeSpan.FromDays(30);
+                    options.RenewDaysInAdvance = TimeSpan.FromDays(5);
                 })
                 .PersistDataToDirectory(new DirectoryInfo(path), "123456");
 
