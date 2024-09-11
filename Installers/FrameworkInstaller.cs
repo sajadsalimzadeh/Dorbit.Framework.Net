@@ -71,7 +71,7 @@ public static class FrameworkInstaller
         services.AddDbContext<FrameworkDbContext>(frameworkDbContextConfiguration);
 
         configs.ConfigFile?.Configure(services);
-        configs.ConfigMessageProvider?.Configure(services);
+        configs.ConfigMessageProviders?.Configure(services);
         configs.ConfigLogRequest?.Configure(services);
         configs.ConfigCaptcha?.Configure(services);
         configs.ConfigGeo?.Configure(services);
@@ -98,7 +98,7 @@ public static class FrameworkInstaller
         public required List<string> DependencyRegisterNamespaces { get; init; }
 
         public IConfig<ConfigFile> ConfigFile { get; init; }
-        public IConfig<ConfigMessageProvider> ConfigMessageProvider { get; init; }
+        public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; }
         public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; }
         public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; }
         public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; }
@@ -109,7 +109,7 @@ public static class FrameworkInstaller
         public Configs(IConfiguration configuration)
         {
             ConfigFile = configuration.GetConfig<ConfigFile>("File");
-            ConfigMessageProvider = configuration.GetConfig<ConfigMessageProvider>("MessageProvider");
+            ConfigMessageProviders = configuration.GetConfig<ConfigMessageProviders>("MessageProviders");
             ConfigSecurity = configuration.GetConfig<ConfigFrameworkSecurity>("Security");
             ConfigLogRequest = configuration.GetConfig<ConfigLogRequest>("LogRequest");
             ConfigCaptcha = configuration.GetConfig<ConfigCaptcha>("Captcha");
