@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Google.Protobuf;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -33,6 +34,11 @@ public static class EncodingExtensions
     public static byte[] ToByteArray(this string input)
     {
         return Encoding.UTF8.GetBytes(input);
+    }
+
+    public static ByteString ToByteString(this string input)
+    {
+        return ByteString.CopyFrom(input.ToByteArray());
     }
 
     public static byte[] ToBytesUtf32(this string input)

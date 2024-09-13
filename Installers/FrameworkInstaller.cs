@@ -117,9 +117,9 @@ public static class FrameworkInstaller
         }
     }
 
-    public static IHostBuilder UseDorbitSerilog(this IHostBuilder builder)
+    public static WebApplicationBuilder UseDorbitSerilog(this WebApplicationBuilder builder)
     {
-        builder.UseSerilog((hostingContext, loggerConfiguration) =>
+        builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
             loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration));
 
         return builder;

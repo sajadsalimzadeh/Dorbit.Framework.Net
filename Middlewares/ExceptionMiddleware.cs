@@ -77,7 +77,7 @@ public class ExceptionMiddleware : IMiddleware
                     break;
                 default:
                     op.Code = (int)HttpStatusCode.InternalServerError;
-                    op.Message = Errors.ServerError.ToString();
+                    op.Message ??= Errors.ServerError.ToString();
                     break;
             }
 

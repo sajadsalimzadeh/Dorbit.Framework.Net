@@ -33,7 +33,7 @@ public static class CryptographyExtensions
             HashAlgorithm = algorithmName
         };
         var decryptedText = aes.Decrypt(encryptedText);
-        return decryptedText.Trim().ToStringUtf8();
+        return decryptedText.TrimAes().ToStringUtf8();
     }
 
     public static ProtectedProperty GetEncryptedValue(this string value)

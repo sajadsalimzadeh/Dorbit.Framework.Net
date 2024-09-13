@@ -17,11 +17,13 @@ public static class BinaryExtensions
         return condition ? data.AddChecksum(iv, ev) : data;
     }
 
-    public static byte[] Trim(this byte[] data)
+    public static byte[] TrimAes(this byte[] data)
     {
-        var byteList = data.ToList();
-        var nullIndex = byteList.IndexOf(0);
-        if (nullIndex > -1) return data.Take(nullIndex).ToArray();
-        return data;
+        var i = data.Length;
+        for (; i > 0; i--)
+        {
+            if(data[i - 1] != 0) break;
+        }
+        return data.Take(i).ToArray();
     }
 }

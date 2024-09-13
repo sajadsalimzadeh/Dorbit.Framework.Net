@@ -90,12 +90,14 @@ public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TK
 
     public async Task<TEntity> DeleteAsync(TKey id)
     {
-        return await DeleteAsync(await GetByIdAsync(id));
+        var entity = await GetByIdAsync(id);
+        return await DeleteAsync(entity);
     }
 
     public async Task<TEntity> UpdateAsync<TR>(TKey id, TR dto)
     {
-        return await UpdateAsync(dto.MapTo(await GetByIdAsync(id)));
+        var entity = await GetByIdAsync(id);
+        return await UpdateAsync(dto.MapTo(entity));
     }
 
     public async Task<TEntity> SaveAsync<TR>(TKey id, TR dto)

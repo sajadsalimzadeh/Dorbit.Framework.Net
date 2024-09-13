@@ -46,6 +46,7 @@ public class FilesController : BaseController
                 dto = new FileDto();
                 var filePath = GetFilePath(filename);
                 var fileInfo = new FileInfo(filePath);
+                if (!System.IO.File.Exists(filePath)) throw new FileNotFoundException();
                 dto.LastModifyTime = fileInfo.LastWriteTime;
                 dto.Content = System.IO.File.ReadAllBytes(filePath);
                 _memoryCache.Set(filename, dto, TimeSpan.FromHours(1));
