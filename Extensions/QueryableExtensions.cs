@@ -77,4 +77,9 @@ public static class QueryableExtensions
     {
         return condition ? query.Where(predicate) : query;
     }
+
+    public static Task<int> CountWithCacheAsync<T>(this IQueryable<T> query, string key, TimeSpan timeSpan)
+    {
+        return query.WithCacheAsync((q) => q.CountAsync(), key, timeSpan);
+    }
 }

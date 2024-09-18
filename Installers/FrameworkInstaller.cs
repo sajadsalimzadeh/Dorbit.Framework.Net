@@ -30,7 +30,7 @@ namespace Dorbit.Framework.Installers;
 
 public static class FrameworkInstaller
 {
-    public static IServiceCollection AddDorbitFramework(this IServiceCollection services, Configs configs)
+    public static IServiceCollection AddDorbitFramework<T>(this IServiceCollection services, Configs configs)
     {
         Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
         App.MainThread = Thread.CurrentThread;
@@ -58,7 +58,7 @@ public static class FrameworkInstaller
             configs.DependencyRegisterNamespaces.Add("Dorbit");
         }
 
-        services.RegisterServicesByAssembly(configs.EntryAssembly, configs.DependencyRegisterNamespaces.ToArray());
+        services.RegisterServicesByAssembly(typeof(T).Assembly, configs.DependencyRegisterNamespaces.ToArray());
 
         services.AddScoped<IPrincipal>(sp => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
 
@@ -94,7 +94,6 @@ public static class FrameworkInstaller
 
     public class Configs
     {
-        public required Assembly EntryAssembly { get; init; }
         public required List<string> DependencyRegisterNamespaces { get; init; }
 
         public IConfig<ConfigFile> ConfigFile { get; init; }

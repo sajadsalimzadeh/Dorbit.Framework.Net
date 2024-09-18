@@ -1,7 +1,6 @@
 ﻿using Dorbit.Framework.Configs;
 using Dorbit.Framework.Configs.Abstractions;
 using Dorbit.Framework.Contracts.Cryptograpy;
-using Dorbit.Framework.Installers;
 using Microsoft.Extensions.Configuration;
 
 namespace Dorbit.Framework.Extensions;
