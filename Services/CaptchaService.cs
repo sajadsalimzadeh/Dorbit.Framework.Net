@@ -6,7 +6,6 @@ using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Utils.Captcha;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Dorbit.Framework.Services;

@@ -25,4 +25,26 @@ public static class CacheableExtensions
             return Task.FromResult(cacheResult);
         }
     }
+    
+    public static T GetValueOrElse<T>(this IMemoryCache cache, string key, Func<T> elseAction, TimeSpan timeSpan)
+    {
+        if (!cache.TryGetValue<T>(key, out var result))
+        {
+            result = elseAction();
+            cache.Set(key, result, timeSpan);
+        }
+
+        return result;
+    }
+    
+    public static async Task<T> GetValueOrElseAsync<T>(this IMemoryCache cache, string key, Func<Task<T>> elseAction, TimeSpan timeSpan)
+    {
+        if (!cache.TryGetValue<T>(key, out var result))
+        {
+            result = await elseAction();
+            cache.Set(key, result, timeSpan);
+        }
+
+        return result;
+    }
 }

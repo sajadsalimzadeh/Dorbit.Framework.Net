@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -27,5 +28,16 @@ public static class DateTimeExtensions
     public static long GetUnixTimeMilliseconds(this DateTime dateTime)
     {
         return (long)dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds;
+    }
+
+    public static string ToPersianDate(this DateTime dateTime, string format)
+    {
+        var pc = new PersianCalendar();
+        return format.Replace("YYYY", pc.GetYear(dateTime).ToString())
+                .Replace("MM", pc.GetMonth(dateTime).ToString())
+                .Replace("DD", pc.GetDayOfMonth(dateTime).ToString())
+                .Replace("hh", pc.GetHour(dateTime).ToString())
+                .Replace("mm", pc.GetMinute(dateTime).ToString())
+                .Replace("ss", pc.GetSecond(dateTime).ToString());
     }
 }
