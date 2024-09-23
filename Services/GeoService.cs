@@ -17,6 +17,6 @@ internal class GeoService : IGeoService
 
     public Task<HttpModel<GeoInfo>> GetGeoInfoAsync(string ip)
     {
-        return GetHttpClient(ip).GetAsync<GeoInfo>();
+        return GetHttpClient(ip).GetAsync<GeoInfo>("");
     }
 }

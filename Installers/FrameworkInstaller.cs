@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -59,13 +60,25 @@ public static class FrameworkInstaller
         }
 
         services.RegisterServicesByAssembly(configs.EntryAssembly, configs.DependencyRegisterNamespaces.ToArray());
+        
+        services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policyBuilder =>
+            {
+                var patterns = (configs.AllowedOrigins ?? ["//localhost"]).Select(x => new Regex(x));
+                policyBuilder
+                    .SetIsOriginAllowed(origin => patterns.Any(x => x.IsMatch(origin)))
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+        });
 
         services.AddScoped<IPrincipal>(sp => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
 
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
 
-        services.AddControllers()
-            .AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
+        services.AddControllers().AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
 
         var frameworkDbContextConfiguration = configs.DbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
         services.AddDbContext<FrameworkDbContext>(frameworkDbContextConfiguration);
@@ -96,6 +109,7 @@ public static class FrameworkInstaller
     {
         public required Assembly EntryAssembly { get; init; }
         public required List<string> DependencyRegisterNamespaces { get; init; }
+        public List<string> AllowedOrigins { get; set; }
 
         public IConfig<ConfigFile> ConfigFile { get; init; }
         public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; }
@@ -103,7 +117,7 @@ public static class FrameworkInstaller
         public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; }
         public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; }
         public IConfig<ConfigGeo> ConfigGeo { get; init; }
-        
+
         public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
 
         public Configs(IConfiguration configuration)
@@ -114,6 +128,8 @@ public static class FrameworkInstaller
             ConfigLogRequest = configuration.GetConfig<ConfigLogRequest>("LogRequest");
             ConfigCaptcha = configuration.GetConfig<ConfigCaptcha>("Captcha");
             ConfigGeo = configuration.GetConfig<ConfigGeo>("Geo");
+
+            AllowedOrigins = configuration.GetSection("AllowedOrigins").Get<List<string>>();
         }
     }
 

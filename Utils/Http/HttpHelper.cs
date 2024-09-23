@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Serialization;
 using Dorbit.Framework.Contracts.Results;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Utils.Http;
@@ -71,9 +72,9 @@ public class HttpHelper : IDisposable
         return this;
     }
 
-    private HttpRequestMessage CreateRequest(string url, HttpMethod method, object parameter = null, Dictionary<string, string> headers = null)
+    private HttpRequestMessage CreateRequest(HttpHelperRequest httpRequest)
     {
-        var request = new HttpRequestMessage(method, url);
+        var request = new HttpRequestMessage(httpRequest.Method, httpRequest.Url);
 
         if (AuthorizationToken is not null)
         {
@@ -87,33 +88,33 @@ public class HttpHelper : IDisposable
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
         }
 
-        if (parameter is HttpContent content)
+        if (httpRequest.Parameter is HttpContent content)
         {
             request.Content = content;
         }
         else
         {
-            switch (method.Method.ToLower())
+            switch (httpRequest.Method.Method.ToLower())
             {
                 case "get":
                 case "delete":
                 case "options":
-                    if (parameter is not null)
+                    if (httpRequest.Parameter is not null)
                     {
-                        request.RequestUri = new Uri(url + (url.Contains("?") ? "&" : "?") + GetQueryString(parameter));
+                        request.RequestUri = new Uri(httpRequest.Url + (httpRequest.Url.Contains("?") ? "&" : "?") + GetQueryString(httpRequest.Parameter));
                     }
 
                     break;
                 case "post":
                 case "put":
                 case "patch":
-                    if (parameter is byte[] bytes)
+                    if (httpRequest.Parameter is byte[] bytes)
                     {
                         var fileContent = new ByteArrayContent(bytes);
                         fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                         request.Content = fileContent;
                     }
-                    else if (parameter is IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+                    else if (httpRequest.Parameter is IEnumerable<KeyValuePair<string, string>> keyValuePairs)
                     {
                         request.Content = new FormUrlEncodedContent(keyValuePairs);
                     }
@@ -121,16 +122,16 @@ public class HttpHelper : IDisposable
                     {
                         if (RequestContentType == ContentType.Json)
                         {
-                            var json = JsonConvert.SerializeObject(parameter);
+                            var json = JsonConvert.SerializeObject(httpRequest.Parameter);
                             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                         }
                         else if (RequestContentType == ContentType.Xml)
                         {
                             using var writer = new StringWriter();
-                            if (parameter != null)
+                            if (httpRequest.Parameter != null)
                             {
-                                var serializer = new XmlSerializer(parameter.GetType());
-                                serializer.Serialize(writer, parameter);
+                                var serializer = new XmlSerializer(httpRequest.Parameter.GetType());
+                                serializer.Serialize(writer, httpRequest.Parameter);
                                 request.Content = new StringContent(writer.ToString(), Encoding.UTF8, "application/xml");
                             }
                         }
@@ -141,9 +142,9 @@ public class HttpHelper : IDisposable
         }
 
         foreach (var item in _headers) request.Headers.Add(item.Key, item.Value);
-        if (headers is not null)
+        if (httpRequest.Headers is not null)
         {
-            foreach (var item in headers)
+            foreach (var item in httpRequest.Headers)
             {
                 request.Headers.Add(item.Key, item.Value);
             }
@@ -180,10 +181,9 @@ public class HttpHelper : IDisposable
             Request = httpModel.Request,
             Response = httpModel.Response,
         };
-        
+
         if (httpModel.Response.IsSuccessStatusCode)
         {
-
             await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
             using var reader = new StreamReader(stream);
 
@@ -213,42 +213,51 @@ public class HttpHelper : IDisposable
 
         return httpModelType;
     }
+    
+    public Task<HttpModel> SendAsync(HttpHelperRequest helperRequest)
+    {
+        var request = CreateRequest(helperRequest);
+        return SendAsync(request);
+    }
 
-    public Task<HttpModel<T>> GetAsync<T>(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync<T>(CreateRequest(url, HttpMethod.Get, parameter, headers));
+    public Task<HttpModel<T>> SendAsync<T>(HttpHelperRequest helperRequest)
+    {
+        var request = CreateRequest(helperRequest);
+        return SendAsync<T>(request);
+    }
 
-    public Task<HttpModel<T>> PostAsync<T>(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync<T>(CreateRequest(url, HttpMethod.Post, parameter, headers));
+    public async Task<HttpModel<T>> SendAsyncWithCache<T>(HttpHelperRequest helperRequest, string key, TimeSpan timeout)
+    {
+        if (!App.MemoryCache.TryGetValue(key, out HttpModel<T> value))
+        {
+            var request = CreateRequest(helperRequest);
+            value = await SendAsync<T>(request);
+            if (value.Response.IsSuccessStatusCode)
+            {
+                App.MemoryCache.Set(key, value, timeout);
+            }
+        }
 
-    public Task<HttpModel<T>> PutAsync<T>(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync<T>(CreateRequest(url, HttpMethod.Put, parameter, headers));
+        return value;
+    }
+    
+    public Task<HttpModel<T>> GetAsync<T>(string url) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Get, url));
 
-    public Task<HttpModel<T>> PatchAsync<T>(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync<T>(CreateRequest(url, HttpMethod.Patch, parameter, headers));
+    public Task<HttpModel<T>> PostAsync<T>(string url, object parameter) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Post, url) { Parameter = parameter });
 
-    public Task<HttpModel<T>> DeleteAsync<T>(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync<T>(CreateRequest(url, HttpMethod.Delete, parameter, headers));
+    public Task<HttpModel<T>> PutAsync<T>(string url, object parameter) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Put, url) { Parameter = parameter });
 
-    public Task<HttpModel<T>> OptionsAsync<T>(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync<T>(CreateRequest(url, HttpMethod.Options, parameter, headers));
+    public Task<HttpModel<T>> PatchAsync<T>(string url, object parameter) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Patch, url) { Parameter = parameter });
 
-    public Task<HttpModel> GetAsync(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync(CreateRequest(url, HttpMethod.Get, parameter, headers));
+    public Task<HttpModel<T>> DeleteAsync<T>(string url, object parameter) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Delete, url) { Parameter = parameter });
 
-    public Task<HttpModel> PostAsync(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync(CreateRequest(url, HttpMethod.Post, parameter, headers));
-
-    public Task<HttpModel> PutAsync(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync(CreateRequest(url, HttpMethod.Put, parameter, headers));
-
-    public Task<HttpModel> PatchAsync(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync(CreateRequest(url, HttpMethod.Patch, parameter, headers));
-
-    public Task<HttpModel> DeleteAsync(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync(CreateRequest(url, HttpMethod.Delete, parameter, headers));
-
-    public Task<HttpModel> OptionsAsync(string url = "", object parameter = null, Dictionary<string, string> headers = null) =>
-        SendAsync(CreateRequest(url, HttpMethod.Options, parameter, headers));
+    public Task<HttpModel<T>> OptionsAsync<T>(string url) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Options, url));
 
     public void Dispose()
     {

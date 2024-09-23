@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -104,6 +105,17 @@ public static class StringExtensions
         }
 
         return trimArray;
+    }
+
+    public static string Repeat(this string template, int count)
+    {
+        var sb = new StringBuilder();
+        for (var i = 0; i < count; i++)
+        {
+            sb.Append(template);
+        }
+
+        return sb.ToString();
     }
 
     public static string Reverse(this string value)
