@@ -36,7 +36,8 @@ public interface IDbContext
     Task BulkDeleteEntityAsync<TEntity, TKey>(List<TEntity> entities) where TEntity : class, IEntity<TKey>;
     Task BulkDeleteEntityAsync<TEntity>(List<TEntity> entities) where TEntity : class, IEntity<Guid>;
 
-    Task<List<TEntity>> QueryAsync<TEntity>(string query, Dictionary<string, object> parameters);
+    Task<int> ExecuteCommandAsync(string query, Dictionary<string, object> parameters);
+    Task<List<TEntity>> ExecuteQueryAsync<TEntity>(string query, Dictionary<string, object> parameters);
     ITransaction BeginTransaction();
     int SaveChanges();
     Task MigrateAsync();

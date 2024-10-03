@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -347,10 +348,9 @@ public abstract class EfDbContext : DbContext, IDbContext
         return Task.CompletedTask;
     }
 
-    public async Task<List<TEntity>> QueryAsync<TEntity>(string query, Dictionary<string, object> parameters)
+    public DbCommand CreateCommand(string query, Dictionary<string, object> parameters)
     {
-        var result = new List<TEntity>();
-        await using var command = Database.GetDbConnection().CreateCommand();
+        var command = Database.GetDbConnection().CreateCommand();
         command.CommandText = query;
         foreach (var item in parameters)
         {
@@ -365,6 +365,20 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
 
         command.CommandType = CommandType.Text;
+        return command;
+    }
+
+    public async Task<int> ExecuteCommandAsync(string query, Dictionary<string, object> parameters)
+    {
+        await using var command = CreateCommand(query, parameters); 
+        await Database.OpenConnectionAsync(CancellationToken);
+        return await command.ExecuteNonQueryAsync(CancellationToken);
+    }
+
+    public async Task<List<TEntity>> ExecuteQueryAsync<TEntity>(string query, Dictionary<string, object> parameters)
+    {
+        var result = new List<TEntity>();
+        await using var command = CreateCommand(query, parameters); 
         await Database.OpenConnectionAsync(CancellationToken);
         await using var reader = await command.ExecuteReaderAsync(CancellationToken);
         var properties = typeof(TEntity).GetProperties();
