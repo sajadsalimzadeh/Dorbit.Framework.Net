@@ -46,6 +46,7 @@ public class HttpHelper : IDisposable
         handler ??= new HttpClientHandler()
         {
             Proxy = null,
+            UseProxy = false,
             ServerCertificateCustomValidationCallback = delegate { return true; },
         };
 

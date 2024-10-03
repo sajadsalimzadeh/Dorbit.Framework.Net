@@ -27,7 +27,6 @@ public class ExceptionMiddleware : IMiddleware
         }
         catch (Exception ex)
         {
-            var authenticationService = context.RequestServices.GetService<IAuthService>();
             var logger = context.RequestServices.GetService<ILogger>();
             var op = new ExceptionResult<IDictionary>
             {
@@ -39,7 +38,8 @@ public class ExceptionMiddleware : IMiddleware
             logger?.Error(ex, ex.Message);
             if (context.Items.TryGetValue("UserId", out var userId))
             {
-                if (await authenticationService.HasAccessAsync(userId?.ToString(), "Developer"))
+                var authenticationService = context.RequestServices.GetService<IAuthService>();
+                if (authenticationService is not null && await authenticationService.HasAccessAsync(userId?.ToString(), "Developer"))
                 {
                     op.Data = ex.Data;
                     op.StackTrace = ex.StackTrace;
