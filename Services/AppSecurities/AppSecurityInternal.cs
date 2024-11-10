@@ -25,6 +25,6 @@ public class AppSecurityInternal : IAppSecurity
 
     public string Decrypt(byte[] value)
     {
-        return _aes?.Decrypt(value).ToStringUtf8();
+        return _aes?.Decrypt(value).ToStringUtf8().TrimEnd('\0');
     }
 }
