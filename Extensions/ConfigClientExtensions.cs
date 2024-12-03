@@ -6,17 +6,17 @@ namespace Dorbit.Framework.Extensions;
 
 public static class ConfigClientExtensions
 {
-    public static HttpHelper GetHttpHelper(this ConfigClient configClient)
+    public static HttpHelper GetHttpHelper(this ConfigClient configClient, string apiKeyHeader = null)
     {
-        return configClient.GetHttpHelper(null);
+        return configClient.GetHttpHelper(null, apiKeyHeader);
     }
     
-    public static HttpHelper GetHttpHelper(this ConfigClient configClient, ILogger logger)
+    public static HttpHelper GetHttpHelper(this ConfigClient configClient, ILogger logger, string apiKeyHeader = null)
     {
         var http = new HttpHelper(configClient.ApiUrl ?? configClient.BaseUrl);
         if (configClient.ApiKey is not null)
         {
-            http.AddHeader("AuthorizationService", configClient.ApiKey.GetDecryptedValue());
+            http.AddHeader(apiKeyHeader ?? "AuthorizationService", configClient.ApiKey.GetDecryptedValue());
         }
 
         if (logger is not null)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Entities.Abstractions;
@@ -19,7 +20,12 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
     [HttpGet]
     public virtual async Task<PagedListResult<TGet>> SelectAsync()
     {
-        return (await Repository.Set().ApplyToPagedListAsync(QueryOptions)).Select(x => Mapper.Map<TGet>(x));
+        var query = Repository.Set();
+        if (typeof(TEntity).IsAssignableTo(typeof(ICreationTime)))
+        {
+            query = query.Cast<ICreationTime>().OrderBy(x => x.CreationTime).Cast<TEntity>().AsQueryable();
+        }
+        return (await query.ApplyToPagedListAsync(QueryOptions)).Select(x => Mapper.Map<TGet>(x));
     }
 
     [HttpGet("{id}")]

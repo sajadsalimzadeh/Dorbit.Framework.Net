@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,9 +61,15 @@ public class HttpHelper : IDisposable
     private string GetQueryString(object obj)
     {
         if (obj == null) return null;
-        var properties = from p in obj.GetType().GetProperties()
-            where p.GetValue(obj, null) != null
-            select p.Name + "=" + HttpUtility.UrlEncode(p.GetValue(obj, null)?.ToString());
+        var properties = obj.GetType()
+            .GetProperties()
+            .Where(p => p.GetValue(obj, null) != null)
+            .Select(p =>
+            {
+                var jsonPropertyAttribute = p.GetCustomAttribute<JsonPropertyAttribute>();
+                var name = (jsonPropertyAttribute != null ? jsonPropertyAttribute.PropertyName : p.Name);
+                return name + "=" + HttpUtility.UrlEncode(p.GetValue(obj, null)?.ToString());
+            });
 
         return string.Join("&", properties.ToArray());
     }
@@ -85,7 +92,8 @@ public class HttpHelper : IDisposable
         if (Username is not null && Password is not null)
         {
             var authenticationString = $"{Username}:{Password}";
-            var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
+            var base64EncodedAuthenticationString =
+                Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
         }
 
@@ -102,7 +110,8 @@ public class HttpHelper : IDisposable
                 case "options":
                     if (httpRequest.Parameter is not null)
                     {
-                        request.RequestUri = new Uri(httpRequest.Url + (httpRequest.Url.Contains("?") ? "&" : "?") + GetQueryString(httpRequest.Parameter));
+                        var url = httpRequest.Url + (httpRequest.Url.Contains("?") ? "&" : "?") + GetQueryString(httpRequest.Parameter);
+                        request.RequestUri = new Uri(url, UriKind.Relative);
                     }
 
                     break;
@@ -133,7 +142,8 @@ public class HttpHelper : IDisposable
                             {
                                 var serializer = new XmlSerializer(httpRequest.Parameter.GetType());
                                 serializer.Serialize(writer, httpRequest.Parameter);
-                                request.Content = new StringContent(writer.ToString(), Encoding.UTF8, "application/xml");
+                                request.Content =
+                                    new StringContent(writer.ToString(), Encoding.UTF8, "application/xml");
                             }
                         }
                     }
@@ -187,8 +197,7 @@ public class HttpHelper : IDisposable
         {
             await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
             using var reader = new StreamReader(stream);
-
-
+            
             try
             {
                 if (ResponseContentType == ContentType.Json)
@@ -204,17 +213,20 @@ public class HttpHelper : IDisposable
             }
             catch (Exception ex)
             {
-                throw new Exception($"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}", ex);
+                throw new Exception(
+                    $"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}",
+                    ex);
             }
         }
         else
         {
-            OnException?.Invoke(new Exception($"[{httpModel.Response.StatusCode}]"), httpModel.Request, httpModel.Response);
+            OnException?.Invoke(new Exception($"[{httpModel.Response.StatusCode}]"), httpModel.Request,
+                httpModel.Response);
         }
 
         return httpModelType;
     }
-    
+
     public Task<HttpModel> SendAsync(HttpHelperRequest helperRequest)
     {
         var request = CreateRequest(helperRequest);
@@ -241,9 +253,9 @@ public class HttpHelper : IDisposable
 
         return value;
     }
-    
-    public Task<HttpModel<T>> GetAsync<T>(string url) =>
-        SendAsync<T>(new HttpHelperRequest(HttpMethod.Get, url));
+
+    public Task<HttpModel<T>> GetAsync<T>(string url, object parameter = null) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Get, url) { Parameter = parameter });
 
     public Task<HttpModel<T>> PostAsync<T>(string url, object parameter) =>
         SendAsync<T>(new HttpHelperRequest(HttpMethod.Post, url) { Parameter = parameter });
