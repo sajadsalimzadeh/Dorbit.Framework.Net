@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -14,13 +15,20 @@ public static class GuidExtensions
         return guid != Guid.Empty;
     }
 
-    public static bool IsNotNullOrEmpty(this Guid? obj)
+    public static bool IsNotNullOrEmpty(this Guid? guid)
     {
-        return obj.HasValue && obj.Value != Guid.Empty;
+        return guid.HasValue && guid.Value != Guid.Empty;
     }
 
-    public static bool IsNullOrEmpty(this Guid? obj)
+    public static bool IsNullOrEmpty(this Guid? guid)
     {
-        return !obj.HasValue || obj.Value == Guid.Empty;
+        return !guid.HasValue || guid.Value == Guid.Empty;
+    }
+
+    public static long ToLong(this Guid guid)
+    {
+        using var sha256 = SHA256.Create();
+        var hash = sha256.ComputeHash(guid.ToByteArray());
+        return BitConverter.ToInt64(hash, 0);
     }
 }

@@ -182,4 +182,28 @@ public static class StringExtensions
         if (string.IsNullOrEmpty(value)) return value;
         return value.Length <= maxLength ? value : value.Substring(0, maxLength);
     }
+    public static string CombinePath(this string str, params string[] paths)
+    {
+        foreach (var path in paths)
+        {
+            str = Path.Combine(str, path);
+        }
+
+        return str;
+    }
+
+    public static string CombineUrl(this string str, params string[] urls)
+    {
+        foreach (var url in urls)
+        {
+            str = str + (str.EndsWith("/") ? "" : "/") + url;
+        }
+
+        return str;
+    }
+
+    public static long ToLong(this string str)
+    {
+        return Convert.ToInt64(str);
+    }
 }
