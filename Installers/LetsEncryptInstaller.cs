@@ -4,6 +4,7 @@ using System.Net;
 using LettuceEncrypt;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -11,9 +12,9 @@ namespace Dorbit.Framework.Installers;
 
 public static class LetsEncryptInstaller
 {
-    public static void UseDorbitLetsEncrypt(this WebApplicationBuilder builder)
+    public static void UseDorbitLetsEncrypt(this WebApplicationBuilder builder, IConfiguration configuration)
     {
-        if (builder.Environment.IsProduction())
+        if (builder.Environment.IsProduction() && configuration.GetSection("LettuceEncrypt").Exists())
         {
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../Certificates/");
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
