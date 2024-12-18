@@ -12,9 +12,9 @@ namespace Dorbit.Framework.Installers;
 
 public static class LetsEncryptInstaller
 {
-    public static void UseDorbitLetsEncrypt(this WebApplicationBuilder builder, IConfiguration configuration)
+    public static void UseDorbitLetsEncrypt(this WebApplicationBuilder builder)
     {
-        if (builder.Environment.IsProduction() && configuration.GetSection("LettuceEncrypt").Exists())
+        if (builder.Environment.IsProduction())
         {
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../Certificates/");
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
