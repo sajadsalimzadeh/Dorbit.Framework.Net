@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -7,13 +9,13 @@ namespace Dorbit.Framework.Extensions;
 
 public static class CacheableExtensions
 {
-    private static ConcurrentDictionary<string, object> _monitors = new();
+    private static readonly ConcurrentDictionary<string, object> Monitors = new();
 
     public static Task<TR> WithCacheAsync<T, TR>(this T obj, Func<T, Task<TR>> action, string key, TimeSpan duration)
     {
         key = $"{nameof(WithCacheAsync)}-{typeof(T).Name}-{typeof(TR).Name}-{key}";
         if (App.MemoryCache.TryGetValue(key, out TR result)) return Task.FromResult(result);
-        var monitor = _monitors.GetOrAdd(key, (_) => new { });
+        var monitor = Monitors.GetOrAdd(key, (_) => new { });
         lock (monitor)
         {
             if (!App.MemoryCache.TryGetValue(key, out TR cacheResult))
@@ -46,5 +48,15 @@ public static class CacheableExtensions
         }
 
         return result;
+    }
+    
+    public static bool IsTooMuchRequest(this IMemoryCache cache, string key, TimeSpan timeSpan, int limitCount)
+    {
+        var items = cache.GetOrCreate(key, _ => new List<DateTime>());
+        var diffTime = DateTime.UtcNow.Add(-timeSpan);
+        items.RemoveAll(x => x < diffTime);
+        if(items.Count >= limitCount) return true;
+        items.Add(DateTime.UtcNow);
+        return false;
     }
 }

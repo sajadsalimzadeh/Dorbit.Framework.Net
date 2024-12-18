@@ -120,6 +120,13 @@ public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TK
 
         return await SaveAsync(entity);
     }
+
+    public async Task<TEntity> PatchAsync(TKey key, object patch)
+    {
+        var entity = await GetByIdAsync(key);
+        entity = entity.Patch(patch);
+        return await UpdateAsync(entity);
+    }
 }
 
 public class BaseWriteRepository<TEntity> : BaseWriteRepository<TEntity, Guid> where TEntity : class, IEntity<Guid>

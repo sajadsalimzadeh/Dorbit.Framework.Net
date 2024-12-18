@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Authentication;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dorbit.Framework.Controllers;
@@ -10,7 +11,6 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using AuthenticationException = System.Security.Authentication.AuthenticationException;
 
 namespace Dorbit.Framework.Filters;
 
@@ -48,7 +48,6 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         return accesses.Select(x => x.ToLower());
     }
 
-
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         if (context.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
@@ -81,6 +80,15 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         }
 
         userStateService.LoadGeoInfo(state, context.HttpContext.Connection.RemoteIpAddress?.ToString());
+        
+        foreach (var authService in sp.GetServices<IAuthService>())
+        {
+            if (!await authService.IsTokenValid(context.HttpContext, user.Claims))
+            {
+                throw new AuthenticationException("InvalidToken");
+            }
+        }
+        
         if (_accesses?.Count() > 0)
         {
             IEnumerable<string> policies;
@@ -97,14 +105,6 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
             if (user.Username != "admin" && !await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
             {
                 throw new UnauthorizedAccessException("AccessDenied");
-            }
-        }
-
-        foreach (var authService in sp.GetServices<IAuthService>())
-        {
-            if (!await authService.IsTokenValid(context.HttpContext, user.Claims))
-            {
-                throw new AuthenticationException("InvalidToken");
             }
         }
 

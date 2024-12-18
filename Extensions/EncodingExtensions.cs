@@ -50,4 +50,14 @@ public static class EncodingExtensions
     {
         return BitConverter.ToString(bytes).Replace("-", "");
     }
+
+    public static string ToBase64String(this byte[] bytes)
+    {
+        return Convert.ToBase64String(bytes);
+    }
+
+    public static byte[] FromBase64String(this string str)
+    {
+        return Convert.FromBase64String(str);
+    }
 }
