@@ -25,6 +25,11 @@ public abstract class NotificationHub : Hub
         if (httpContext is not null)
         {
             var userResolver = httpContext.RequestServices.GetService<IUserResolver>();
+            if (userResolver.User is null)
+            {
+                Context.Abort();
+                return;
+            }
             var userId = (Guid)userResolver.User.Id;
             HubService.Add(userId, Context.ConnectionId);
         }
