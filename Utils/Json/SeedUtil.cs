@@ -20,7 +20,7 @@ public static class SeedUtil
         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
         var content = await File.ReadAllTextAsync(path);
         var items = JsonConvert.DeserializeObject<List<TEntity>>(content);
-        var existsItems = await repository.Set().ToListAsync();
+        var existsItems = await repository.Set(false).ToListAsync();
         if (ignorePredicate is not null) items = items.Where(x => !existsItems.Any(y => ignorePredicate(x, y))).ToList();
         using var transaction = repository.DbContext.BeginTransaction();
         foreach (var entity in items.Where(x => !existsItems.Contains(x)))
