@@ -152,20 +152,13 @@ public class HttpHelper : IDisposable
             }
         }
 
-        foreach (var item in _headers) request.Headers.Add(item.Key, item.Value);
-        if (httpRequest.Headers is not null)
-        {
-            foreach (var item in httpRequest.Headers)
-            {
-                request.Headers.Add(item.Key, item.Value);
-            }
-        }
-
         return request;
     }
 
     public async Task<HttpModel> SendAsync(HttpRequestMessage request)
     {
+        foreach (var item in _headers) request.Headers.Add(item.Key, item.Value);
+
         var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
         return new HttpModel()
         {
@@ -197,7 +190,7 @@ public class HttpHelper : IDisposable
         {
             await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
             using var reader = new StreamReader(stream);
-            
+
             try
             {
                 if (ResponseContentType == ContentType.Json)
