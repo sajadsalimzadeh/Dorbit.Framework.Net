@@ -197,25 +197,29 @@ public class HttpHelper : IDisposable
         {
             await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
             using var reader = new StreamReader(stream);
-            
+            httpModelType.Content = await reader.ReadToEndAsync(CancellationToken);
+
             try
             {
                 if (ResponseContentType == ContentType.Json)
                 {
-                    await using var jsonTextReader = new JsonTextReader(reader);
-                    httpModelType.Result = new JsonSerializer().Deserialize<T>(jsonTextReader);
+                    using var stringReader = new StringReader(httpModelType.Content);
+                    httpModelType.Result = new JsonSerializer().Deserialize<T>(new JsonTextReader(stringReader));
                 }
                 else if (ResponseContentType == ContentType.Xml)
                 {
                     var serializer = new XmlSerializer(typeof(T));
-                    httpModelType.Result = (T)serializer.Deserialize(reader);
+                    using var stringReader = new StringReader(httpModelType.Content);
+                    httpModelType.Result = (T)serializer.Deserialize(stringReader);
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception(
-                    $"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}",
-                    ex);
+                OnException?.Invoke(
+                    new Exception($"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}", ex),
+                    httpModel.Request,
+                    httpModel.Response
+                );
             }
         }
         else
