@@ -33,11 +33,15 @@ public static class DateTimeExtensions
     public static string ToPersianDate(this DateTime dateTime, string format)
     {
         var pc = new PersianCalendar();
-        return format.Replace("YYYY", pc.GetYear(dateTime).ToString())
-                .Replace("MM", pc.GetMonth(dateTime).ToString())
-                .Replace("DD", pc.GetDayOfMonth(dateTime).ToString())
-                .Replace("hh", pc.GetHour(dateTime).ToString())
-                .Replace("mm", pc.GetMinute(dateTime).ToString())
-                .Replace("ss", pc.GetSecond(dateTime).ToString());
+        return format
+            .Replace("YYYY", pc.GetYear(dateTime).ToString())
+            .Replace("YYY", pc.GetYear(dateTime).ToString().Substring(1))
+            .Replace("YY", pc.GetYear(dateTime).ToString().Substring(2))
+            .Replace("Y", pc.GetYear(dateTime).ToString().Substring(3))
+            .Replace("MM", pc.GetMonth(dateTime).ToString().PadLeft(2, '0'))
+            .Replace("DD", pc.GetDayOfMonth(dateTime).ToString().PadLeft(2, '0'))
+            .Replace("hh", pc.GetHour(dateTime).ToString().PadLeft(2, '0'))
+            .Replace("mm", pc.GetMinute(dateTime).ToString().PadLeft(2, '0'))
+            .Replace("ss", pc.GetSecond(dateTime).ToString().PadLeft(2, '0'));
     }
 }
