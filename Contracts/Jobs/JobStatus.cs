@@ -6,4 +6,5 @@ public enum JobStatus
     Running = 1,
     Pause = 2,
     Finish = 10,
+    FinishError = 11,
 }

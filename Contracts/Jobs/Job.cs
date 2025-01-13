@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Abstractions;
@@ -119,7 +120,7 @@ public class Job
             finally
             {
                 EndTime = DateTime.UtcNow;
-                Status = JobStatus.Finish;
+                Status = (Logs.Any(x => x.Level == LogLevel.Error || x.Level == LogLevel.Critical) ? JobStatus.FinishError : JobStatus.Finish);
                 _semaphore.Release();
             }
         }
