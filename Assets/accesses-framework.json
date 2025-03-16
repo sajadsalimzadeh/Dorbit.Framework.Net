@@ -1,0 +1,16 @@
+﻿[
+  {
+    "Name": "AllAccess",
+    "Children": [
+      {
+        "Name": "Framework",
+        "Children": [
+          {
+            "Name": "Setting",
+            "Children": []
+          }
+        ]
+      }
+    ]
+  }
+]

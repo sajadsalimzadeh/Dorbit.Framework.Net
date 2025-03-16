@@ -21,4 +21,5 @@ public class FrameworkDbContext : EfDbContext
 
     public DbSet<EntityLog> Logs { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<Setting> Settings { get; set; }
 }

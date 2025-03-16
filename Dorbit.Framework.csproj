@@ -12,6 +12,9 @@
     
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\" />
+        <None Update="Assets\accesses-framework.json">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
     
     <ItemGroup>
