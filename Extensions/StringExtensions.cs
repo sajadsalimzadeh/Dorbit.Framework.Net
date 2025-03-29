@@ -206,4 +206,9 @@ public static class StringExtensions
     {
         return Convert.ToInt64(str);
     }
+
+    public static string SubstringLast(this string str, int length)
+    {
+        return str.Substring(Math.Max(0, str.Length - length));
+    }
 }

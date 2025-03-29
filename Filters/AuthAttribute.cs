@@ -70,6 +70,8 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         var user = userResolver.User;
         if (user is null) throw new AuthenticationException();
 
+        if (!user.IsActive) throw new UnauthorizedAccessException("Your user is disabled");
+
         var userStateService = sp.GetService<IUserStateService>();
         var state = userStateService.GetUserState(user.Id?.ToString());
         state.Url = context.HttpContext.Request.GetDisplayUrl();

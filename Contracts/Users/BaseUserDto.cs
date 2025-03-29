@@ -8,5 +8,6 @@ public class BaseUserDto : IUserDto
     public object Id { get; set; }
     public string Name { get; set; }
     public string Username { get; set; }
+    public bool IsActive { get; set; }
     public ClaimsPrincipal Claims { get; set; }
 }

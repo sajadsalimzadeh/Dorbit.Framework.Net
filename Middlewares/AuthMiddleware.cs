@@ -21,18 +21,9 @@ public class AuthMiddleware : IMiddleware
             var token = context.Request.GetToken();
             if (!string.IsNullOrEmpty(token))
             {
-                var userResolver = sp.GetService<IUserResolver>();
-                var jwtService = sp.GetService<JwtService>();
-                if (await jwtService.TryValidateTokenAsync(token, out _, out var claims))
-                {
-                    var id = claims.FindFirst("UserId")?.Value ?? claims.FindFirst("Id")?.Value;
-                    userResolver.User = new BaseUserDto()
-                    {
-                        Id = Guid.Parse(id ?? ""),
-                        Username = claims.FindFirst("Name")?.Value,
-                        Claims = claims,
-                    };
-                }
+                var userResolver = sp.GetRequiredService<IUserResolver>();
+                var authService = sp.GetRequiredService<IAuthService>();
+                userResolver.User = await authService.GetUserByTokenAsync(token);
             }
         }
         catch

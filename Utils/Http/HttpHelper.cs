@@ -190,7 +190,7 @@ public class HttpHelper : IDisposable
         {
             await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
             using var reader = new StreamReader(stream);
-httpModelType.Content = await reader.ReadToEndAsync(CancellationToken);
+            httpModelType.Content = await reader.ReadToEndAsync(CancellationToken);
             try
             {
                 if (ResponseContentType == ContentType.Json)
