@@ -21,7 +21,7 @@ public abstract class BaseController : ControllerBase
 
     protected T GetUserId<T>() => (T)UserResolver.User?.Id ?? throw new UnauthorizedAccessException();
     protected Guid GetUserId() => GetUserId<Guid>();
-    protected QueryOptions QueryOptions => new ODataQueryOptions().Parse(Request);
+    protected QueryOptions QueryOptions => ODataQueryOptions.Parse(Request);
 
     protected CommandResult Succeed()
     {

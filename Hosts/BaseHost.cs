@@ -10,6 +10,7 @@ namespace Dorbit.Framework.Hosts;
 public abstract class BaseHost(IServiceProvider serviceProvider) : BackgroundService
 {
     protected readonly ILogger Logger = serviceProvider.GetService<ILogger>();
+    protected readonly IServiceProvider ServiceProvider = serviceProvider;
     private static readonly CancellationTokenSource MainCancellationTokenSource = new();
 
     static BaseHost()
@@ -30,7 +31,7 @@ public abstract class BaseHost(IServiceProvider serviceProvider) : BackgroundSer
         {
             try
             {
-                using var scope = serviceProvider.CreateScope();
+                using var scope = ServiceProvider.CreateScope();
                 await InvokeAsync(scope.ServiceProvider, MainCancellationTokenSource.Token);
             }
             catch (Exception ex)
