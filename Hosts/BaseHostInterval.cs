@@ -21,7 +21,7 @@ public abstract class BaseHostInterval(IServiceProvider serviceProvider) : BaseH
             {
                 try
                 {
-                    using var scope = serviceProvider.CreateScope();
+                    using var scope = ServiceProvider.CreateScope();
                     await InvokeAsync(scope.ServiceProvider, stoppingToken);
                 }
                 catch (Exception ex)

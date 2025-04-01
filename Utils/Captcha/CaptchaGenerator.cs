@@ -1,8 +1,10 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Drawing.Text;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.Fonts;
+using System;
 using System.IO;
 using Dorbit.Framework.Contracts;
 using Fare;
@@ -16,8 +18,8 @@ public class CaptchaGenerator
     public int Height { get; set; } = 200;
     public int Length { get; set; } = 6;
     public string Pattern { get; set; } = "[0-9A-Z]";
-
-    private readonly string[] _fontNames =
+    
+    private static readonly string[] FontNames =
     {
         "Comic Sans MS",
         "Arial",
@@ -26,15 +28,22 @@ public class CaptchaGenerator
         "Verdana",
         "Geneva"
     };
-
-    FontStyle[] _fontStyles =
+    
+    public string GenerateBase64(string text, int width, int height)
     {
-        FontStyle.Regular,
-        FontStyle.Bold,
-        FontStyle.Italic,
-        FontStyle.Underline,
-        FontStyle.Strikeout,
-    };
+        using var image = new Image<Rgba32>(width, height);
+        image.Mutate(ctx =>
+        {
+            ctx.Fill(Color.White);
+            ctx.DrawText(text, SystemFonts.CreateFont("Arial", 24), Color.Black, new PointF(10, 10));
+            ctx.DrawLine(Color.Gray, 1, new PointF(0, 10), new PointF(width, 40), new PointF(0, 40), new PointF(width, 10));
+        });
+
+        using var ms = new MemoryStream();
+        image.Save(ms, new PngEncoder());
+        return Convert.ToBase64String(ms.ToArray());
+    }
+    
 
     private int GetRotation(Random rnd)
     {
@@ -60,15 +69,14 @@ public class CaptchaGenerator
         };
     }
 
-    private FontStyle GetFontStyle(Random rnd)
+    private FontStyle GetFontStyle()
     {
         return Difficulty switch
         {
-            CaptchaDificulty.VeryEasy => FontStyle.Regular,
-            CaptchaDificulty.Easy => _fontStyles[rnd.Next(0, 1)],
-            CaptchaDificulty.Normal => _fontStyles[rnd.Next(0, 2)],
-            CaptchaDificulty.Hard => _fontStyles[rnd.Next(0, 3)],
-            _ => _fontStyles[rnd.Next(0, 4)],
+            CaptchaDificulty.VeryEasy => FontStyle.Bold,
+            CaptchaDificulty.Easy => FontStyle.BoldItalic,
+            CaptchaDificulty.Normal => FontStyle.Italic,
+            _ => FontStyle.Regular
         };
     }
 
@@ -76,89 +84,65 @@ public class CaptchaGenerator
     {
         switch (Difficulty)
         {
-            case CaptchaDificulty.VeryEasy: return _fontNames[0];
-            case CaptchaDificulty.Easy: return _fontNames[rnd.Next(0, 1)];
-            case CaptchaDificulty.Normal: return _fontNames[rnd.Next(0, 2)];
-            case CaptchaDificulty.Hard: return _fontNames[rnd.Next(0, 4)];
+            case CaptchaDificulty.VeryEasy: return FontNames[0];
+            case CaptchaDificulty.Easy: return FontNames[rnd.Next(0, 1)];
+            case CaptchaDificulty.Normal: return FontNames[rnd.Next(0, 2)];
+            case CaptchaDificulty.Hard: return FontNames[rnd.Next(0, 4)];
             case CaptchaDificulty.VeryHard:
             case CaptchaDificulty.None:
             default:
-                return _fontNames[rnd.Next(0, 5)];
+                return FontNames[rnd.Next(0, 5)];
         }
     }
 
-    private int[] GetColor(Random rnd)
+    private Color GetColor(Random rnd)
     {
         switch (Difficulty)
         {
-            case CaptchaDificulty.VeryEasy: return new int[] { 0, 0, 0 };
-            case CaptchaDificulty.Easy: return new int[] { rnd.Next(0, 30), rnd.Next(0, 30), rnd.Next(0, 30) };
-            case CaptchaDificulty.Normal: return new int[] { rnd.Next(0, 60), rnd.Next(0, 60), rnd.Next(0, 60) };
-            case CaptchaDificulty.Hard: return new int[] { rnd.Next(0, 90), rnd.Next(0, 90), rnd.Next(0, 90) };
+            case CaptchaDificulty.VeryEasy: return Color.FromRgb(0, 0, 0);
+            case CaptchaDificulty.Easy: return Color.FromRgb((byte)rnd.Next(0, 30), (byte)rnd.Next(0, 30), (byte)rnd.Next(0, 30));
+            case CaptchaDificulty.Normal: return Color.FromRgb((byte)rnd.Next(0, 60), (byte)rnd.Next(0, 60), (byte)rnd.Next(0, 60));
+            case CaptchaDificulty.Hard: return Color.FromRgb((byte)rnd.Next(0, 90), (byte)rnd.Next(0, 90), (byte)rnd.Next(0, 90));
             case CaptchaDificulty.VeryHard:
+            case CaptchaDificulty.None:
             default:
-                return new int[] { rnd.Next(0, 150), rnd.Next(0, 150), rnd.Next(0, 150) };
+                return Color.FromRgb((byte)rnd.Next(0, 150), (byte)rnd.Next(0, 150), (byte)rnd.Next(0, 150));
         }
     }
 
-    public Image Generate(string text)
+    public Image<Rgba32> Generate(string text)
     {
-        Random rnd = new Random();
-
-        //Creates an output Bitmap
-        var bitmap = new Bitmap(Width, Height, PixelFormat.Format24bppRgb);
-        var graphics = Graphics.FromImage(bitmap);
-        graphics.TextRenderingHint = TextRenderingHint.AntiAlias;
-
-        //Create a Drawing area
-        var rectangle = new RectangleF(0, 0, Width, Height);
-
-        for (int i = 0; i <= (int)Difficulty; i++)
+        var rnd = new Random();
+        var image = new Image<Rgba32>(Width, Height);
+        image.Mutate(ctx =>
         {
-            //Draw background (Lighter colors RGB 100 to 255)
-            Brush brush = new SolidBrush(Color.FromArgb(245, 245, 245));
+            ctx.Fill(Color.FromRgb(245, 245, 245));
 
-            graphics.FillRectangle(brush, rectangle);
-        }
+            for (int i = 0, length = text.Length, unit = Width / (length + 2); i < length; i++)
+            {
+                var x = unit * (i + 1);
+                var y = Height / 2 - 20;
 
-        var matrix = new Matrix();
-        for (int i = 0, length = text.Length, unit = Width / (length + 2); i < length; i++)
-        {
-            matrix.Reset();
-            int x = unit * (i + 1);
-            int y = Height / 2 - 20;
+                var color = GetColor(rnd);
+                var fontName = GetFontName(rnd);
+                var fontSize = GetFontSize(rnd);
+                var fontStyle = GetFontStyle();
+                var location = new PointF(x, y);
+                ctx.DrawText(text[i].ToString(), SystemFonts.CreateFont(fontName, fontSize, fontStyle), color, location);
+                
+            }
+            
+        });
 
-            //Rotate text Random
-            matrix.RotateAt(GetRotation(rnd), new PointF(x, y));
-            graphics.Transform = matrix;
-
-            //Draw the letters with Random Font Type, Size and Color
-            GetColor(rnd);
-            graphics.DrawString
-            (
-                //Text
-                text.Substring(i, 1),
-                //Random Font Name and Style
-                new Font(GetFontName(rnd), GetFontSize(rnd), GetFontStyle(rnd)),
-                //Random Color (Darker colors RGB 0 to 100)
-                new SolidBrush(Color.FromArgb(118, 38, 133)),
-                x,
-                y //rnd.Next(10, 40)
-            );
-            graphics.ResetTransform();
-        }
-
-        return bitmap;
+        return image;
     }
-
+    
     public string GenerateBase64(string text)
     {
-        using Image image = Generate(text);
-        using MemoryStream memory = new MemoryStream();
-        image.Save(memory, ImageFormat.Png);
-        byte[] imageBytes = memory.ToArray();
-        // Convert byte[] to Base64 String
-        return Convert.ToBase64String(imageBytes);
+        using var image = Generate(text);
+        using var ms = new MemoryStream();
+        image.Save(ms, new PngEncoder());
+        return Convert.ToBase64String(ms.ToArray());
     }
 
     public string NewText()
