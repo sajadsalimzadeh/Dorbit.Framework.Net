@@ -1,22 +1,13 @@
 ﻿namespace Dorbit.Framework.Contracts.Commands;
 
-public class CommandParameter<T>
+public class CommandParameter<T>(string key, string message, T defaultValue)
 {
-    public string Key { get; set; }
-    public string Message { get; set; }
-    public T DefaultValue { get; set; }
+    public string Key { get; set; } = key;
+    public string Message { get; set; } = message;
+    public T DefaultValue { get; set; } = defaultValue;
 
-    public CommandParameter(string key, string message)
+    public CommandParameter(string key, string message) : this(key, message, default(T))
     {
-        Key = key;
-        Message = message;
-    }
-
-    public CommandParameter(string key, string message, T defaultValue)
-    {
-        Key = key;
-        Message = message;
-        DefaultValue = defaultValue;
     }
 }
 

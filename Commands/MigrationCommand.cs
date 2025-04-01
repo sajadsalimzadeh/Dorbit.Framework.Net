@@ -10,20 +10,13 @@ using ICommand = Dorbit.Framework.Commands.Abstractions.ICommand;
 namespace Dorbit.Framework.Commands;
 
 [ServiceRegister]
-public class MigrationCommand : Command
+public class MigrationCommand(IServiceProvider serviceProvider) : Command
 {
-    private readonly IServiceProvider _serviceProvider;
-
     public override string Message => "Migrate";
-
-    public MigrationCommand(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
 
     public override IEnumerable<ICommand> GetSubCommands(ICommandContext context)
     {
-        var dbContexts = _serviceProvider.GetServices<IDbContext>();
+        var dbContexts = serviceProvider.GetServices<IDbContext>();
         yield return new MigrationCommandAll(dbContexts);
         foreach (var dbContext in dbContexts)
         {
@@ -38,23 +31,16 @@ public class MigrationCommand : Command
 }
 
 [ServiceRegister]
-public class MigrationCommandAll : Command
+public class MigrationCommandAll(IEnumerable<IDbContext> dbContexts) : Command
 {
     public override bool IsRoot { get; } = false;
 
-    private readonly IEnumerable<IDbContext> _dbContexts;
-
     public override string Message => "Migrate All";
-
-    public MigrationCommandAll(IEnumerable<IDbContext> dbContexts)
-    {
-        _dbContexts = dbContexts;
-    }
 
     public override async Task InvokeAsync(ICommandContext context)
     {
         context.Log($"\n==========Migrating==========\n");
-        foreach (var dbContext in _dbContexts)
+        foreach (var dbContext in dbContexts)
         {
             try
             {
@@ -69,20 +55,13 @@ public class MigrationCommandAll : Command
     }
 }
 
-internal class MigrationCommandItem : Command
+internal class MigrationCommandItem(IDbContext dbContext) : Command
 {
-    private readonly IDbContext _dbContext;
-
-    public override string Message => _dbContext.GetType().Name;
-
-    public MigrationCommandItem(IDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    public override string Message => dbContext.GetType().Name;
 
     public override async Task InvokeAsync(ICommandContext context)
     {
-        await _dbContext.MigrateAsync();
-        context.Log($"{_dbContext.GetType().Name} Migrate");
+        await dbContext.MigrateAsync();
+        context.Log($"{dbContext.GetType().Name} Migrate");
     }
 }

@@ -15,14 +15,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthAttribute : Attribute, IAsyncActionFilter
+public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFilter
 {
-    private readonly IEnumerable<string> _accesses;
-
-    public AuthAttribute(params string[] accesses)
-    {
-        _accesses = accesses;
-    }
+    private readonly IEnumerable<string> _accesses = accesses;
 
     private IEnumerable<string> GetAccesses(Type type)
     {

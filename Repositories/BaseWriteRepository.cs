@@ -11,14 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Repositories;
 
-public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TKey>, IWriterRepository<TEntity, TKey> where TEntity : class, IEntity<TKey>
+public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseReadRepository<TEntity, TKey>(dbContext), IWriterRepository<TEntity, TKey>
+    where TEntity : class, IEntity<TKey>
 {
-    private readonly IDbContext _dbContext;
-
-    public BaseWriteRepository(IDbContext dbContext) : base(dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly IDbContext _dbContext = dbContext;
 
     public virtual Task<TEntity> InsertAsync(TEntity entity)
     {
@@ -129,9 +125,5 @@ public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TK
     }
 }
 
-public class BaseWriteRepository<TEntity> : BaseWriteRepository<TEntity, Guid> where TEntity : class, IEntity<Guid>
-{
-    public BaseWriteRepository(IDbContext dbContext) : base(dbContext)
-    {
-    }
-}
+public class BaseWriteRepository<TEntity>(IDbContext dbContext) : BaseWriteRepository<TEntity, Guid>(dbContext)
+    where TEntity : class, IEntity<Guid>;

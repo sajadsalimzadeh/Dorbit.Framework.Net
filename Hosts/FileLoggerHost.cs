@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Hosts;
 
-public class FileLoggerHost : BaseHostInterval
+public class FileLoggerHost(IServiceProvider serviceProvider) : BaseHostInterval(serviceProvider)
 {
     protected override TimeSpan Interval { get; } = TimeSpan.FromSeconds(5);
 
@@ -18,11 +18,7 @@ public class FileLoggerHost : BaseHostInterval
         public string Path { get; set; }
         public object Content { get; set; }
     }
-    
-    
-    public FileLoggerHost(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
+
 
     public static void Add(LogRequest request)
     {

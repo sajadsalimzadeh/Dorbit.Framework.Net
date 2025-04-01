@@ -11,16 +11,11 @@ public enum TransactionState
     Rollback = 2,
 }
 
-internal class EfTransactionContext
+internal class EfTransactionContext(DbContext dbContext)
 {
-    internal readonly DbContext DbContext;
+    internal readonly DbContext DbContext = dbContext;
     internal readonly List<ITransaction> Transactions = new();
     private TransactionState _state = TransactionState.NotSet;
-
-    public EfTransactionContext(DbContext dbContext)
-    {
-        DbContext = dbContext;
-    }
 
     public ITransaction BeginTransaction()
     {

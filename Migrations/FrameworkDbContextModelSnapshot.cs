@@ -17,7 +17,7 @@ namespace Dorbit.Framework.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("frm")
+                .HasDefaultSchema("framework")
                 .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -64,7 +64,7 @@ namespace Dorbit.Framework.Migrations
 
                     b.HasIndex("EntityType", "ReferenceId");
 
-                    b.ToTable("Logs", "frm");
+                    b.ToTable("Logs", "framework");
                 });
 
             modelBuilder.Entity("Dorbit.Framework.Entities.Notification", b =>
@@ -115,7 +115,7 @@ namespace Dorbit.Framework.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Notifications", "frm");
+                    b.ToTable("Notifications", "framework");
                 });
 
             modelBuilder.Entity("Dorbit.Framework.Entities.Setting", b =>
@@ -142,7 +142,7 @@ namespace Dorbit.Framework.Migrations
                     b.HasIndex("Key")
                         .IsUnique();
 
-                    b.ToTable("Settings", "frm");
+                    b.ToTable("Settings", "framework");
                 });
 #pragma warning restore 612, 618
         }

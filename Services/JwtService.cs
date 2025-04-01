@@ -14,14 +14,9 @@ using Microsoft.IdentityModel.Tokens;
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
-public class JwtService
+public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
 {
-    private readonly ConfigFrameworkSecurity _configFrameworkSecurity;
-
-    public JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
-    {
-        _configFrameworkSecurity = securityOptions.Value;
-    }
+    private readonly ConfigFrameworkSecurity _configFrameworkSecurity = securityOptions.Value;
 
     public Task<JwtCreateTokenResponse> CreateTokenAsync(JwtCreateTokenRequest request)
     {

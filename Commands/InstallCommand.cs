@@ -10,18 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Commands;
 
 [ServiceRegister(Order = 100)]
-public class InstallCommand : Command
+public class InstallCommand(IServiceProvider serviceProvider) : Command
 {
-    private readonly IServiceProvider _serviceProvider;
-
     public override string Message { get; } = "Install or Update";
     public override int Order { get; } = 100;
 
-
-    public InstallCommand(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
 
     public override async Task InvokeAsync(ICommandContext context)
     {
@@ -42,7 +35,7 @@ public class InstallCommand : Command
         });
         await deleteProcess?.WaitForExitAsync()!;
 
-        var migrationCommandAll = _serviceProvider.GetService<MigrationCommandAll>();
+        var migrationCommandAll = serviceProvider.GetService<MigrationCommandAll>();
         await migrationCommandAll.InvokeAsync(context);
 
         var createProcess = Process.Start(new ProcessStartInfo("sc", $"create {assemblyName} binpath= \"{entryFilename} run\" start= auto")

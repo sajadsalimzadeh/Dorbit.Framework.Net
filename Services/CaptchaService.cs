@@ -11,15 +11,10 @@ using Microsoft.Extensions.Options;
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
-public class CaptchaService
+public class CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
 {
     private static Dictionary<string, string> _captchas = new();
-    private readonly ConfigCaptcha _configCaptcha;
-
-    public CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
-    {
-        _configCaptcha = configCaptchaOptions.Value;
-    }
+    private readonly ConfigCaptcha _configCaptcha = configCaptchaOptions.Value;
 
     public KeyValuePair<string, string> Generate(CaptchaGenerateModel dto)
     {

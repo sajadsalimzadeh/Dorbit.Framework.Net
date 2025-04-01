@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Filters;
 
-public class AntiDosAttribute : ActionFilterAttribute
+public class AntiDosAttribute(AntiDosAttribute.DurationType type, int count) : ActionFilterAttribute
 {
     public enum DurationType
     {
@@ -18,20 +18,14 @@ public class AntiDosAttribute : ActionFilterAttribute
         Minute = 3,
     }
 
-    private TimeSpan _time;
-    public int Count { get; set; }
-
-    public AntiDosAttribute(DurationType type, int count)
+    private TimeSpan _time = type switch
     {
-        Count = count;
-        _time = type switch
-        {
-            DurationType.Day => TimeSpan.FromDays(1),
-            DurationType.Hour => TimeSpan.FromHours(1),
-            DurationType.Minute => TimeSpan.FromMinutes(1),
-            _ => TimeSpan.FromMinutes(1),
-        };
-    }
+        DurationType.Day => TimeSpan.FromDays(1),
+        DurationType.Hour => TimeSpan.FromHours(1),
+        DurationType.Minute => TimeSpan.FromMinutes(1),
+        _ => TimeSpan.FromMinutes(1),
+    };
+    public int Count { get; set; } = count;
 
     private class RequestModel
     {

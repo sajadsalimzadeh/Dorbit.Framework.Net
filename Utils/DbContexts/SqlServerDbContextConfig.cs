@@ -2,14 +2,9 @@
 
 namespace Dorbit.Framework.Utils.DbContexts;
 
-public class SqlServerDbContextConfig : DbContextConfig
+public class SqlServerDbContextConfig(string connectionString) : DbContextConfig
 {
-    public string ConnectionString { get; set; }
-
-    public SqlServerDbContextConfig(string connectionString)
-    {
-        ConnectionString = connectionString;
-    }
+    public string ConnectionString { get; set; } = connectionString;
 
     public override void Configure(DbContextOptionsBuilder builder)
     {

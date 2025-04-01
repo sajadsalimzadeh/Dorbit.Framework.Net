@@ -1,9 +1,6 @@
 ﻿namespace Dorbit.Framework.Contracts;
 
-public struct ArrayWrapper<T>
+public struct ArrayWrapper<T>(T[] values)
 {
-    public ArrayWrapper(T[] values)
-        => Values = values;
-
-    public T[] Values { get; }
+    public T[] Values { get; } = values;
 }

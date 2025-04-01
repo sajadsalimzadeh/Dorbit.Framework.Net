@@ -4,12 +4,8 @@ using Prometheus;
 
 namespace Dorbit.Framework.Filters;
 
-public class MetricContentLengthAttribute : MetricAttribute<Summary>
+public class MetricContentLengthAttribute(Type type, string memberName) : MetricAttribute<Summary>(type, memberName)
 {
-    public MetricContentLengthAttribute(Type type, string memberName) : base(type, memberName)
-    {
-    }
-
     public override void OnActionExecuting(ActionExecutingContext context)
     {
         if (context?.HttpContext.Request.ContentLength is not null)

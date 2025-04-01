@@ -9,16 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Repositories;
 
-public abstract class DistributedCacheRepository<T> where T : IEntity
+public abstract class DistributedCacheRepository<T>(IServiceProvider serviceProvider)
+    where T : IEntity
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IDistributedCache _cache;
-
-    protected DistributedCacheRepository(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-        _cache = serviceProvider.GetService<IDistributedCache>();
-    }
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly IDistributedCache _cache = serviceProvider.GetService<IDistributedCache>();
 
     public async Task<T> GetAsync(Guid id, CancellationToken cancellationToken = default)
     {

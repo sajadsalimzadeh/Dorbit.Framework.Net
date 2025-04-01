@@ -14,19 +14,15 @@ using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Utils.Json;
 using EFCore.BulkExtensions;
 using Microsoft.Extensions.DependencyInjection;
+using ChangeLog = Dorbit.Framework.Entities.ChangeLog;
 
 namespace Dorbit.Framework.Hosts;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-internal class EntityLoggerHost : BaseHostInterval
+internal class EntityLoggerHost(IServiceProvider serviceProvider) : BaseHostInterval(serviceProvider)
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
     private static readonly ConcurrentQueue<LogRequest> Requests = new();
-
-    public EntityLoggerHost(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
 
     public EntityLoggerHost Add(LogRequest request)
     {
@@ -41,7 +37,7 @@ internal class EntityLoggerHost : BaseHostInterval
     {
         try
         {
-            var logs = new List<EntityLog>();
+            var logs = new List<ChangeLog>();
             while (Requests.TryDequeue(out var request))
             {
                 var type = request.NewObj.GetType();
@@ -62,7 +58,7 @@ internal class EntityLoggerHost : BaseHostInterval
                 }
 
                 if (diff.Count == 0) continue;
-                var entity = new EntityLog
+                var entity = new ChangeLog
                 {
                     Module = request.Module,
                     EntityType = request.NewObj.GetType().Name,
