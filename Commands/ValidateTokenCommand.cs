@@ -18,10 +18,11 @@ public class ValidateTokenCommand(JwtService jwtService) : Command
         yield return new CommandParameter("Key", "Key");
     }
 
-    public override async Task InvokeAsync(ICommandContext context)
+    public override Task InvokeAsync(ICommandContext context)
     {
-        var result = await jwtService.TryValidateTokenAsync(context.GetArgAsString("Key"));
+        var result = jwtService.TryValidateToken(context.GetArgAsString("Key"));
         if (result) context.Success("Token Is Valid");
         else context.Error("Token Is InValid");
+        return Task.CompletedTask;
     }
 }

@@ -18,7 +18,7 @@ public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
 {
     private readonly ConfigFrameworkSecurity _configFrameworkSecurity = securityOptions.Value;
 
-    public Task<JwtCreateTokenResponse> CreateTokenAsync(JwtCreateTokenRequest request)
+    public string CreateToken(JwtCreateTokenRequest request)
     {
         var secret = _configFrameworkSecurity.Secret.GetDecryptedValue();
         var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
@@ -39,25 +39,16 @@ public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
             }
         }
 
-        var csrf = Guid.NewGuid().ToString();
-        tokenDescriptor.Claims.Add("csrf", csrf);
-
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        var key = tokenHandler.WriteToken(token);
-
-        return Task.FromResult(new JwtCreateTokenResponse()
-        {
-            Key = key,
-            Csrf = csrf
-        });
+        return tokenHandler.WriteToken(token);
     }
 
-    public Task<bool> TryValidateTokenAsync(string token)
+    public bool TryValidateToken(string token)
     {
-        return TryValidateTokenAsync(token, out _, out _);
+        return TryValidateToken(token, out _, out _);
     }
 
-    public Task<bool> TryValidateTokenAsync(string token, out SecurityToken securityToken, out ClaimsPrincipal claimsPrincipal)
+    public bool TryValidateToken(string token, out SecurityToken securityToken, out ClaimsPrincipal claimsPrincipal)
     {
         var secret = _configFrameworkSecurity.Secret.GetDecryptedValue();
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -72,7 +63,7 @@ public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret)),
             };
             claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out securityToken);
-            return Task.FromResult(securityToken.ValidTo > DateTime.UtcNow);
+            return securityToken.ValidTo > DateTime.UtcNow;
         }
         catch
         {
@@ -81,6 +72,6 @@ public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
 
         claimsPrincipal = null;
         securityToken = null;
-        return Task.FromResult(false);
+        return false;
     }
 }

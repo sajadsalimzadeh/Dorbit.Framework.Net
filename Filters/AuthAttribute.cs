@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dorbit.Framework.Controllers;
+using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -15,47 +15,21 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFilter
+public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
 {
-    private readonly IEnumerable<string> _accesses = accesses;
-
-    private IEnumerable<string> GetAccesses(Type type)
-    {
-        var accesses = _accesses.ToList();
-        var preType = type;
-        while (type is not null)
-        {
-            if (type.IsAssignableFrom(typeof(CrudController)))
-            {
-                var entityType = preType.GenericTypeArguments.FirstOrDefault();
-                if (entityType is not null)
-                {
-                    accesses = accesses.ConvertAll(x => x.Replace("[entity]", entityType.Name));
-                }
-
-                break;
-            }
-
-            preType = type;
-            type = type.BaseType;
-        }
-
-        return accesses.Select(x => x.ToLower());
-    }
-
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (context.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
+        if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor)
+            throw new Exception("Context is not type of ControllerActionDescriptor");
+
+        var controllerAuthAttributes = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<AuthAttribute>();
+        var methodAttributes = actionDescriptor.MethodInfo.GetCustomAttributes<AuthAttribute>();
+        var methodHasAuthAttribute = controllerAuthAttributes.Any(x => Equals(x, this)) && methodAttributes.Any();
+        var hasIgnoreAuthIgnoreAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null;
+        if (methodHasAuthAttribute || hasIgnoreAuthIgnoreAttribute)
         {
-            var controllerAuthAttributes = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<AuthAttribute>();
-            var methodAttributes = actionDescriptor.MethodInfo.GetCustomAttributes<AuthAttribute>();
-            var methodHasAuthAttribute = controllerAuthAttributes.Any(x => Equals(x, this)) && methodAttributes.Any();
-            var hasIgnoreAuthIgnoreAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null;
-            if (methodHasAuthAttribute || hasIgnoreAuthIgnoreAttribute)
-            {
-                await next.Invoke();
-                return;
-            }
+            await next.Invoke();
+            return;
         }
         //Find Token
 
@@ -77,7 +51,7 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
         }
 
         userStateService.LoadGeoInfo(state, context.HttpContext.Connection.RemoteIpAddress?.ToString());
-        
+
         foreach (var authService in sp.GetServices<IAuthService>())
         {
             if (!await authService.IsTokenValid(context.HttpContext, user.Claims))
@@ -85,21 +59,32 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
                 throw new AuthenticationException("InvalidToken");
             }
         }
-        
-        if (_accesses?.Count() > 0)
+
+        if (access.IsNotNullOrEmpty())
         {
-            IEnumerable<string> policies;
-            if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
+            var type = actionDescriptor.ControllerTypeInfo as Type;
+            var preType = type;
+            while (type is not null)
             {
-                policies = GetAccesses(controllerActionDescriptor.ControllerTypeInfo);
-            }
-            else
-            {
-                throw new Exception("ActionDescription is Not ControllerActionDescriptor");
+                if (type.IsAssignableFrom(typeof(CrudController)))
+                {
+                    var index = 0;
+                    foreach (var genericType in preType.GenericTypeArguments)
+                    {
+                        access = access.Replace("{type" + index + "}", genericType.Name);
+                        index++;
+                    }
+                    
+                    break;
+                }
+
+                preType = type;
+                type = type.BaseType;
             }
 
+
             var authenticationService = sp.GetService<IAuthService>();
-            if (user.Username != "admin" && !await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
+            if (user.Username != "admin" && !await authenticationService.HasAccessAsync(user.Id, access))
             {
                 throw new UnauthorizedAccessException("AccessDenied");
             }

@@ -46,7 +46,7 @@ public class CreateTokenCommand(JwtService jwtService) : Command
         };
         request.Claims.Add("Id", context.GetArgAsString("Id"));
         request.Claims.Add("Name", context.GetArgAsString("Name"));
-        var createTokenResponse = await jwtService.CreateTokenAsync(request);
-        context.Log($"Token: {createTokenResponse.Key}\n");
+        var createTokenResponse = jwtService.CreateToken(request);
+        context.Log($"Token: {createTokenResponse}\n");
     }
 }
