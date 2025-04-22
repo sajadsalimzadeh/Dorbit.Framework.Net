@@ -7,9 +7,7 @@ using Dorbit.Framework.Entities;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Repositories;
 using Dorbit.Framework.Services.Abstractions;
-using Dorbit.Framework.Utils.Json;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Services;
 

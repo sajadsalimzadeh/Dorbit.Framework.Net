@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Filters;
-using Dorbit.Framework.Repositories;
 using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Mvc;
 
