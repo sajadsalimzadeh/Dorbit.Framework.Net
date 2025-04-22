@@ -104,31 +104,19 @@ public static class FrameworkInstaller
         return services;
     }
 
-    public class Configs
+    public class Configs(IConfiguration configuration)
     {
         public required List<string> DependencyRegisterNamespaces { get; init; }
-        public List<string> AllowedOrigins { get; set; }
+        public List<string> AllowedOrigins { get; set; } = configuration.GetSection("AllowedOrigins").Get<List<string>>();
 
-        public IConfig<ConfigFile> ConfigFile { get; init; }
-        public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; }
-        public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; }
-        public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; }
-        public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; }
-        public IConfig<ConfigGeo> ConfigGeo { get; init; }
+        public IConfig<ConfigFile> ConfigFile { get; init; } = configuration.GetConfig<ConfigFile>("File");
+        public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; } = configuration.GetConfig<ConfigMessageProviders>("MessageProviders");
+        public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; } = configuration.GetConfig<ConfigFrameworkSecurity>("Security");
+        public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; } = configuration.GetConfig<ConfigLogRequest>("LogRequest");
+        public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; } = configuration.GetConfig<ConfigCaptcha>("Captcha");
+        public IConfig<ConfigGeo> ConfigGeo { get; init; } = configuration.GetConfig<ConfigGeo>("Geo");
 
         public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
-
-        public Configs(IConfiguration configuration)
-        {
-            ConfigFile = configuration.GetConfig<ConfigFile>("File");
-            ConfigMessageProviders = configuration.GetConfig<ConfigMessageProviders>("MessageProviders");
-            ConfigSecurity = configuration.GetConfig<ConfigFrameworkSecurity>("Security");
-            ConfigLogRequest = configuration.GetConfig<ConfigLogRequest>("LogRequest");
-            ConfigCaptcha = configuration.GetConfig<ConfigCaptcha>("Captcha");
-            ConfigGeo = configuration.GetConfig<ConfigGeo>("Geo");
-
-            AllowedOrigins = configuration.GetSection("AllowedOrigins").Get<List<string>>();
-        }
     }
 
     public static WebApplicationBuilder UseDorbitSerilog(this WebApplicationBuilder builder)

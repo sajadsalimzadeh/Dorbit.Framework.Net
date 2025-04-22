@@ -29,16 +29,9 @@ public class OperationException : Exception
     }
 }
 
-public class ExceptionLogDto
+public class ExceptionLogDto(string message, params object[] @params)
 {
     public LogEventLevel Level { get; set; } = LogEventLevel.Error;
-    public string Message { get; set; }
-    public object[] Params { get; set; }
-
-
-    public ExceptionLogDto(string message, params object[] @params)
-    {
-        Message = message;
-        Params = @params;
-    }
+    public string Message { get; set; } = message;
+    public object[] Params { get; set; } = @params;
 }

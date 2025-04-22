@@ -4,14 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Configs;
 
-public class Config<TOptions> : IConfig<TOptions> where TOptions : class
+public class Config<TOptions>(IConfiguration configuration) : IConfig<TOptions>
+    where TOptions : class
 {
-    public IConfiguration Configuration { get; }
-
-    public Config(IConfiguration configuration)
-    {
-        Configuration = configuration;
-    }
+    public IConfiguration Configuration { get; } = configuration;
 
     public void Configure(IServiceCollection services)
     {

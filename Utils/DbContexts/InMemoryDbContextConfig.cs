@@ -2,14 +2,9 @@
 
 namespace Dorbit.Framework.Utils.DbContexts;
 
-public class InMemoryDbContextConfig : DbContextConfig
+public class InMemoryDbContextConfig(string databaseName) : DbContextConfig
 {
-    public string DatabaseName { get; set; }
-
-    public InMemoryDbContextConfig(string databaseName)
-    {
-        DatabaseName = databaseName;
-    }
+    public string DatabaseName { get; set; } = databaseName;
 
     public override void Configure(DbContextOptionsBuilder builder)
     {

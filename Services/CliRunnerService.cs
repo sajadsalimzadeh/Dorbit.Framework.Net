@@ -12,19 +12,13 @@ using Microsoft.AspNetCore.Builder;
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
-public class CliRunnerService
+public class CliRunnerService(IEnumerable<ICommand> commands)
 {
-    private readonly IEnumerable<ICommand> _commands;
     private CancellationToken _cancellationToken = default;
-
-    public CliRunnerService(IEnumerable<ICommand> commands)
-    {
-        _commands = commands;
-    }
 
     public Task RunAsync(WebApplication app)
     {
-        return CreateMenus(app, _commands.Where(x => x.IsRoot));
+        return CreateMenus(app, commands.Where(x => x.IsRoot));
     }
 
     private Task CreateMenus(WebApplication app, IEnumerable<ICommand> commands, bool isRoot = true)

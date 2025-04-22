@@ -75,9 +75,5 @@ public class BaseReadRepository<TEntity, TKey>(IDbContext dbContext) : IReaderRe
     }
 }
 
-public class BaseReadRepository<TEntity> : BaseReadRepository<TEntity, Guid> where TEntity : class, IEntity<Guid>
-{
-    public BaseReadRepository(IDbContext dbContext) : base(dbContext)
-    {
-    }
-}
+public class BaseReadRepository<TEntity>(IDbContext dbContext) : BaseReadRepository<TEntity, Guid>(dbContext)
+    where TEntity : class, IEntity<Guid>;

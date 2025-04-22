@@ -4,25 +4,15 @@ using System.Linq;
 namespace Dorbit.Framework.Utils.Queries;
 
 [AttributeUsage(AttributeTargets.All)]
-internal class FilterQueryOptionSqlAttribute : Attribute
+internal class FilterQueryOptionSqlAttribute(string value) : Attribute
 {
-    public string Value { get; set; }
-
-    public FilterQueryOptionSqlAttribute(string value)
-    {
-        Value = value;
-    }
+    public string Value { get; set; } = value;
 }
 
 [AttributeUsage(AttributeTargets.All)]
-internal class FilterQueryOptionFormatAttribute : Attribute
+internal class FilterQueryOptionFormatAttribute(string format) : Attribute
 {
-    public string Format { get; set; }
-
-    public FilterQueryOptionFormatAttribute(string format)
-    {
-        Format = format;
-    }
+    public string Format { get; set; } = format;
 }
 
 internal static class FilterQueryOptionAttributeExtension

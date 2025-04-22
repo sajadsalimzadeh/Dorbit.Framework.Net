@@ -8,15 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Dorbit.Framework.Controllers;
 
-public class CaptchasController : BaseController
+public class CaptchasController(CaptchaService captchaService) : BaseController
 {
-    private readonly CaptchaService _captchaService;
-
-    public CaptchasController(CaptchaService captchaService)
-    {
-        _captchaService = captchaService;
-    }
-
     [HttpGet, Delay(Request = 300)]
     public QueryResult<KeyValuePair<string, string>> Generate([FromQuery] CaptchaGenerateCommand viewModel)
     {
@@ -25,6 +18,6 @@ public class CaptchasController : BaseController
             Width = viewModel.Width,
             Height = viewModel.Height,
         };
-        return new QueryResult<KeyValuePair<string, string>>(_captchaService.Generate(dto));
+        return new QueryResult<KeyValuePair<string, string>>(captchaService.Generate(dto));
     }
 }
