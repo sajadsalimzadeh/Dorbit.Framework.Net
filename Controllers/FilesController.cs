@@ -12,17 +12,11 @@ using Microsoft.Extensions.Options;
 
 namespace Dorbit.Framework.Controllers;
 
-public class FilesController : BaseController
+[ApiExplorerSettings(GroupName = "framework")]
+public class FilesController(IOptions<ConfigFile> options, IMemoryCache memoryCache) : BaseController
 {
     private readonly ConcurrentDictionary<string, object> _monitors = new();
-    private readonly IMemoryCache _memoryCache;
-    private readonly ConfigFile _configFile;
-
-    public FilesController(IOptions<ConfigFile> options, IMemoryCache memoryCache)
-    {
-        _memoryCache = memoryCache;
-        _configFile = options.Value;
-    }
+    private readonly ConfigFile _configFile = options.Value;
 
     private string GetFilePath(string filename)
     {
@@ -41,7 +35,7 @@ public class FilesController : BaseController
         var monitor = _monitors.GetOrAdd(filename, () => new { });
         lock (monitor)
         {
-            if (!_memoryCache.TryGetValue(filename, out FileDto dto))
+            if (!memoryCache.TryGetValue(filename, out FileDto dto))
             {
                 dto = new FileDto();
                 var filePath = GetFilePath(filename);
@@ -49,7 +43,7 @@ public class FilesController : BaseController
                 if (!System.IO.File.Exists(filePath)) throw new FileNotFoundException();
                 dto.LastModifyTime = fileInfo.LastWriteTime;
                 dto.Content = System.IO.File.ReadAllBytes(filePath);
-                _memoryCache.Set(filename, dto, TimeSpan.FromHours(1));
+                memoryCache.Set(filename, dto, TimeSpan.FromHours(1));
             }
 
             return dto;
@@ -76,7 +70,7 @@ public class FilesController : BaseController
     {
         var file = Request.Form.Files[0];
         var ext = Path.GetExtension(file.FileName);
-        var filename = Guid.NewGuid() + ext;
+        var filename = Guid.CreateVersion7() + ext;
         var filePath = GetFilePath(filename);
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms);

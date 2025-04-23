@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using AutoMapper.Internal;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -45,41 +47,46 @@ public static class ObjectExtension
         return obj1;
     }
 
-    public static bool IsNumericType(this object o)
-    {
-        switch (Type.GetTypeCode(o.GetType()))
-        {
-            case TypeCode.Byte:
-            case TypeCode.SByte:
-            case TypeCode.UInt16:
-            case TypeCode.UInt32:
-            case TypeCode.UInt64:
-            case TypeCode.Int16:
-            case TypeCode.Int32:
-            case TypeCode.Int64:
-            case TypeCode.Decimal:
-            case TypeCode.Double:
-            case TypeCode.Single:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    public static bool IsString(this object o)
-    {
-        switch (Type.GetTypeCode(o.GetType()))
-        {
-            case TypeCode.String:
-                return true;
-            default:
-                return false;
-        }
-    }
-
     public static Dictionary<string, object> ToDictionary(this object o)
     {
         return o.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
             .ToDictionary(prop => prop.Name, prop => prop.GetValue(o, null));
+    }
+
+    public static T Patch<T>(this Dictionary<string, object> dict, T destination)
+    {
+        var destType = typeof(T);
+        var destProperties = destType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        foreach (var item in dict)
+        {
+            var destProperty = destProperties.FirstOrDefault(x => string.Equals(x.Name, item.Key, StringComparison.CurrentCultureIgnoreCase));
+            if (destProperty is null) continue;
+            if (item.Value is null)
+            {
+                destProperty.SetValue(destination, null);
+                continue;
+            }
+
+            destProperty.SetValue(destination, item.Value.ConvertTo(destProperty.PropertyType));
+        }
+
+        return destination;
+    }
+
+    public static T Patch<T>(this object source, T destination)
+    {
+        var sourceType = source.GetType();
+        var destType = typeof(T);
+        var sourceProperties = sourceType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        var destProperties = destType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+        foreach (var sourceProperty in sourceProperties)
+        {
+            var destProperty = destProperties.FirstOrDefault(
+                x => string.Equals(x.Name, sourceProperty.Name, StringComparison.CurrentCultureIgnoreCase) && x.PropertyType == sourceProperty.PropertyType);
+            destProperty?.SetValue(destination, sourceProperty.GetValue(source));
+        }
+
+        return destination;
     }
 }

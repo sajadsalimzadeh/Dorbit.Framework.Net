@@ -30,7 +30,7 @@ public static class ListExtension
         return list.Search(obj, (prop, value) =>
         {
             if (!enums && value is Enum) return false;
-            return value.IsNumericType() || value.IsString();
+            return value.GetType().IsNumeric() || value.GetType().IsString();
         });
     }
 

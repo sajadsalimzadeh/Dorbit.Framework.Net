@@ -41,7 +41,7 @@ public class KavenegarProvider : IMessageProviderSms
         SendResult result;
         if (string.IsNullOrEmpty(request.TemplateId))
         {
-            result = _api.Send(_sender, request.To, request.Text);
+            result = _api.Send(_sender, request.To, request.Body);
         }
         else
         {

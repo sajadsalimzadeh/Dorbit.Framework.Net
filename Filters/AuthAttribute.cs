@@ -15,18 +15,14 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthAttribute : Attribute, IAsyncActionFilter
+public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFilter
 {
-    private readonly IEnumerable<string> _accesses;
+    private readonly IEnumerable<string> _accesses = accesses;
 
-    public AuthAttribute(params string[] accesses)
-    {
-        _accesses = accesses;
-    }
-
-    private IEnumerable<string> GetAccesses(Type type)
+    private IEnumerable<string> GetAccesses(MethodInfo methodInfo)
     {
         var accesses = _accesses.ToList();
+        var type = methodInfo.ReflectedType;
         var preType = type;
         while (type is not null)
         {
@@ -35,7 +31,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
                 var entityType = preType.GenericTypeArguments.FirstOrDefault();
                 if (entityType is not null)
                 {
-                    accesses = accesses.ConvertAll(x => x.Replace("[entity]", entityType.Name));
+                    accesses = accesses.ConvertAll(x => x.Replace("{entity}", entityType.Name));
                 }
 
                 break;
@@ -50,17 +46,16 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (context.ActionDescriptor is ControllerActionDescriptor actionDescriptor)
+        if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor) return;
+        
+        var controllerAuthAttributes = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<AuthAttribute>();
+        var methodAttributes = actionDescriptor.MethodInfo.GetCustomAttributes<AuthAttribute>();
+        var methodHasAuthAttribute = controllerAuthAttributes.Any(x => Equals(x, this)) && methodAttributes.Any();
+        var hasIgnoreAuthIgnoreAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null;
+        if (methodHasAuthAttribute || hasIgnoreAuthIgnoreAttribute)
         {
-            var controllerAuthAttributes = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<AuthAttribute>();
-            var methodAttributes = actionDescriptor.MethodInfo.GetCustomAttributes<AuthAttribute>();
-            var methodHasAuthAttribute = controllerAuthAttributes.Any(x => Equals(x, this)) && methodAttributes.Any();
-            var hasIgnoreAuthIgnoreAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null;
-            if (methodHasAuthAttribute || hasIgnoreAuthIgnoreAttribute)
-            {
-                await next.Invoke();
-                return;
-            }
+            await next.Invoke();
+            return;
         }
         //Find Token
 
@@ -70,10 +65,10 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         var user = userResolver.User;
         if (user is null) throw new AuthenticationException();
 
-        if (!user.IsActive) throw new UnauthorizedAccessException("Your user is disabled");
+        if (!user.IsActive()) throw new UnauthorizedAccessException("Your user is disabled");
 
         var userStateService = sp.GetService<IUserStateService>();
-        var state = userStateService.GetUserState(user.Id?.ToString());
+        var state = userStateService.GetUserState(user.GetId()?.ToString());
         state.Url = context.HttpContext.Request.GetDisplayUrl();
         state.LastRequestTime = DateTime.UtcNow;
         if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var agent))
@@ -82,35 +77,28 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         }
 
         userStateService.LoadGeoInfo(state, context.HttpContext.Connection.RemoteIpAddress?.ToString());
-        
+
         foreach (var authService in sp.GetServices<IAuthService>())
         {
-            if (!await authService.IsTokenValid(context.HttpContext, user.Claims))
+            if (!await authService.ValidateAsync(context.HttpContext, userResolver.Claims))
             {
                 throw new AuthenticationException("InvalidToken");
             }
         }
-        
+
         if (_accesses?.Count() > 0)
         {
-            IEnumerable<string> policies;
-            if (context.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
-            {
-                policies = GetAccesses(controllerActionDescriptor.ControllerTypeInfo);
-            }
-            else
-            {
-                throw new Exception("ActionDescription is Not ControllerActionDescriptor");
-            }
+            
+            var accesses = GetAccesses(actionDescriptor.MethodInfo);
 
             var authenticationService = sp.GetService<IAuthService>();
-            if (user.Username != "admin" && !await authenticationService.HasAccessAsync(user.Id, policies.ToArray()))
+            if (user.GetUsername() != "admin" && !await authenticationService.HasAccessAsync(user.GetId(), accesses.ToArray()))
             {
                 throw new UnauthorizedAccessException("AccessDenied");
             }
         }
 
-        await OnActionExecutionAsync(context, user.Claims);
+        await OnActionExecutionAsync(context, userResolver.Claims);
 
         await next.Invoke();
     }

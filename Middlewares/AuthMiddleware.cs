@@ -1,9 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
-using Dorbit.Framework.Contracts.Users;
 using Dorbit.Framework.Extensions;
-using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;

@@ -2,7 +2,7 @@
 
 namespace Dorbit.Framework.Entities.Abstractions;
 
-public interface IValidator
+public interface ICreationValidate
 {
-    void Validate(ModelValidationException e);
+    void ValidateOnCreate(ModelValidationException e);
 }

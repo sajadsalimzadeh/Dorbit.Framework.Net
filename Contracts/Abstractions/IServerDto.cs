@@ -2,6 +2,6 @@
 
 public interface IServerDto
 {
-    public long? Id { get; set; }
-    public string Name { get; set; }
+    object GetId();
+    string GetName();
 }

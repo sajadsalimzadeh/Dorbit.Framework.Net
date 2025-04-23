@@ -15,18 +15,13 @@ public class MeliPayamakProvider : IMessageProviderSms
     public string Name => "MeliPayamak";
     private string _username;
     private string _password;
-    private readonly HttpHelper _client;
+    private readonly HttpHelper _client = new("https://rest.payamak-panel.com/api/");
 
     private class SendResponse
     {
         public string Value { get; set; }
         public int RetStatus { get; set; }
         public string StrRetStatus { get; set; }
-    }
-
-    public MeliPayamakProvider()
-    {
-        _client = new HttpHelper("https://rest.payamak-panel.com/api/");
     }
 
     public void Configure(ConfigMessageSmsProvider configuration)

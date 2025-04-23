@@ -11,17 +11,10 @@ using Dorbit.Framework.Services;
 namespace Dorbit.Framework.Commands;
 
 [ServiceRegister]
-public class CreateTokenCommand : Command
+public class CreateTokenCommand(JwtService jwtService) : Command
 {
-    private readonly JwtService _jwtService;
-
     public override bool IsRoot { get; } = false;
     public override string Message => "Create Token";
-
-    public CreateTokenCommand(JwtService jwtService)
-    {
-        _jwtService = jwtService;
-    }
 
     public override IEnumerable<CommandParameter> GetParameters(ICommandContext context)
     {
@@ -53,7 +46,7 @@ public class CreateTokenCommand : Command
         };
         request.Claims.Add("Id", context.GetArgAsString("Id"));
         request.Claims.Add("Name", context.GetArgAsString("Name"));
-        var createTokenResponse = await _jwtService.CreateTokenAsync(request);
-        context.Log($"Token: {createTokenResponse.Key}\n");
+        var createTokenResponse = jwtService.CreateToken(request);
+        context.Log($"Token: {createTokenResponse}\n");
     }
 }

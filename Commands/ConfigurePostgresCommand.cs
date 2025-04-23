@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands.Abstractions;
 using Dorbit.Framework.Contracts.Commands;
 using Dorbit.Framework.Extensions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Dorbit.Framework.Commands;
 
@@ -37,9 +37,9 @@ public class ConfigurePostgresCommand : Command
             $"host={host};port={port};database={db};user id={username};password={password};pooling=true;minimum Pool Size=1;Maximum Pool Size=20;";
 
         var appSettingPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json");
-        var appSettings = JObject.Parse(File.ReadAllText(appSettingPath));
-        appSettings["Connection"] = JToken.FromObject(connectionString.GetEncryptedValue());
-        File.WriteAllText(appSettingPath, appSettings.ToString(Formatting.Indented));
+        var appSettings = JsonNode.Parse(File.ReadAllText(appSettingPath));
+        appSettings["Connection"] = JsonSerializer.SerializeToNode(connectionString.GetEncryptedValue());
+        File.WriteAllText(appSettingPath, appSettings.ToJsonString());
         
         context.Log($"\n\"{appSettingPath}\" changed.");
         context.Log("\nTo apply changes, you need to run the program again\n");

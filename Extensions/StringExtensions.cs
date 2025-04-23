@@ -182,6 +182,7 @@ public static class StringExtensions
         if (string.IsNullOrEmpty(value)) return value;
         return value.Length <= maxLength ? value : value.Substring(0, maxLength);
     }
+
     public static string CombinePath(this string str, params string[] paths)
     {
         foreach (var path in paths)
@@ -210,5 +211,18 @@ public static class StringExtensions
     public static string SubstringLast(this string str, int length)
     {
         return str.Substring(Math.Max(0, str.Length - length));
+    }
+
+    public static string Random(this string template, int length)
+    {
+        var rnd = new Random();
+        var sb = new StringBuilder();
+        for (var i = 0; i < length; i++)
+        {
+            var index = (int)Math.Floor((double)rnd.NextInt64() % template.Length);
+            sb.Append(template[index]);
+        }
+
+        return sb.ToString();
     }
 }

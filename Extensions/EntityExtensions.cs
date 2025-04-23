@@ -13,7 +13,7 @@ namespace Dorbit.Framework.Extensions;
 
 public static class EntityExtensions
 {
-    private static readonly ConcurrentDictionary<Type, List<PropertyInfo>> _allReadonlyProperties = new();
+    private static readonly ConcurrentDictionary<Type, List<PropertyInfo>> AllReadonlyProperties = new();
 
     public static TEntity IncludeCreationTime<TEntity>(this TEntity entity) where TEntity : ICreationTime
     {
@@ -25,8 +25,8 @@ public static class EntityExtensions
     public static TEntity IncludeCreationAudit<TEntity>(this TEntity entity, IUserDto user) where TEntity : ICreationAudit
     {
         entity.IncludeCreationTime();
-        entity.CreatorId = user?.Id?.ToString();
-        entity.CreatorName = user?.Username;
+        entity.CreatorId = user?.GetId()?.ToString();
+        entity.CreatorName = user?.GetUsername();
         return entity;
     }
 
@@ -39,8 +39,8 @@ public static class EntityExtensions
     public static TEntity IncludeModificationAudit<TEntity>(this TEntity entity, IUserDto user) where TEntity : IModificationAudit
     {
         entity.IncludeModificationTime();
-        entity.ModifierId = user?.Id?.ToString();
-        entity.ModifierName = user?.Username;
+        entity.ModifierId = user?.GetId()?.ToString();
+        entity.ModifierName = user?.GetUsername();
         return entity;
     }
 
@@ -53,8 +53,8 @@ public static class EntityExtensions
     public static TEntity IncludeDeletionAudit<TEntity>(this TEntity entity, IUserDto user) where TEntity : IDeletionAudit
     {
         entity.IncludeDeletionTime();
-        entity.DeleterId = user?.Id?.ToString();
-        entity.DeleterName = user?.Username;
+        entity.DeleterId = user?.GetId()?.ToString();
+        entity.DeleterName = user?.GetUsername();
         return entity;
     }
 
@@ -79,36 +79,26 @@ public static class EntityExtensions
         return entity;
     }
 
-    public static TEntity IncludeTenantAudit<TEntity, TKey>(this TEntity entity, ITenantDto tenant) where TEntity : IEntity<TKey>
+    public static TEntity IncludeTenantAudit<TEntity>(this TEntity entity, ITenantDto tenant) where TEntity : ITenantAudit
     {
-        if (entity is ITenantAudit tenantAudit)
-        {
-            tenantAudit.TenantId = tenant?.Id;
-            tenantAudit.TenantName = tenant?.Name;
-        }
+        entity.TenantId = tenant?.GetId()?.ToString();
+        entity.TenantName = tenant?.GetName();
 
         return entity;
     }
 
-    public static TEntity IncludeServerAudit<TEntity, TKey>(this TEntity entity, IServerDto server) where TEntity : IEntity<TKey>
+    public static TEntity IncludeServerAudit<TEntity>(this TEntity entity, IServerDto server) where TEntity : IServerAudit
     {
-        if (entity is IServerAudit serverAudit)
-        {
-            serverAudit.ServerId = server?.Id;
-            serverAudit.ServerName = server?.Name;
-        }
+        entity.ServerId = server?.GetId().ToString();
+        entity.ServerName = server?.GetName();
 
         return entity;
     }
 
-    public static TEntity IncludeSoftwareAudit<TEntity, TKey>(this TEntity entity, ISoftwareDto software) where TEntity : IEntity<TKey>
+    public static TEntity IncludeSoftwareAudit<TEntity>(this TEntity entity, ISoftwareDto software) where TEntity : ISoftwareAudit
     {
-        if (entity is ISoftwareAudit softwareAudit)
-        {
-            softwareAudit.SoftwareId = software?.Id;
-            softwareAudit.SoftwareName = software?.Name;
-        }
-
+        entity.SoftwareId = software?.GetId().ToString();
+        entity.SoftwareName = software?.GetName();
         return entity;
     }
 
@@ -130,9 +120,9 @@ public static class EntityExtensions
         return entity;
     }
 
-    public static TEntity IncludeChangeLogs<TEntity, TKey>(this TEntity entity, TEntity oldEntity = default) where TEntity : IEntity<TKey>
+    public static TEntity IncludeChangeLogs<TEntity, TKey>(this TEntity entity, TEntity oldEntity = default) where TEntity : IChangeLog
     {
-        if (entity is IChangeLog changeLog) changeLog.IncludeChangeLogs(oldEntity as IChangeLog);
+        entity.IncludeChangeLogs(oldEntity);
         return entity;
     }
 
@@ -141,7 +131,7 @@ public static class EntityExtensions
         if (entity is IHistorical historical)
         {
             historical.IsHistorical = false;
-            historical.HistoryId = Guid.NewGuid();
+            historical.HistoryId = Guid.CreateVersion7();
         }
 
         return entity;
@@ -161,7 +151,7 @@ public static class EntityExtensions
     {
         if (entity is IEntity<Guid> guidEntity)
         {
-            if (guidEntity.Id == Guid.Empty) guidEntity.Id = Guid.NewGuid();
+            if (guidEntity.Id == Guid.Empty) guidEntity.Id = Guid.CreateVersion7();
         }
 
         return entity;
@@ -170,8 +160,8 @@ public static class EntityExtensions
     public static TEntity ValidateCreation<TEntity, TKey>(this TEntity entity) where TEntity : IEntity<TKey>
     {
         var e = new ModelValidationException();
-        if (entity is IValidator validator) validator.Validate(e);
-        if (entity is ICreationValidator creationValidator) creationValidator.ValidateOnCreate(e);
+        if (entity is IValidate validator) validator.Validate(e);
+        if (entity is ICreationValidate creationValidator) creationValidator.ValidateOnCreate(e);
         e.ThrowIfHasError();
         return entity;
     }
@@ -179,8 +169,8 @@ public static class EntityExtensions
     public static TEntity ValidateModification<TEntity, TKey>(this TEntity entity) where TEntity : IEntity<TKey>
     {
         var e = new ModelValidationException();
-        if (entity is IValidator validator) validator.Validate(e);
-        if (entity is IModificationValidator modificationValidator) modificationValidator.ValidateOnModify(e);
+        if (entity is IValidate validator) validator.Validate(e);
+        if (entity is IModificationValidate modificationValidator) modificationValidator.ValidateOnModify(e);
         e.ThrowIfHasError();
         return entity;
     }
@@ -188,15 +178,15 @@ public static class EntityExtensions
     public static TEntity ValidateDeletion<TEntity, TKey>(this TEntity entity) where TEntity : IEntity<TKey>
     {
         var e = new ModelValidationException();
-        if (entity is IValidator validator) validator.Validate(e);
-        if (entity is IDeletionValidator deletionValidator) deletionValidator.ValidateOnDelete(e);
+        if (entity is IValidate validator) validator.Validate(e);
+        if (entity is IDeletionValidate deletionValidator) deletionValidator.ValidateOnDelete(e);
         e.ThrowIfHasError();
         return entity;
     }
 
     public static List<PropertyInfo> GetReadonlyProperties<TEntity, TKey>(this TEntity entity) where TEntity : IEntity<TKey>
     {
-        return _allReadonlyProperties.GetOrAdd(typeof(TEntity), _ =>
+        return AllReadonlyProperties.GetOrAdd(typeof(TEntity), _ =>
         {
             var items = new List<PropertyInfo>();
             var properties = entity.GetType().GetProperties();

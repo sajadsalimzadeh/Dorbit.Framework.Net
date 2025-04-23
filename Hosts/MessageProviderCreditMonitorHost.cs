@@ -8,12 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Hosts;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-public class MessageProviderCreditMonitorHost : BaseHostInterval
+public class MessageProviderCreditMonitorHost(IServiceProvider serviceProvider) : BaseHostInterval(serviceProvider)
 {
-    public MessageProviderCreditMonitorHost(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     protected override Task InvokeAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken)
     {
         var messageManager = serviceProvider.GetService<MessageManager>();

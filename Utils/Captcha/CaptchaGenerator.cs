@@ -7,7 +7,6 @@ using SixLabors.Fonts;
 using System;
 using System.IO;
 using Dorbit.Framework.Contracts;
-using Fare;
 
 namespace Dorbit.Framework.Utils.Captcha;
 
@@ -16,8 +15,6 @@ public class CaptchaGenerator
     public CaptchaDificulty Difficulty { get; set; } = CaptchaDificulty.Normal;
     public int Width { get; set; } = 80;
     public int Height { get; set; } = 200;
-    public int Length { get; set; } = 6;
-    public string Pattern { get; set; } = "[0-9A-Z]";
     
     private static readonly string[] FontNames =
     {
@@ -61,11 +58,11 @@ public class CaptchaGenerator
     {
         return Difficulty switch
         {
-            CaptchaDificulty.VeryEasy => 20,
-            CaptchaDificulty.Easy => rnd.Next(20, 25),
-            CaptchaDificulty.Normal => rnd.Next(15, 25),
-            CaptchaDificulty.Hard => rnd.Next(10, 30),
-            _ => rnd.Next(10, 35),
+            CaptchaDificulty.VeryEasy => rnd.Next(35, 40),
+            CaptchaDificulty.Easy => rnd.Next(30, 35),
+            CaptchaDificulty.Normal => rnd.Next(25, 30),
+            CaptchaDificulty.Hard => rnd.Next(20, 25),
+            _ => rnd.Next(20, 40),
         };
     }
 
@@ -97,17 +94,7 @@ public class CaptchaGenerator
 
     private Color GetColor(Random rnd)
     {
-        switch (Difficulty)
-        {
-            case CaptchaDificulty.VeryEasy: return Color.FromRgb(0, 0, 0);
-            case CaptchaDificulty.Easy: return Color.FromRgb((byte)rnd.Next(0, 30), (byte)rnd.Next(0, 30), (byte)rnd.Next(0, 30));
-            case CaptchaDificulty.Normal: return Color.FromRgb((byte)rnd.Next(0, 60), (byte)rnd.Next(0, 60), (byte)rnd.Next(0, 60));
-            case CaptchaDificulty.Hard: return Color.FromRgb((byte)rnd.Next(0, 90), (byte)rnd.Next(0, 90), (byte)rnd.Next(0, 90));
-            case CaptchaDificulty.VeryHard:
-            case CaptchaDificulty.None:
-            default:
-                return Color.FromRgb((byte)rnd.Next(0, 150), (byte)rnd.Next(0, 150), (byte)rnd.Next(0, 150));
-        }
+        return Color.FromRgb((byte)rnd.Next(0, 200), (byte)rnd.Next(0, 200), (byte)rnd.Next(0, 200));
     }
 
     public Image<Rgba32> Generate(string text)
@@ -116,8 +103,6 @@ public class CaptchaGenerator
         var image = new Image<Rgba32>(Width, Height);
         image.Mutate(ctx =>
         {
-            ctx.Fill(Color.FromRgb(245, 245, 245));
-
             for (int i = 0, length = text.Length, unit = Width / (length + 2); i < length; i++)
             {
                 var x = unit * (i + 1);
@@ -143,11 +128,5 @@ public class CaptchaGenerator
         using var ms = new MemoryStream();
         image.Save(ms, new PngEncoder());
         return Convert.ToBase64String(ms.ToArray());
-    }
-
-    public string NewText()
-    {
-        var xeger = new Xeger("(" + Pattern + "){" + Length + "}");
-        return xeger.Generate();
     }
 }

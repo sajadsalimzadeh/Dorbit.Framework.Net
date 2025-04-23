@@ -4,47 +4,77 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Entities;
-using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Repositories;
-using Dorbit.Framework.Services.Abstractions;
-using Dorbit.Framework.Utils.Json;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
-public class SettingService(SettingRepository settingRepository, IAuthService authService)
+public class SettingService(SettingRepository settingRepository)
 {
+    private static bool _isChangeDetected = true;
+    private static readonly Dictionary<string, Setting> Settings = new();
 
-    public async Task<string> GetAsync(string key)
+    private void Load()
     {
-        var accesses = await authService.GetAllAccessAsync();
-        var setting = await settingRepository.Set().FirstOrDefaultAsync(x => x.Key == key);
-        if (setting is null || setting.Value.IsNullOrEmpty()) return default;
-        try
+        if (!_isChangeDetected) return;
+        var allSettings = settingRepository.Set().ToList();
+        foreach (var setting in allSettings)
         {
-            if (setting.Access.IsNotNullOrEmpty() && !accesses.Contains(setting.Access)) return default;
-            return setting.Value;
-        }
-        catch (Exception e)
-        {
-            return default;
+            Settings[setting.Key] = setting;
         }
     }
 
-    public async Task<Dictionary<string, string>> GetAllAsync(List<string> keys)
+    public Setting Get(string key)
     {
-        var accesses = await authService.GetAllAccessAsync();
-        var query = settingRepository.Set().AsQueryable();
-        if (keys is not null && keys.Count > 0) query = query.Where(x => keys.Contains(x.Key));
-        var settings = await query.ToListAsync();
-        settings = settings.Where(x => x.Access.IsNullOrEmpty() || accesses.Contains(x.Access)).ToList();
-        return settings.ToDictionary(setting => setting.Key, setting => setting.Value);
+        Load();
+        return Settings.GetValueOrDefault(key);
+    }
+
+    public T Get<T>(string key, T defaultValue)
+    {
+        var setting = Get(key);
+        if (setting is null)
+        {
+            setting = new Setting()
+            {
+                Key = key,
+            };
+            setting.SetValue(defaultValue);
+            try
+            {
+                settingRepository.InsertAsync(setting).Wait();
+            }
+            catch
+            {
+                // ignored
+            }
+
+            Settings[setting.Key] = setting;
+        }
+
+        return setting.GetValue(defaultValue);
+    }
+
+    public Setting Get(Enum key)
+    {
+        return Get(key.ToString());
+    }
+
+    public T Get<T>(Enum key, T defaultValue)
+    {
+        return Get(key.ToString(), defaultValue);
+    }
+
+    public List<Setting> GetAll()
+    {
+        Load();
+        return Settings.Values.ToList();
     }
 
     public async Task SaveAsync(string key, dynamic value)
     {
+        _isChangeDetected = true;
         var setting = await settingRepository.Set().FirstOrDefaultAsync(x => x.Key == key);
         if (setting is null)
         {

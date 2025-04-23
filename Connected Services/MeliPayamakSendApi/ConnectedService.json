@@ -148,7 +148,7 @@
       "UAParser.Core, {UAParser.Core, 4.0.3}"
     ],
     "serializerMode": "XmlSerializer",
-    "targetFramework": "net8.0",
+    "targetFramework": "net9.0",
     "typeReuseMode": "All"
   }
 }

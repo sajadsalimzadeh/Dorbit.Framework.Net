@@ -55,7 +55,7 @@ public static class CryptographyExtensions
         return new ProtectedProperty()
         {
             Iterations = aes.Iterations,
-            Algorithm = aes.HashAlgorithm.ToString(),
+            Algorithm = nameof(aes.HashAlgorithm),
             Value = Convert.ToBase64String(aes.Encrypt(value))
         };
     }

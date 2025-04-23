@@ -4,5 +4,5 @@ namespace Dorbit.Framework.Services.Abstractions;
 
 public interface ISoftwareResolver
 {
-    ISoftwareDto GetSoftware();
+    ISoftwareDto Software { get; set; }
 }

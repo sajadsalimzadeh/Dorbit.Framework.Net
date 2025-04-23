@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,21 +19,33 @@ using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Services.AppSecurities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using Serilog;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using IStartup = Dorbit.Framework.Services.Abstractions.IStartup;
 
 namespace Dorbit.Framework.Installers;
 
 public static class FrameworkInstaller
 {
+    private static Configs _configs;
+
     public static IServiceCollection AddDorbitFramework<T>(this IServiceCollection services, Configs configs)
     {
+        _configs = configs;
+
+        _configs.SwaggerConfigs.Insert(0, new ConfigSwaggerDoc("all", "All"));
+        _configs.SwaggerConfigs.Add(new ConfigSwaggerDoc("framework", "Framework"));
+
         Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
         App.MainThread = Thread.CurrentThread;
 
@@ -52,7 +65,46 @@ public static class FrameworkInstaller
         services.AddHttpContextAccessor();
         services.AddDistributedMemoryCache();
         services.AddSerilog();
-        services.AddSwaggerGen();
+        services.AddRazorPages();
+        services.AddSwaggerGen(options =>
+        {
+            options.EnableAnnotations();
+            foreach (var swagger in configs.SwaggerConfigs)
+            {
+                options.SwaggerDoc(swagger.Name, new OpenApiInfo()
+                {
+                    Title = swagger.Title,
+                    Version = swagger.Name
+                });
+            }
+
+            // Use ApiExplorer to group by version
+            options.DocInclusionPredicate((docName, apiDesc) =>
+            {
+                if (docName == "all") return true;
+                if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
+                if (methodInfo.ReflectedType?.Namespace is null) return false;
+
+                var swaggerConfigs = _configs.SwaggerConfigs.Where(x => x.Name == docName).ToList();
+                
+                if (swaggerConfigs.Any(x => x.Namespace != null && methodInfo.ReflectedType.Namespace.StartsWith(x.Namespace)))
+                {
+                    return true;
+                }
+                
+                var apiExplorerVersions = methodInfo.ReflectedType
+                    .GetCustomAttributes(true)
+                    .OfType<ApiExplorerSettingsAttribute>()
+                    .Select(attr => attr.GroupName);
+
+                if (swaggerConfigs.Any(x => apiExplorerVersions.Contains(x.Name)))
+                {
+                    return true;
+                }
+
+                return false;
+            });
+        });
 
         if (!configs.DependencyRegisterNamespaces.Contains("Dorbit"))
         {
@@ -77,7 +129,17 @@ public static class FrameworkInstaller
 
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
 
-        services.AddControllers().AddJsonOptions(options => { options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase; });
+        services.AddControllersWithViews()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            });
+
+        // if (EnvironmentUtil.IsDevelopment())
+        // {
+        //     services.AddControllers().AddRazorRuntimeCompilation();
+        // }
 
         var frameworkDbContextConfiguration = configs.DbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
         services.AddDbContext<FrameworkDbContext>(frameworkDbContextConfiguration);
@@ -103,32 +165,39 @@ public static class FrameworkInstaller
 
         return services;
     }
-
-    public class Configs
+    
+    public static WebApplication UseDorbit(this WebApplication app)
     {
-        public required List<string> DependencyRegisterNamespaces { get; init; }
-        public List<string> AllowedOrigins { get; set; }
+        var defaultFilesOptions = new DefaultFilesOptions();
+        defaultFilesOptions.DefaultFileNames.Add("index.html");
+        app.UseDefaultFiles(defaultFilesOptions);
+        app.UseStaticFiles();
+        app.UseCors();
+        app.UseRouting();
 
-        public IConfig<ConfigFile> ConfigFile { get; init; }
-        public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; }
-        public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; }
-        public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; }
-        public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; }
-        public IConfig<ConfigGeo> ConfigGeo { get; init; }
-
-        public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
-
-        public Configs(IConfiguration configuration)
+        app.UseSwagger(o =>
         {
-            ConfigFile = configuration.GetConfig<ConfigFile>("File");
-            ConfigMessageProviders = configuration.GetConfig<ConfigMessageProviders>("MessageProviders");
-            ConfigSecurity = configuration.GetConfig<ConfigFrameworkSecurity>("Security");
-            ConfigLogRequest = configuration.GetConfig<ConfigLogRequest>("LogRequest");
-            ConfigCaptcha = configuration.GetConfig<ConfigCaptcha>("Captcha");
-            ConfigGeo = configuration.GetConfig<ConfigGeo>("Geo");
+            o.OpenApiVersion = OpenApiSpecVersion.OpenApi2_0;
+        });
+        app.UseSwaggerUI(o =>
+        {
+            o.EnableFilter();
+            o.DocExpansion(DocExpansion.None);
 
-            AllowedOrigins = configuration.GetSection("AllowedOrigins").Get<List<string>>();
-        }
+            foreach (var group in _configs.SwaggerConfigs)
+            {
+                o.SwaggerEndpoint($"/swagger/{group.Name}/swagger.json", group.Title);
+            }
+        });
+
+        app.UseExceptionHandler("/Error");
+        app.UseHsts();
+
+        app.UseMiddleware<AuthMiddleware>();
+        app.UseMiddleware<ExceptionMiddleware>();
+        app.UseMiddleware<CancellationTokenMiddleware>();
+        app.UseResponseCaching();
+        return app;
     }
 
     public static WebApplicationBuilder UseDorbitSerilog(this WebApplicationBuilder builder)
@@ -157,28 +226,6 @@ public static class FrameworkInstaller
         return builder.Build();
     }
 
-    public static WebApplication UseDorbit(this WebApplication app)
-    {
-        var defaultFilesOptions = new DefaultFilesOptions();
-        defaultFilesOptions.DefaultFileNames.Add("index.html");
-        app.UseDefaultFiles(defaultFilesOptions);
-        app.UseStaticFiles();
-        app.UseCors();
-        app.UseRouting();
-
-        app.UseSwagger();
-        app.UseSwaggerUI(o => o.UseDefaultOptions("Mobicar.Shared.CoreServer API v1"));
-
-        app.UseExceptionHandler("/Error");
-        app.UseHsts();
-
-        app.UseMiddleware<AuthMiddleware>();
-        app.UseMiddleware<ExceptionMiddleware>();
-        app.UseMiddleware<CancellationTokenMiddleware>();
-        app.UseResponseCaching();
-        return app;
-    }
-
     public static async Task RunWithStartupsAsync(this WebApplication app)
     {
         var startups = app.Services.GetServices<IStartup>();
@@ -192,6 +239,8 @@ public static class FrameworkInstaller
 
     public static async Task RunDorbitAsync(this WebApplication app, string[] args)
     {
+        app.MapControllers();
+        
         if (app.Environment.IsDevelopment())
         {
             if (args.Contains("run"))
@@ -216,5 +265,30 @@ public static class FrameworkInstaller
                 await app.RunWithStartupsAsync();
             }
         }
+    }
+
+
+    public class Configs(IConfiguration configuration)
+    {
+        public List<string> DependencyRegisterNamespaces { get; init; }
+        public List<string> AllowedOrigins { get; set; } = configuration.GetSection("AllowedOrigins").Get<List<string>>();
+
+        public IConfig<ConfigFile> ConfigFile { get; init; } = configuration.GetConfig<ConfigFile>("File");
+        public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; } = configuration.GetConfig<ConfigMessageProviders>("MessageProviders");
+        public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; } = configuration.GetConfig<ConfigFrameworkSecurity>("Security");
+        public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; } = configuration.GetConfig<ConfigLogRequest>("LogRequest");
+        public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; } = configuration.GetConfig<ConfigCaptcha>("Captcha");
+        public IConfig<ConfigGeo> ConfigGeo { get; init; } = configuration.GetConfig<ConfigGeo>("Geo");
+
+        public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
+
+        public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
+    }
+
+    public class ConfigSwaggerDoc(string name, string title)
+    {
+        public string Name { get; } = name;
+        public string Title { get; } = title;
+        public string Namespace { get; set; }
     }
 }

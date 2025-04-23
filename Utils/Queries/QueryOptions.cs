@@ -5,18 +5,10 @@ namespace Dorbit.Framework.Utils.Queries;
 
 public class QueryOptions
 {
-    public FilterQueryOption Filters { get; protected set; }
-    public OrderByQueryOption OrderBy { get; protected set; }
-    public TopQueryOption Top { get; protected set; }
-    public SkipQueryOption Skip { get; protected set; }
-
-    public QueryOptions()
-    {
-        Filters = new FilterQueryOption();
-        OrderBy = new OrderByQueryOption();
-        Top = new TopQueryOption();
-        Skip = new SkipQueryOption();
-    }
+    public FilterQueryOption Filters { get; protected set; } = new();
+    public OrderByQueryOption OrderBy { get; protected set; } = new();
+    public TopQueryOption Top { get; protected set; } = new();
+    public SkipQueryOption Skip { get; protected set; } = new();
 
     public IQueryable<T> ApplyTo<T>(IQueryable<T> query)
     {

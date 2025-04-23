@@ -11,14 +11,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Repositories;
 
-public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TKey>, IWriterRepository<TEntity, TKey> where TEntity : class, IEntity<TKey>
+public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseReadRepository<TEntity, TKey>(dbContext), IWriterRepository<TEntity, TKey>
+    where TEntity : class, IEntity<TKey>
 {
-    private readonly IDbContext _dbContext;
-
-    public BaseWriteRepository(IDbContext dbContext) : base(dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly IDbContext _dbContext = dbContext;
 
     public virtual Task<TEntity> InsertAsync(TEntity entity)
     {
@@ -27,7 +23,7 @@ public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TK
 
     public virtual Task BulkInsertAsync(Func<TEntity, bool> predicate)
     {
-        return BulkInsertAsync(Set().Where(predicate).ToList());
+        return BulkInsertAsync(Set().AsEnumerable().Where(predicate).ToList());
     }
 
     public virtual Task BulkInsertAsync(List<TEntity> entities)
@@ -72,7 +68,7 @@ public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TK
             return guid != Guid.Empty ? UpdateAsync(entity) : InsertAsync(entity);
         }
 
-        if (entity.Id.IsNumericType())
+        if (entity.Id.GetType().IsNumeric())
         {
             var longValue = Convert.ToInt64(entity.Id);
             return longValue > 0 ? UpdateAsync(entity) : InsertAsync(entity);
@@ -129,9 +125,5 @@ public class BaseWriteRepository<TEntity, TKey> : BaseReadRepository<TEntity, TK
     }
 }
 
-public class BaseWriteRepository<TEntity> : BaseWriteRepository<TEntity, Guid> where TEntity : class, IEntity<Guid>
-{
-    public BaseWriteRepository(IDbContext dbContext) : base(dbContext)
-    {
-    }
-}
+public class BaseWriteRepository<TEntity>(IDbContext dbContext) : BaseWriteRepository<TEntity, Guid>(dbContext)
+    where TEntity : class, IEntity<Guid>;

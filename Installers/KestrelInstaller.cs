@@ -36,7 +36,7 @@ public static class KestrelInstaller
 
     public class Configs
     {
-        public required int Port { get; init; }
+        public int Port { get; init; }
 
         public ConfigsHttps Https { get; init; }
     }

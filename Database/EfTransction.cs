@@ -65,29 +65,22 @@ internal class EfSecondaryTransaction : ITransaction
     }
 }
 
-internal class InMemoryTransaction : ITransaction
+internal class InMemoryTransaction(EfTransactionContext transactionContext) : ITransaction
 {
-    private readonly EfTransactionContext _transactionContext;
-
-    public InMemoryTransaction(EfTransactionContext transactionContext)
-    {
-        _transactionContext = transactionContext;
-    }
-
     public Task CommitAsync()
     {
-        _transactionContext.Transactions.Remove(this);
-        return _transactionContext.DbContext.SaveChangesAsync();
+        transactionContext.Transactions.Remove(this);
+        return transactionContext.DbContext.SaveChangesAsync();
     }
 
     public Task RollbackAsync()
     {
-        _transactionContext.Transactions.Remove(this);
+        transactionContext.Transactions.Remove(this);
         return Task.CompletedTask;
     }
 
     public void Dispose()
     {
-        _transactionContext.Transactions.Remove(this);
+        transactionContext.Transactions.Remove(this);
     }
 }

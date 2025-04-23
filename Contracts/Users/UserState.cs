@@ -1,5 +1,5 @@
 ﻿using System;
-using UAParser.Objects;
+using Dorbit.Framework.Utils;
 
 namespace Dorbit.Framework.Contracts.Users;
 

@@ -5,17 +5,11 @@ using Serilog.Events;
 
 namespace Dorbit.Framework.Installers.Configurations;
 
-public class AppConfigSeq : IConfigurationLogger
+public class AppConfigSeq(string serverUrl = "http://localhost:5341", string apiKey = null) : IConfigurationLogger
 {
-    public string ServerUrl { get; set; }
-    public string ApiKey { get; set; }
+    public string ServerUrl { get; set; } = serverUrl;
+    public string ApiKey { get; set; } = apiKey;
     public LogEventLevel Level { get; set; } = LogEventLevel.Information;
-
-    public AppConfigSeq(string serverUrl = "http://localhost:5341", string apiKey = null)
-    {
-        ServerUrl = serverUrl;
-        ApiKey = apiKey;
-    }
 
     public void Configure(IServiceCollection services)
     {

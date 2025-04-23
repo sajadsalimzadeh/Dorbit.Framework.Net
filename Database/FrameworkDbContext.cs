@@ -6,12 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Dorbit.Framework.Database;
 
 [ServiceRegister]
-public class FrameworkDbContext : EfDbContext
+public class FrameworkDbContext(DbContextOptions<FrameworkDbContext> options, IServiceProvider serviceProvider) : EfDbContext(options, serviceProvider)
 {
-    public FrameworkDbContext(DbContextOptions<FrameworkDbContext> options, IServiceProvider serviceProvider) : base(options, serviceProvider)
-    {
-    }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

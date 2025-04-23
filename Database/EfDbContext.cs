@@ -16,8 +16,8 @@ using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Hosts;
 using Dorbit.Framework.Services.Abstractions;
+using Dorbit.Framework.Utils.Json;
 using EFCore.BulkExtensions;
-using Innofactor.EfCoreJsonValueConverter;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -113,7 +113,7 @@ public abstract class EfDbContext : DbContext, IDbContext
                 }
             }
         }
-        
+
         this.ExcludeMigrationByAttribute(modelBuilder);
     }
 
@@ -185,13 +185,14 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
 
         entity.ValidateCreation<TEntity, TKey>();
-        entity.IncludeCreationAudit<TEntity, TKey>(UserResolver?.User);
-        entity.IncludeTenantAudit<TEntity, TKey>(TenantResolver?.GetTenant());
-        entity.IncludeServerAudit<TEntity, TKey>(ServerResolver?.GetServer());
-        entity.IncludeSoftwareAudit<TEntity, TKey>(SoftwareResolver?.GetSoftware());
-        entity.IncludeChangeLogs<TEntity, TKey>();
         entity.GenerateKey<TEntity, TKey>();
         entity.GenerateHistoricalId<TEntity, TKey>();
+
+        entity.IncludeCreationAudit<TEntity, TKey>(UserResolver?.User);
+        if (entity is ITenantAudit tenantAudit) tenantAudit.IncludeTenantAudit(TenantResolver?.Tenant);
+        if (entity is IServerAudit serverAudit) serverAudit.IncludeServerAudit(ServerResolver?.Server);
+        if (entity is ISoftwareAudit softwareAudit) softwareAudit.IncludeSoftwareAudit(SoftwareResolver?.Software);
+        if (entity is IChangeLog changeLog) changeLog.IncludeChangeLogs();
 
         await AddAsync(entity, CancellationToken);
         await SaveIfNotInTransactionAsync();
@@ -248,10 +249,13 @@ public abstract class EfDbContext : DbContext, IDbContext
             }
         }
 
-        if (entity is IChangeLog)
+        if (entity is IChangeLog changeLog)
         {
             oldEntity ??= DbSet<TEntity, TKey>().GetById(entity.Id);
-            entity.IncludeChangeLogs<TEntity, TKey>(oldEntity);
+            if (oldEntity is IChangeLog oldEntityChangeLog)
+            {
+                changeLog.IncludeChangeLogs(oldEntityChangeLog);
+            }
         }
 
         await SaveIfNotInTransactionAsync();
@@ -333,7 +337,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, ex.Message);
+            Logger?.Error(ex, ex.Message);
             throw;
         }
     }
@@ -370,7 +374,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public async Task<int> ExecuteCommandAsync(string query, Dictionary<string, object> parameters)
     {
-        await using var command = CreateCommand(query, parameters); 
+        await using var command = CreateCommand(query, parameters);
         await Database.OpenConnectionAsync(CancellationToken);
         return await command.ExecuteNonQueryAsync(CancellationToken);
     }
@@ -378,7 +382,7 @@ public abstract class EfDbContext : DbContext, IDbContext
     public async Task<List<TEntity>> ExecuteQueryAsync<TEntity>(string query, Dictionary<string, object> parameters)
     {
         var result = new List<TEntity>();
-        await using var command = CreateCommand(query, parameters); 
+        await using var command = CreateCommand(query, parameters);
         await Database.OpenConnectionAsync(CancellationToken);
         await using var reader = await command.ExecuteReaderAsync(CancellationToken);
         var properties = typeof(TEntity).GetProperties();
@@ -404,18 +408,18 @@ public abstract class EfDbContext : DbContext, IDbContext
     public async Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> entities) where TEntity : class, IEntity<TKey>
     {
         var user = UserResolver?.User;
-        var tenant = TenantResolver?.GetTenant();
-        var server = ServerResolver?.GetServer();
-        var software = SoftwareResolver?.GetSoftware();
+        var tenant = TenantResolver?.Tenant;
+        var server = ServerResolver?.Server;
+        var software = SoftwareResolver?.Software;
         entities.ForEach(entity =>
         {
             entity.ValidateCreation<TEntity, TKey>();
             entity.IncludeCreationAudit<TEntity, TKey>(user);
-            entity.IncludeTenantAudit<TEntity, TKey>(tenant);
-            entity.IncludeServerAudit<TEntity, TKey>(server);
-            entity.IncludeSoftwareAudit<TEntity, TKey>(software);
-            entity.IncludeChangeLogs<TEntity, TKey>();
             entity.GenerateKey<TEntity, TKey>();
+            if(entity is ITenantAudit tenantAudit) tenantAudit.IncludeTenantAudit(tenant);
+            if(entity is IServerAudit serverAudit) serverAudit.IncludeServerAudit(server);
+            if(entity is ISoftwareAudit softwareAudit) softwareAudit.IncludeSoftwareAudit(software);
+            if(entity is IChangeLog changeLog) changeLog.IncludeChangeLogs();
         });
 
         if (ProviderType == DatabaseProviderType.InMemory)
@@ -440,7 +444,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
         if (ProviderType == DatabaseProviderType.InMemory)
         {
-            UpdateRange(entities, CancellationToken);
+            UpdateRange(entities);
             return SaveChangesAsync(CancellationToken);
         }
 

@@ -9,7 +9,7 @@ namespace Dorbit.Framework.Services.Abstractions;
 public interface IAuthService
 {
     Task<IUserDto> GetUserByTokenAsync(string token);
-    Task<bool> IsTokenValid(HttpContext context, ClaimsPrincipal claimsPrincipal);
+    Task<bool> ValidateAsync(HttpContext context, ClaimsPrincipal claimsPrincipal);
     Task<IEnumerable<string>> GetAllAccessAsync();
     Task<IEnumerable<string>> GetAllAccessAsync(object userId);
     Task<bool> HasAccessAsync(params string[] accesses);

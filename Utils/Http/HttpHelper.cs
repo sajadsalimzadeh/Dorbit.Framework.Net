@@ -7,13 +7,14 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Serialization;
 using Dorbit.Framework.Contracts.Results;
 using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Utils.Http;
 
@@ -66,8 +67,8 @@ public class HttpHelper : IDisposable
             .Where(p => p.GetValue(obj, null) != null)
             .Select(p =>
             {
-                var jsonPropertyAttribute = p.GetCustomAttribute<JsonPropertyAttribute>();
-                var name = (jsonPropertyAttribute != null ? jsonPropertyAttribute.PropertyName : p.Name);
+                var jsonPropertyAttribute = p.GetCustomAttribute<JsonPropertyNameAttribute>();
+                var name = (jsonPropertyAttribute != null ? jsonPropertyAttribute.Name : p.Name);
                 return name + "=" + HttpUtility.UrlEncode(p.GetValue(obj, null)?.ToString());
             });
 
@@ -132,7 +133,7 @@ public class HttpHelper : IDisposable
                     {
                         if (RequestContentType == ContentType.Json)
                         {
-                            var json = JsonConvert.SerializeObject(httpRequest.Parameter);
+                            var json = JsonSerializer.Serialize(httpRequest.Parameter);
                             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                         }
                         else if (RequestContentType == ContentType.Xml)
@@ -195,8 +196,7 @@ public class HttpHelper : IDisposable
             {
                 if (ResponseContentType == ContentType.Json)
                 {
-                    using var stringReader = new StringReader(httpModelType.Content);
-                    httpModelType.Result = new JsonSerializer().Deserialize<T>(new JsonTextReader(stringReader));
+                    httpModelType.Result = JsonSerializer.Deserialize<T>(httpModelType.Content);
                 }
                 else if (ResponseContentType == ContentType.Xml)
                 {

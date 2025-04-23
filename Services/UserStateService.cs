@@ -6,24 +6,17 @@ using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Users;
 using Dorbit.Framework.Services.Abstractions;
+using Dorbit.Framework.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using UAParser;
 
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-internal class UserStateService : IUserStateService
+internal class UserStateService(IGeoService geoService, IOptions<ConfigGeo> configGeoOptions) : IUserStateService
 {
     private readonly Dictionary<string, UserState> _states = new();
-    private readonly IGeoService _geoService;
-    private readonly ConfigGeo _configGeo;
-
-    public UserStateService(IGeoService geoService, IOptions<ConfigGeo> configGeoOptions)
-    {
-        _geoService = geoService;
-        _configGeo = configGeoOptions.Value;
-    }
+    private readonly ConfigGeo _configGeo = configGeoOptions.Value;
 
     public UserState GetUserState(string userId)
     {
@@ -57,7 +50,7 @@ internal class UserStateService : IUserStateService
     {
         try
         {
-            var uaParser = Parser.GetDefault();
+            var uaParser = UserAgentParser.GetDefault();
             state.ClientInfo = uaParser.Parse(uaString);
         }
         catch
@@ -82,7 +75,7 @@ internal class UserStateService : IUserStateService
         {
             try
             {
-                state.GeoInfo = (await _geoService.GetGeoInfoAsync(ip)).Result;
+                state.GeoInfo = (await geoService.GetGeoInfoAsync(ip)).Result;
             }
             catch
             {

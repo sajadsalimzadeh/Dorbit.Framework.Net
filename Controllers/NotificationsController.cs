@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Dorbit.Framework.Controllers;
 
 [Auth]
+[ApiExplorerSettings(GroupName = "framework")]
 public class NotificationsController(NotificationRepository notificationRepository, INotificationService notificationService) : BaseApiController
 {
     [HttpGet]

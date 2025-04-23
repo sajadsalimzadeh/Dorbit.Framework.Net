@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
@@ -11,22 +12,16 @@ using Dorbit.Framework.Contracts.Loggers;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Entities.Abstractions;
-using Dorbit.Framework.Utils.Json;
 using EFCore.BulkExtensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Hosts;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-internal class EntityLoggerHost : BaseHostInterval
+internal class EntityLoggerHost(IServiceProvider serviceProvider) : BaseHostInterval(serviceProvider)
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
     private static readonly ConcurrentQueue<LogRequest> Requests = new();
-
-    public EntityLoggerHost(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
 
     public EntityLoggerHost Add(LogRequest request)
     {
@@ -67,11 +62,14 @@ internal class EntityLoggerHost : BaseHostInterval
                     Module = request.Module,
                     EntityType = request.NewObj.GetType().Name,
                     ReferenceId = type.GetProperty("Id")?.GetValue(request.NewObj)?.ToString(),
-                    Data = JsonConverterWrapper.SerializeObject(diff, 1),
+                    Data = JsonSerializer.Serialize(diff, new JsonSerializerOptions()
+                    {
+                        MaxDepth = 1
+                    }),
                     Action = request.Action,
                     CreationTime = DateTime.UtcNow,
-                    CreatorId = request.User?.Id?.ToString(),
-                    CreatorName = request.User?.Username,
+                    CreatorId = request.User?.GetId()?.ToString(),
+                    CreatorName = request.User?.GetUsername(),
                 };
                 logs.Add(entity);
             }

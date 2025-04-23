@@ -4,12 +4,8 @@ using Prometheus;
 
 namespace Dorbit.Framework.Filters;
 
-public class MetricCounterAttribute : MetricAttribute<Summary>
+public class MetricCounterAttribute(Type type, string memberName) : MetricAttribute<Summary>(type, memberName)
 {
-    public MetricCounterAttribute(Type type, string memberName) : base(type, memberName)
-    {
-    }
-
     public override void OnActionExecuting(ActionExecutingContext context)
     {
         context.HttpContext.Items.Add("StartTime", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());

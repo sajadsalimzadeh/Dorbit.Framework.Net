@@ -4,5 +4,5 @@ namespace Dorbit.Framework.Services.Abstractions;
 
 public interface IServerResolver
 {
-    IServerDto GetServer();
+    IServerDto Server { get; set; }
 }

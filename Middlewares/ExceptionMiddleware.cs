@@ -3,15 +3,15 @@ using System.Collections;
 using System.Linq;
 using System.Net;
 using System.Security.Authentication;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Exceptions;
+using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Serilog;
 
 namespace Dorbit.Framework.Middlewares;
@@ -51,13 +51,13 @@ public class ExceptionMiddleware : IMiddleware
 
             switch (ex)
             {
-                case UnauthorizedAccessException:
+                case UnauthorizedAccessException unauthorizedAccessException:
                     op.Code = StatusCodes.Status403Forbidden;
-                    op.Message = Errors.UnAuthorize.ToString();
+                    op.Message = unauthorizedAccessException.Message.IsNullOrEmpty() ? Errors.UnAuthorize.ToString() : unauthorizedAccessException.Message;
                     break;
-                case AuthenticationException:
+                case AuthenticationException authenticationException:
                     op.Code = StatusCodes.Status401Unauthorized;
-                    op.Message = Errors.AuthenticationFailed.ToString();
+                    op.Message = authenticationException.Message.IsNullOrEmpty() ? Errors.AuthenticationFailed.ToString() : authenticationException.Message;
                     break;
                 case OperationException operationException:
                     op.Code = 400;
@@ -83,9 +83,9 @@ public class ExceptionMiddleware : IMiddleware
 
             context.Response.StatusCode = op.Code;
             context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(op, new JsonSerializerSettings()
+            await context.Response.WriteAsync(JsonSerializer.Serialize(op, new JsonSerializerOptions()
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             }));
         }
     }

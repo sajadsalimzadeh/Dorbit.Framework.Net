@@ -32,8 +32,8 @@ public class Job
             Type = type;
             if (userDto is not null)
             {
-                UserId = userDto.Id?.ToString();
-                UserName = userDto.Username;
+                UserId = userDto.GetId()?.ToString();
+                UserName = userDto.GetUsername();
             }
         }
 
@@ -52,7 +52,7 @@ public class Job
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly Semaphore _semaphore = new(0, 1);
 
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; } = Guid.CreateVersion7();
     public Exception Exception { get; private set; }
     public string Name { get; set; }
     public List<JobLog> Logs { get; } = [];

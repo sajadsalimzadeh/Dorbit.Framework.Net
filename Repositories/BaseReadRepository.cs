@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Database.Abstractions;
 using Dorbit.Framework.Entities.Abstractions;
+using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Repositories.Abstractions;
 using Dorbit.Framework.Utils.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,11 @@ public class BaseReadRepository<TEntity, TKey>(IDbContext dbContext) : IReaderRe
     {
         return Set().FirstOrDefaultAsync(x => x.Id.Equals(id));
     }
+    
+    public virtual Task<TEntity> GetByIdAsyncWithCache(TKey id, TimeSpan timeToLive)
+    {
+        return Set().FirstOrDefaultAsyncWithCache(x => x.Id.Equals(id), $"{nameof(GetByIdAsyncWithCache)}-{typeof(TEntity).Name}-{id}", timeToLive);
+    }
 
     public Task<TEntity> FirstOrDefaultAsync()
     {
@@ -75,9 +81,5 @@ public class BaseReadRepository<TEntity, TKey>(IDbContext dbContext) : IReaderRe
     }
 }
 
-public class BaseReadRepository<TEntity> : BaseReadRepository<TEntity, Guid> where TEntity : class, IEntity<Guid>
-{
-    public BaseReadRepository(IDbContext dbContext) : base(dbContext)
-    {
-    }
-}
+public class BaseReadRepository<TEntity>(IDbContext dbContext) : BaseReadRepository<TEntity, Guid>(dbContext)
+    where TEntity : class, IEntity<Guid>;

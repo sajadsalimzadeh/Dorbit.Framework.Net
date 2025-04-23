@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Utils.Json;
 
@@ -19,7 +19,15 @@ public static class SeedUtil
     {
         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
         var content = await File.ReadAllTextAsync(path);
-        var items = JsonConvert.DeserializeObject<List<TEntity>>(content);
+        var items = JsonSerializer.Deserialize<List<TEntity>>(content);
+        await repository.SeedAsync(items, beforeInsertAction, ignorePredicate);
+    }
+
+    public static async Task SeedAsync<TEntity, TKey>(this IWriterRepository<TEntity, TKey> repository, List<TEntity> items,
+        Func<TEntity, Task> beforeInsertAction = default,
+        Func<TEntity, TEntity, bool> ignorePredicate = default)
+        where TEntity : class, IEntity<TKey>
+    {
         var existsItems = await repository.Set(false).ToListAsync();
         if (ignorePredicate is not null) items = items.Where(x => !existsItems.Any(y => ignorePredicate(x, y))).ToList();
         using var transaction = repository.DbContext.BeginTransaction();

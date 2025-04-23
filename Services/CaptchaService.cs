@@ -5,21 +5,20 @@ using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Exceptions;
+using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Utils.Captcha;
+using GoogleReCaptcha.V3.Interface;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
-public class CaptchaService
+public class CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
 {
     private static Dictionary<string, string> _captchas = new();
-    private readonly ConfigCaptcha _configCaptcha;
-
-    public CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
-    {
-        _configCaptcha = configCaptchaOptions.Value;
-    }
+    private readonly ConfigCaptcha _configCaptcha = configCaptchaOptions.Value;
 
     public KeyValuePair<string, string> Generate(CaptchaGenerateModel dto)
     {
@@ -34,12 +33,10 @@ public class CaptchaService
             Width = dto.Width,
             Height = dto.Height,
             Difficulty = dto.Dificulty,
-            Length = dto.Length,
-            Pattern = dto.Pattern
         };
 
-        var key = Guid.NewGuid().ToString();
-        var value = generator.NewText();
+        var key = Guid.CreateVersion7().ToString();
+        var value = dto.Pattern.Random(dto.Length);
         lock (_captchas)
         {
             if (_captchas.Count > 1000) _captchas = _captchas.Skip(500).ToDictionary(x => x.Key, x => x.Value);
@@ -49,7 +46,7 @@ public class CaptchaService
         return new KeyValuePair<string, string>(key, generator.GenerateBase64(value));
     }
 
-    public bool Verify(string key, string value)
+    public bool Validate(string key, string value)
     {
         if (_captchas.ContainsKey(key))
         {
@@ -61,8 +58,52 @@ public class CaptchaService
         return false;
     }
 
-    public bool Verify(KeyValuePair<string, string> obj)
+    public bool Validate(KeyValuePair<string, string> obj)
     {
-        return Verify(obj.Key, obj.Value);
+        return Validate(obj.Key, obj.Value);
+    }
+
+    public bool Validate(HttpContext context)
+    {
+        var captchaKey = string.Empty;
+        var captchaValue = string.Empty;
+        var recaptcha = string.Empty;
+        if (context.Request.Form.ContainsKey("CaptchaKey")) captchaKey = context.Request.Form["CaptchaKey"];
+        if (context.Request.Form.ContainsKey("CaptchaValue")) captchaValue = context.Request.Form["CaptchaValue"];
+        if (context.Request.Headers.ContainsKey("Captcha"))
+        {
+            var captchaHeader = context.Request.Headers["Captcha"];
+            if (captchaHeader.Count == 1)
+            {
+                recaptcha = captchaHeader[0];
+            }
+            else if (captchaHeader.Count == 2)
+            {
+                captchaKey = captchaHeader[0];
+                captchaValue = captchaHeader[1];
+            }
+        }
+
+        if (recaptcha.IsNotNullOrEmpty())
+        {
+            var captchaValidator = context.RequestServices.GetRequiredService<ICaptchaValidator>();
+            if (!captchaValidator.IsCaptchaPassedAsync(recaptcha).Result)
+            {
+                throw new OperationException(Errors.CaptchaNotCorrect);
+            }
+        }
+        else if (captchaKey.IsNotNullOrEmpty() && captchaValue.IsNotNullOrEmpty())
+        {
+            if (!Validate(captchaKey, captchaValue))
+            {
+                throw new OperationException(Errors.CaptchaNotCorrect);
+            }
+        }
+        else
+        {
+            throw new OperationException(Errors.CaptchaNotSet);
+        }
+
+        return true;
     }
 }

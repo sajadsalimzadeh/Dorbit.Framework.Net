@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Primitives;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -38,5 +39,20 @@ public static class ListExtensions
         }
 
         return item;
+    }
+
+    public static string FirstValueOrDefault(this IEnumerable<KeyValuePair<string, StringValues>> items, string key)
+    {
+        return items.FirstOrDefault(x => x.Key == key).Value.ToString() ?? string.Empty;
+    }
+
+    public static string FirstValueOrDefault(this IEnumerable<KeyValuePair<string, string>> items, string key)
+    {
+        return items.FirstOrDefault(x => x.Key == key).Value.ToString();
+    }
+
+    public static bool IsNotNullOrEmpty<T>(this IEnumerable<T> items)
+    {
+        return items is not null && items.Any();
     }
 }

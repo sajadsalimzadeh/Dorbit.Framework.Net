@@ -2,7 +2,7 @@
 
 namespace Dorbit.Framework.Entities.Abstractions;
 
-public interface IModificationValidator
+public interface IModificationValidate
 {
     void ValidateOnModify(ModelValidationException e);
 }

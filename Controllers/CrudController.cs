@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
@@ -8,23 +9,27 @@ using Dorbit.Framework.Repositories.Abstractions;
 using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Controllers;
 
 public abstract class CrudController : BaseController;
 
-public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudController where TEntity : class, IEntity<TKey> where TEdit : IEntity<TKey>
+public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudController where TEntity : class, IEntity<TKey>
 {
     protected IBaseRepository<TEntity, TKey> Repository => ServiceProvider.GetService<IBaseRepository<TEntity, TKey>>();
+    
+    protected virtual IQueryable<TEntity> Set() => Repository.Set();
 
     [HttpGet]
     public virtual async Task<PagedListResult<TGet>> SelectAsync()
     {
-        var query = Repository.Set();
+        var query = Set();
         if (typeof(TEntity).IsAssignableTo(typeof(ICreationTime)))
         {
             query = query.Cast<ICreationTime>().OrderBy(x => x.CreationTime).Cast<TEntity>().AsQueryable();
         }
+
         return (await query.ApplyToPagedListAsync(QueryOptions)).Select(x => Mapper.Map<TGet>(x));
     }
 
@@ -40,11 +45,19 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
         return Repository.InsertAsync(request.MapTo<TEntity>()).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
-    [HttpPatch("{id}")]
+    [HttpPut("{id}")]
     public virtual Task<QueryResult<TGet>> EditAsync(TKey id, [FromBody] TEdit request)
     {
-        request.Id = id;
         return Repository.UpdateAsync(id, request).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
+    }
+
+    [HttpPatch("{id}")]
+    public virtual async Task<QueryResult<TGet>> PatchAsync(TKey id, [FromBody] object jsonData)
+    {
+        var entity = await Repository.GetByIdAsync(id);
+        var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonData.ToString());
+        entity = await Repository.UpdateAsync(data.Patch(entity));
+        return entity.MapTo<TGet>().ToQueryResult();
     }
 
     [HttpDelete("{id}")]
@@ -54,14 +67,10 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
     }
 }
 
-public abstract class CrudController<TEntity> : CrudController<TEntity, Guid, TEntity, TEntity, TEntity>
-    where TEntity : class, IEntity<Guid>;
+public abstract class CrudController<TEntity> : CrudController<TEntity, Guid, TEntity, TEntity, TEntity> where TEntity : class, IEntity<Guid>;
 
-public abstract class CrudController<TEntity, TKey> : CrudController<TEntity, TKey, TEntity, TEntity, TEntity>
-    where TEntity : class, IEntity<TKey>;
+public abstract class CrudController<TEntity, TKey> : CrudController<TEntity, TKey, TEntity, TEntity, TEntity> where TEntity : class, IEntity<TKey>;
 
-public abstract class CrudController<TEntity, TKey, TGet> : CrudController<TEntity, TKey, TGet, TEntity, TEntity>
-    where TEntity : class, IEntity<TKey>;
+public abstract class CrudController<TEntity, TKey, TGet> : CrudController<TEntity, TKey, TGet, TEntity, TEntity> where TEntity : class, IEntity<TKey>;
 
-public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController<TEntity, TKey, TGet, TAdd, TEntity>
-    where TEntity : class, IEntity<TKey>;
+public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController<TEntity, TKey, TGet, TAdd, TEntity> where TEntity : class, IEntity<TKey>;

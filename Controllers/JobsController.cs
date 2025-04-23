@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Dorbit.Framework.Controllers;
 
+[ApiExplorerSettings(GroupName = "framework")]
 public class JobsController(JobService jobService) : BaseController
 {
     [HttpGet]
