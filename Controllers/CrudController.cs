@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Filters;
 using Dorbit.Framework.Repositories.Abstractions;
 using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +15,12 @@ namespace Dorbit.Framework.Controllers;
 
 public abstract class CrudController : BaseController;
 
-public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudController where TEntity : class, IEntity<TKey> where TEdit : IEntity<TKey>
+public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudController
+    where TEntity : class, IEntity<TKey>
 {
     protected IBaseRepository<TEntity, TKey> Repository => ServiceProvider.GetService<IBaseRepository<TEntity, TKey>>();
 
-    [HttpGet]
+    [HttpGet, Auth("{type0}-View")]
     public virtual async Task<PagedListResult<TGet>> SelectAsync()
     {
         var query = Repository.Set();
@@ -25,29 +28,30 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
         {
             query = query.Cast<ICreationTime>().OrderBy(x => x.CreationTime).Cast<TEntity>().AsQueryable();
         }
+
         return (await query.ApplyToPagedListAsync(QueryOptions)).Select(x => Mapper.Map<TGet>(x));
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id}"), Auth("{type0}-View")]
     public virtual Task<QueryResult<TGet>> GetById(TKey id)
     {
         return Repository.GetByIdAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
-    [HttpPost]
+    [HttpPost, Auth("{type0}-Save")]
     public virtual Task<QueryResult<TGet>> AddAsync([FromBody] TAdd request)
     {
         return Repository.InsertAsync(request.MapTo<TEntity>()).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
-    [HttpPatch("{id}")]
-    public virtual Task<QueryResult<TGet>> EditAsync(TKey id, [FromBody] TEdit request)
+    [HttpPatch("{id}"), Auth("{type0}-Save")]
+    public virtual async Task<QueryResult<TGet>> PatchAsync(TKey id, [FromBody] JsonElement obj)
     {
-        request.Id = id;
-        return Repository.UpdateAsync(id, request).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
+        var entity = await Repository.PatchAsync(id, obj);
+        return entity.MapTo<TGet>().ToQueryResult();
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id}"), Auth("{type0}-Delete")]
     public virtual Task<QueryResult<TGet>> Remove(TKey id)
     {
         return Repository.DeleteAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();

@@ -23,7 +23,7 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
 
     public virtual Task BulkInsertAsync(Func<TEntity, bool> predicate)
     {
-        return BulkInsertAsync(Set().Where(predicate).ToList());
+        return BulkInsertAsync(Set().AsEnumerable().Where(predicate).ToList());
     }
 
     public virtual Task BulkInsertAsync(List<TEntity> entities)
@@ -96,6 +96,13 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
         return await UpdateAsync(dto.MapTo(entity));
     }
 
+    public async Task<TEntity> PatchAsync(TKey key, object patch)
+    {
+        var entity = await GetByIdAsync(key);
+        entity = entity.PatchObject(patch);
+        return await UpdateAsync(entity);
+    }
+
     public async Task<TEntity> SaveAsync<TR>(TKey id, TR dto)
     {
         return await SaveAsync(await GetByIdAsync(id), dto);
@@ -115,13 +122,6 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
         }
 
         return await SaveAsync(entity);
-    }
-
-    public async Task<TEntity> PatchAsync(TKey key, object patch)
-    {
-        var entity = await GetByIdAsync(key);
-        entity = entity.Patch(patch);
-        return await UpdateAsync(entity);
     }
 }
 
