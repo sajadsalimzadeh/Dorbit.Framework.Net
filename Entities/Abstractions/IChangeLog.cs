@@ -8,11 +8,11 @@ namespace Dorbit.Framework.Entities.Abstractions;
 public interface IChangeLog
 {
     [JsonField]
-    public List<ChangeLog> ChangeLogs { get; set; }
+    public List<ChangeLogDto> ChangeLogs { get; set; }
 }
 
 [NotMapped]
-public class ChangeLog
+public class ChangeLogDto
 {
     public DateTime Timestamp { get; set; }
     public string Property { get; set; }

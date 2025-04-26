@@ -39,9 +39,7 @@ public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
         }
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        var accessToken = tokenHandler.WriteToken(token);
-
-        return accessToken;
+        return tokenHandler.WriteToken(token);
     }
 
     public bool TryValidateToken(string token)

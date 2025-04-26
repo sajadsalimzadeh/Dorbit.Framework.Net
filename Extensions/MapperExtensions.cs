@@ -1,6 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -31,19 +35,29 @@ public static class MapperExtensions
         return App.Mapper.Map<List<TR>>(await task);
     }
 
-    public static T Patch<T>(this T model, object patch)
+    public static T PatchObject<T>(this T model, JsonElement patch)
     {
-        var modelProperties = model.GetType().GetProperties();
-        var patchProperties = patch.GetType().GetProperties();
-        foreach (var patchProperty in patchProperties)
+        return model;
+    }
+
+    public static T PatchObject<T>(this T model, object patch, Type pathType = null)
+    {
+        if (patch is not JsonElement jsonElement)
         {
-            var modelProperty = modelProperties.FirstOrDefault(x => x.Name == patchProperty.Name);
-            if (modelProperty is null) continue;
-            
-            var value = patchProperty.GetValue(patch);
-            if (value == default) continue;
-            
-            modelProperty.SetValue(model, value);
+            var json = JsonSerializer.Serialize(patch);
+            var doc = JsonDocument.Parse(json);
+            jsonElement = doc.RootElement;
+        }
+
+        var patchObject = JsonConvert.DeserializeObject<T>(jsonElement.GetRawText());
+        var patchProperties = (pathType ?? typeof(T)).GetProperties();
+        var properties = typeof(T).GetProperties();
+        foreach (var jsonProperty in jsonElement.EnumerateObject())
+        {
+            var property = properties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.CurrentCultureIgnoreCase));
+            if (property is null) continue;
+            if (patchProperties.All(x => x.Name != property.Name)) continue;
+            property.SetValue(model, property.GetValue(patchObject));
         }
 
         return model;

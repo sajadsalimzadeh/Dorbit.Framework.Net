@@ -104,11 +104,11 @@ public static class EntityExtensions
 
     public static TEntity IncludeChangeLogs<TEntity>(this TEntity entity, TEntity oldEntity = default) where TEntity : IChangeLog
     {
-        entity.ChangeLogs ??= new List<ChangeLog>();
+        entity.ChangeLogs ??= new List<ChangeLogDto>();
         var properties = entity.GetType().GetProperties();
         foreach (var propertyInfo in properties.Where(x => x.GetCustomAttribute<ChangeLogAttribute>() is not null))
         {
-            entity.ChangeLogs.Add(new ChangeLog()
+            entity.ChangeLogs.Add(new ChangeLogDto()
             {
                 Timestamp = DateTime.UtcNow,
                 Property = propertyInfo.Name,

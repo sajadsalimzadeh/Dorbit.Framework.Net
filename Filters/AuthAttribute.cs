@@ -6,6 +6,7 @@ using System.Security.Authentication;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dorbit.Framework.Controllers;
+using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -15,13 +16,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFilter
+public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
 {
-    private readonly IEnumerable<string> _accesses = accesses;
-
-    private IEnumerable<string> GetAccesses(MethodInfo methodInfo)
+    private string GetAccesses(MethodInfo methodInfo)
     {
-        var accesses = _accesses.ToList();
         var type = methodInfo.ReflectedType;
         var preType = type;
         while (type is not null)
@@ -31,7 +29,7 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
                 var entityType = preType.GenericTypeArguments.FirstOrDefault();
                 if (entityType is not null)
                 {
-                    accesses = accesses.ConvertAll(x => x.Replace("{entity}", entityType.Name));
+                    access = access.Replace("{entity}", entityType.Name);
                 }
 
                 break;
@@ -41,13 +39,14 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
             type = type.BaseType;
         }
 
-        return accesses.Select(x => x.ToLower());
+        return access;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor) return;
-        
+        if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor)
+            throw new Exception("Context is not type of ControllerActionDescriptor");
+
         var controllerAuthAttributes = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<AuthAttribute>();
         var methodAttributes = actionDescriptor.MethodInfo.GetCustomAttributes<AuthAttribute>();
         var methodHasAuthAttribute = controllerAuthAttributes.Any(x => Equals(x, this)) && methodAttributes.Any();
@@ -86,13 +85,33 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
             }
         }
 
-        if (_accesses?.Count() > 0)
+        if (access.IsNotNullOrEmpty())
         {
+            var type = actionDescriptor.ControllerTypeInfo as Type;
+            var preType = type;
+            while (type is not null)
+            {
+                if (type.IsAssignableFrom(typeof(CrudController)))
+                {
+                    var index = 0;
+                    foreach (var genericType in preType.GenericTypeArguments)
+                    {
+                        access = access.Replace("{type" + index + "}", genericType.Name);
+                        index++;
+                    }
+                    
+                    break;
+                }
+
+                preType = type;
+                type = type.BaseType;
+            }
+
             
             var accesses = GetAccesses(actionDescriptor.MethodInfo);
 
             var authenticationService = sp.GetService<IAuthService>();
-            if (user.GetUsername() != "admin" && !await authenticationService.HasAccessAsync(user.GetId(), accesses.ToArray()))
+            if (user.GetUsername() != "admin" && !await authenticationService.HasAccessAsync(user.GetId(), access))
             {
                 throw new UnauthorizedAccessException("AccessDenied");
             }

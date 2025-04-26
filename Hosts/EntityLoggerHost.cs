@@ -10,10 +10,10 @@ using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Loggers;
 using Dorbit.Framework.Database;
-using Dorbit.Framework.Entities;
 using Dorbit.Framework.Entities.Abstractions;
 using EFCore.BulkExtensions;
 using Microsoft.Extensions.DependencyInjection;
+using ChangeLog = Dorbit.Framework.Entities.ChangeLog;
 
 namespace Dorbit.Framework.Hosts;
 
@@ -36,7 +36,7 @@ internal class EntityLoggerHost(IServiceProvider serviceProvider) : BaseHostInte
     {
         try
         {
-            var logs = new List<EntityLog>();
+            var logs = new List<ChangeLog>();
             while (Requests.TryDequeue(out var request))
             {
                 var type = request.NewObj.GetType();
@@ -57,7 +57,7 @@ internal class EntityLoggerHost(IServiceProvider serviceProvider) : BaseHostInte
                 }
 
                 if (diff.Count == 0) continue;
-                var entity = new EntityLog
+                var entity = new ChangeLog
                 {
                     Module = request.Module,
                     EntityType = request.NewObj.GetType().Name,
