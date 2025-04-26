@@ -1,9 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Dorbit.Framework.Entities.Abstractions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dorbit.Framework.Entities;
 
+[Index(nameof(CreationTime))]
 public class CreateEntity<TKey> : Entity<TKey>, ICreationAudit
 {
     public virtual DateTime CreationTime { get; set; } = DateTime.Now;

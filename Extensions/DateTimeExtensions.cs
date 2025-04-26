@@ -44,4 +44,10 @@ public static class DateTimeExtensions
             .Replace("mm", pc.GetMinute(dateTime).ToString().PadLeft(2, '0'))
             .Replace("ss", pc.GetSecond(dateTime).ToString().PadLeft(2, '0'));
     }
+    
+    public static DateTime GetFirstDayOfWeek(this DateTime date, DayOfWeek startOfWeek = DayOfWeek.Monday)
+    {
+        var diff = (7 + (date.DayOfWeek - startOfWeek)) % 7;
+        return date.AddDays(-1 * diff).Date;
+    }
 }

@@ -8,16 +8,18 @@ using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Commands;
 using Dorbit.Framework.Commands.Abstractions;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
-public class CliRunnerService(IEnumerable<ICommand> commands)
+public class CliRunnerService(IServiceProvider serviceProvider)
 {
-    private CancellationToken _cancellationToken = default;
+    private readonly CancellationToken _cancellationToken = default;
 
     public Task RunAsync(WebApplication app)
     {
+        var commands = serviceProvider.GetServices<ICommand>();
         return CreateMenus(app, commands.Where(x => x.IsRoot));
     }
 

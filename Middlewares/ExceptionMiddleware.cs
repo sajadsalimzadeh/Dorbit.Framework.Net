@@ -38,7 +38,7 @@ public class ExceptionMiddleware : IMiddleware
             logger?.Error(ex, ex.Message);
             if (context.Items.TryGetValue("UserId", out var userId))
             {
-                var authenticationService = context.RequestServices.GetService<IAuthService>();
+                var authenticationService = context.RequestServices.GetService<IIdentityService>();
                 if (authenticationService is not null && await authenticationService.HasAccessAsync(userId?.ToString(), "Developer"))
                 {
                     op.Data = ex.Data;

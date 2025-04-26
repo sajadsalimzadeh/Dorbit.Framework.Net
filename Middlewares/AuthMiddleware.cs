@@ -19,7 +19,7 @@ public class AuthMiddleware : IMiddleware
             if (!string.IsNullOrEmpty(token))
             {
                 var userResolver = sp.GetRequiredService<IUserResolver>();
-                var authService = sp.GetRequiredService<IAuthService>();
+                var authService = sp.GetRequiredService<IIdentityService>();
                 userResolver.User = await authService.GetUserByTokenAsync(token);
             }
         }

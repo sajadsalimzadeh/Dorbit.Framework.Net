@@ -1,18 +1,32 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Dorbit.Framework.Extensions;
 
 public static class MemoryCacheExtensions
 {
-    private static readonly ConcurrentDictionary<string, object> Locks = new();
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> Locks = new();
 
-    public static bool TryGetValueWithLock<T>(this IMemoryCache memoryCache, string key, out T value)
+    public static async Task<T> GetValueWithLockAsync<T>(this IMemoryCache memoryCache, string key, Func<Task<T>> action, TimeSpan timeToLive)
     {
-        var lockObj = Locks.GetOrAdd(key, new { });
-        lock (lockObj)
+        var semaphoreSlim = Locks.GetOrAdd(key, new SemaphoreSlim(1,1));
+        await semaphoreSlim.WaitAsync();
+        try
         {
-            return memoryCache.TryGetValue(key, out value);
+            if (!memoryCache.TryGetValue(key, out T value))
+            {
+                value = await action();
+                memoryCache.Set(key, value, timeToLive);
+            }
+
+            return value;
+        }
+        finally
+        {
+            semaphoreSlim.Release();
         }
     }
 }

@@ -76,7 +76,7 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
 
         userStateService.LoadGeoInfo(state, context.HttpContext.Connection.RemoteIpAddress?.ToString());
 
-        foreach (var authService in sp.GetServices<IAuthService>())
+        foreach (var authService in sp.GetServices<IIdentityService>())
         {
             if (!await authService.ValidateAsync(context.HttpContext, userResolver.Claims))
             {
@@ -109,7 +109,7 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
             
             var accesses = GetAccesses(actionDescriptor.MethodInfo);
 
-            var authenticationService = sp.GetService<IAuthService>();
+            var authenticationService = sp.GetService<IIdentityService>();
             if (user.GetUsername() != "admin" && !await authenticationService.HasAccessAsync(user.GetId(), access))
             {
                 throw new UnauthorizedAccessException("AccessDenied");

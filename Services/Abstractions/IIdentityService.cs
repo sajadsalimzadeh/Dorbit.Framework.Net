@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Dorbit.Framework.Services.Abstractions;
 
-public interface IAuthService
+public interface IIdentityService
 {
     Task<IUserDto> GetUserByTokenAsync(string token);
     Task<bool> ValidateAsync(HttpContext context, ClaimsPrincipal claimsPrincipal);
