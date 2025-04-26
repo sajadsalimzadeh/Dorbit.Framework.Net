@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-
-namespace Dorbit.Framework.Contracts.Abstractions;
+﻿namespace Dorbit.Framework.Contracts.Abstractions;
 
 public interface IUserDto
 {
