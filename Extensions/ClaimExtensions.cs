@@ -7,21 +7,38 @@ namespace Dorbit.Framework.Extensions;
 
 public static class ClaimExtensions
 {
-    public static string Get(this IEnumerable<Claim> claims, string type)
+    public static bool TryGetString(this Claim claim, out string value)
     {
-        return claims.FirstOrDefault(x => x.Type == type)?.Value;
+        value = claim?.Value;
+        return value.IsNullOrEmpty();
     }
-    
-    public static bool GetBoolean(this Claim claim)
+
+    public static bool TryGetString(this IEnumerable<Claim> claims, string type, out string value)
     {
-        return claim is not null && Convert.ToBoolean(claim.Value);
+        value = claims.FirstOrDefault(x => x.Type == type)?.Value;
+        return !value.IsNullOrEmpty();
     }
-    
-    public static bool GetBoolean(this IEnumerable<Claim> claims, string type)
+
+    public static bool TryGetBoolean(this Claim claim, out bool value)
     {
-        return claims.FirstOrDefault(x => x.Type == type).GetBoolean();
+        value = false;
+        try
+        {
+            if (claim is null) return false;
+            value = Convert.ToBoolean(claim.Value);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
-    
+
+    public static bool TryGetBoolean(this IEnumerable<Claim> claims, string type, out bool value)
+    {
+        return claims.FirstOrDefault(x => x.Type == type).TryGetBoolean(out value);
+    }
+
     public static bool TryGetInt32(this Claim claim, out int value)
     {
         value = 0;
@@ -37,12 +54,12 @@ public static class ClaimExtensions
 
         return true;
     }
-    
+
     public static bool TryGetInt32(this IEnumerable<Claim> claims, string type, out int value)
     {
         return claims.FirstOrDefault(x => x.Type == type).TryGetInt32(out value);
     }
-    
+
     public static bool TryGetGuid(this Claim claim, out Guid value)
     {
         value = Guid.Empty;

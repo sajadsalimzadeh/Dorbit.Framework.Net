@@ -193,7 +193,6 @@ public static class FrameworkInstaller
         app.UseExceptionHandler("/Error");
         app.UseHsts();
 
-        app.UseMiddleware<AuthMiddleware>();
         app.UseMiddleware<ExceptionMiddleware>();
         app.UseMiddleware<CancellationTokenMiddleware>();
         app.UseResponseCaching();

@@ -6,5 +6,4 @@ namespace Dorbit.Framework.Services.Abstractions;
 public interface IUserResolver
 {
     IUserDto User { get; set; }
-    ClaimsPrincipal Claims { get; set; }
 }
