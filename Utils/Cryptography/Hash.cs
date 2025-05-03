@@ -5,8 +5,6 @@ namespace Dorbit.Framework.Utils.Cryptography;
 
 public static class Hash
 {
-    private const string secret = "yf4m394wpV";
-
     public static string Sha1(string text)
     {
         var data = Encoding.ASCII.GetBytes(text);
@@ -18,11 +16,6 @@ public static class Hash
         }
 
         return hash;
-    }
-
-    public static string Sha1(string text, string secretKey)
-    {
-        return Sha1(text, secretKey + secretKey);
     }
 
     public static string Sha256(string text)

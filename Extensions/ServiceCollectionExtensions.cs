@@ -34,11 +34,11 @@ public static class ServiceCollectionExtensions
             services.AddControllers(assembly);
             try
             {
-                foreach (var type in assembly.GetTypes())
+                foreach (var serviceType in assembly.GetTypes())
                 {
-                    var registerAttr = type.GetCustomAttribute<ServiceRegisterAttribute>();
+                    var registerAttr = serviceType.GetCustomAttribute<ServiceRegisterAttribute>();
                     if (registerAttr is null) continue;
-                    services.RegisterServicesByAttribute(type, type, registerAttr, descriptors, registerAttr.RecursiveLevelCount);
+                    services.RegisterServicesByAttribute(serviceType, serviceType, registerAttr, descriptors, registerAttr.RecursiveLevelCount);
                 }
             }
             catch
@@ -100,7 +100,7 @@ public static class ServiceCollectionExtensions
         ServiceRegisterAttribute registerAttr,
         List<Descriptor> descriptors, int level)
     {
-        if (implementationType.IsInterface)
+        if (serviceType.IsInterface)
         {
             descriptors.Add(new Descriptor()
             {

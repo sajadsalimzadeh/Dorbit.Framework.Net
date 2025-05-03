@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Controllers;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
@@ -11,36 +12,13 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
+using AuthenticationException = MailKit.Security.AuthenticationException;
 
 namespace Dorbit.Framework.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
 {
-    private string GetAccesses(MethodInfo methodInfo)
-    {
-        var type = methodInfo.ReflectedType;
-        var preType = type;
-        while (type is not null)
-        {
-            if (type.IsAssignableFrom(typeof(CrudController)))
-            {
-                var entityType = preType.GenericTypeArguments.FirstOrDefault();
-                if (entityType is not null)
-                {
-                    access = access.Replace("{entity}", entityType.Name);
-                }
-
-                break;
-            }
-
-            preType = type;
-            type = type.BaseType;
-        }
-
-        return access;
-    }
-
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor)
@@ -54,34 +32,6 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
         {
             await next.Invoke();
             return;
-        }
-        //Find Token
-
-        var sp = context.HttpContext.RequestServices;
-        var userResolver = sp.GetService<IUserResolver>();
-
-        var user = userResolver.User;
-        if (user is null) throw new AuthenticationException();
-
-        if (!user.IsActive()) throw new UnauthorizedAccessException("Your user is disabled");
-
-        var userStateService = sp.GetService<IUserStateService>();
-        var state = userStateService.GetUserState(user.GetId()?.ToString());
-        state.Url = context.HttpContext.Request.GetDisplayUrl();
-        state.LastRequestTime = DateTime.UtcNow;
-        if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var agent))
-        {
-            userStateService.LoadClientInfo(state, agent);
-        }
-
-        userStateService.LoadGeoInfo(state, context.HttpContext.Connection.RemoteIpAddress?.ToString());
-
-        foreach (var authService in sp.GetServices<IIdentityService>())
-        {
-            if (!await authService.ValidateAsync(context.HttpContext, userResolver.Claims))
-            {
-                throw new AuthenticationException("InvalidToken");
-            }
         }
 
         if (access.IsNotNullOrEmpty())
@@ -98,31 +48,43 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
                         access = access.Replace("{type" + index + "}", genericType.Name);
                         index++;
                     }
-                    
+
                     break;
                 }
 
                 preType = type;
                 type = type.BaseType;
             }
-
-            
-            var accesses = GetAccesses(actionDescriptor.MethodInfo);
-
-            var authenticationService = sp.GetService<IIdentityService>();
-            if (user.GetUsername() != "admin" && !await authenticationService.HasAccessAsync(user.GetId(), access))
-            {
-                throw new UnauthorizedAccessException("AccessDenied");
-            }
         }
 
-        await OnActionExecutionAsync(context, userResolver.Claims);
+        var identityRequest = new IdentityValidateRequest()
+        {
+            Access = access
+        };
+        var httpRequest = context.HttpContext.Request;
 
-        await next.Invoke();
-    }
+        if (httpRequest.Headers.ContainsKey("Authorization")) identityRequest.AccessToken = httpRequest.Headers["Authorization"];
+        else if (httpRequest.Query.ContainsKey("ApiKey")) identityRequest.AccessToken = httpRequest.Query["ApiKey"];
+        else if (httpRequest.Cookies.ContainsKey("ApiKey")) identityRequest.AccessToken = httpRequest.Cookies["ApiKey"];
 
-    protected virtual Task OnActionExecutionAsync(ActionExecutingContext context, ClaimsPrincipal claims)
-    {
-        return Task.CompletedTask;
+        if (identityRequest.AccessToken.IsNullOrEmpty())
+            throw new AuthenticationException("Access token not set");
+
+        identityRequest.AccessToken = identityRequest.AccessToken!.Replace("Bearer ", "");
+
+        if (httpRequest.Cookies.ContainsKey("CsrfToken")) identityRequest.CsrfToken = httpRequest.Cookies["CsrfToken"];
+
+        if (identityRequest.CsrfToken.IsNullOrEmpty())
+            throw new AuthenticationException("Csrf token not set");
+
+        if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var userAgent))
+            identityRequest.UserAgent = userAgent;
+
+        var serviceProvider = context.HttpContext.RequestServices;
+        var identityService = serviceProvider.GetService<IIdentityService>();
+        if (await identityService.ValidateAsync(identityRequest))
+        {
+            await next.Invoke();
+        }
     }
 }

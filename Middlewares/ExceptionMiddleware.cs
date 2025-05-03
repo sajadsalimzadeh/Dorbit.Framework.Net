@@ -36,14 +36,11 @@ public class ExceptionMiddleware : IMiddleware
             };
 
             logger?.Error(ex, ex.Message);
-            if (context.Items.TryGetValue("UserId", out var userId))
+            var identityService = context.RequestServices.GetService<IIdentityService>();
+            if (identityService.Identity is not null && identityService.Identity.HasAccess("Developer"))
             {
-                var authenticationService = context.RequestServices.GetService<IIdentityService>();
-                if (authenticationService is not null && await authenticationService.HasAccessAsync(userId?.ToString(), "Developer"))
-                {
-                    op.Data = ex.Data;
-                    op.StackTrace = ex.StackTrace;
-                }
+                op.Data = ex.Data;
+                op.StackTrace = ex.StackTrace;
             }
 #if DEBUG
             op.StackTrace = ex.StackTrace;
@@ -53,11 +50,15 @@ public class ExceptionMiddleware : IMiddleware
             {
                 case UnauthorizedAccessException unauthorizedAccessException:
                     op.Code = StatusCodes.Status403Forbidden;
-                    op.Message = unauthorizedAccessException.Message.IsNullOrEmpty() ? Errors.UnAuthorize.ToString() : unauthorizedAccessException.Message;
+                    op.Message = unauthorizedAccessException.Message.IsNullOrEmpty()
+                        ? Errors.UnAuthorize.ToString()
+                        : unauthorizedAccessException.Message;
                     break;
                 case AuthenticationException authenticationException:
                     op.Code = StatusCodes.Status401Unauthorized;
-                    op.Message = authenticationException.Message.IsNullOrEmpty() ? Errors.AuthenticationFailed.ToString() : authenticationException.Message;
+                    op.Message = authenticationException.Message.IsNullOrEmpty()
+                        ? Errors.AuthenticationFailed.ToString()
+                        : authenticationException.Message;
                     break;
                 case OperationException operationException:
                     op.Code = 400;
@@ -66,7 +67,8 @@ public class ExceptionMiddleware : IMiddleware
                     op.Messages = operationException.Messages;
                     if (logger is not null && operationException.ExceptionLog is not null)
                     {
-                        logger.Write(operationException.ExceptionLog.Level, operationException.ExceptionLog.Message, operationException.ExceptionLog.Params);
+                        logger.Write(operationException.ExceptionLog.Level, operationException.ExceptionLog.Message,
+                            operationException.ExceptionLog.Params);
                     }
 
                     break;
