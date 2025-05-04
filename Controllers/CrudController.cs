@@ -69,15 +69,6 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
         return entity.MapTo<TGet>().ToQueryResult();
     }
 
-    [HttpPatch("{id}"), Auth("{type0}-Save")]
-    public virtual async Task<QueryResult<TGet>> PatchAsync(TKey id, [FromBody] object jsonData)
-    {
-        var entity = await Repository.GetByIdAsync(id);
-        var data = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonData.ToString());
-        entity = await Repository.UpdateAsync(data.Patch(entity));
-        return entity.MapTo<TGet>().ToQueryResult();
-    }
-
     [HttpDelete("{id}"), Auth("{type0}-Delete")]
     public virtual async Task<CommandResult> Remove(TKey id)
     {
