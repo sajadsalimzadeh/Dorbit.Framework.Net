@@ -75,7 +75,7 @@ public abstract class EfDbContext : DbContext, IDbContext
     {
         ServiceProvider = serviceProvider;
         _efTransactionContext = new EfTransactionContext(this);
-        CancellationToken = serviceProvider.GetService<ICancellationTokenService>()?.CancellationToken ?? default;
+        // CancellationToken = serviceProvider.GetService<ICancellationTokenService>()?.CancellationToken ?? default;
         ChangeTracker.AutoDetectChangesEnabled = false;
         ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }

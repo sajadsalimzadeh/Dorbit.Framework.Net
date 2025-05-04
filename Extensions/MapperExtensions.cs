@@ -35,11 +35,6 @@ public static class MapperExtensions
         return App.Mapper.Map<List<TR>>(await task);
     }
 
-    public static T PatchObject<T>(this T model, JsonElement patch)
-    {
-        return model;
-    }
-
     public static T PatchObject<T>(this T model, object patch, Type pathType = null)
     {
         if (patch is not JsonElement jsonElement)
@@ -57,7 +52,9 @@ public static class MapperExtensions
             var property = properties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.CurrentCultureIgnoreCase));
             if (property is null) continue;
             if (patchProperties.All(x => x.Name != property.Name)) continue;
-            property.SetValue(model, property.GetValue(patchObject));
+            var pathValue = property.GetValue(patchObject);
+            if(pathValue is null) continue;
+            property.SetValue(model, pathValue);
         }
 
         return model;

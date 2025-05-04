@@ -685,12 +685,7 @@ internal class MinimalYamlParser
     {
         private Dictionary<string, string> _lastEntry;
 
-        public Mapping()
-        {
-            Sequences = new List<Dictionary<string, string>>();
-        }
-
-        public List<Dictionary<string, string>> Sequences { get; }
+        public List<Dictionary<string, string>> Sequences { get; } = new();
 
         public void BeginSequence()
         {

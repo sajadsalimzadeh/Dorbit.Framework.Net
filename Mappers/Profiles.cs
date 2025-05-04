@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Dorbit.Framework.Contracts.Jobs;
 using Dorbit.Framework.Contracts.Notifications;
+using Dorbit.Framework.Contracts.Settings;
 using Dorbit.Framework.Entities;
 
 namespace Dorbit.Framework.Mappers;
@@ -15,5 +16,7 @@ public class Profiles : Profile
 
         CreateMap<NotificationDto, Notification>();
         CreateMap<Notification, NotificationDto>();
+        
+        CreateMap<Setting, SettingDto>();
     }
 }

@@ -92,15 +92,13 @@ public static class ModelBuilderExtensions
     }
 }
 
-public class JsonValueConverter<T> : ValueConverter<T, string> where T : class
-{
-    public JsonValueConverter(PolymorphismOptions polymorphismOptions = null, ConverterMappingHints hints = null) :
-        base(v => JsonHelper.Serialize(v), v => JsonHelper.Deserialize<T>(v, polymorphismOptions), hints)
-    {
-    }
-}
+public class JsonValueConverter<T>(PolymorphismOptions polymorphismOptions = null, ConverterMappingHints hints = null)
+    : ValueConverter<T, string>(v => JsonHelper.Serialize(v), v => JsonHelper.Deserialize<T>(v, polymorphismOptions), hints)
+    where T : class;
 
-internal class JsonValueComparer<T> : ValueComparer<T>
+internal class JsonValueComparer<T>() : ValueComparer<T>((t1, t2) => DoEquals(t1, t2),
+    t => DoGetHashCode(t),
+    t => DoGetSnapshot(t))
 {
     private static string Json(T instance)
     {
@@ -131,13 +129,6 @@ internal class JsonValueComparer<T> : ValueComparer<T>
 
         var result = Json(left).Equals(Json(right));
         return result;
-    }
-
-    public JsonValueComparer() : base(
-        (t1, t2) => DoEquals(t1, t2),
-        t => DoGetHashCode(t),
-        t => DoGetSnapshot(t))
-    {
     }
 }
 

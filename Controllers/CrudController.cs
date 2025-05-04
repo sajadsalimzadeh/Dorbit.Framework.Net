@@ -10,6 +10,7 @@ using Dorbit.Framework.Filters;
 using Dorbit.Framework.Repositories.Abstractions;
 using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
@@ -25,6 +26,19 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
     protected virtual IQueryable<TEntity> Set() => Repository.Set();
 
     [HttpGet, Auth("{type0}-View")]
+    public virtual async Task<QueryResult<IEnumerable<TGet>>> GetAllAsync()
+    {
+        var query = Set();
+        if (typeof(TEntity).IsAssignableTo(typeof(ICreationTime)))
+        {
+            query = query.Cast<ICreationTime>().OrderBy(x => x.CreationTime).Cast<TEntity>().AsQueryable();
+        }
+
+        var result = await query.ToListAsync();
+        return result.Select(x => Mapper.Map<TGet>(x)).ToQueryResult();
+    }
+    
+    [HttpGet("odata"), Auth("{type0}-View")]
     public virtual async Task<PagedListResult<TGet>> SelectAsync()
     {
         var query = Set();
@@ -55,7 +69,7 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
         return entity.MapTo<TGet>().ToQueryResult();
     }
 
-    [HttpPatch("{id}")]
+    [HttpPatch("{id}"), Auth("{type0}-Save")]
     public virtual async Task<QueryResult<TGet>> PatchAsync(TKey id, [FromBody] object jsonData)
     {
         var entity = await Repository.GetByIdAsync(id);
@@ -65,9 +79,10 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
     }
 
     [HttpDelete("{id}"), Auth("{type0}-Delete")]
-    public virtual Task<QueryResult<TGet>> Remove(TKey id)
+    public virtual async Task<CommandResult> Remove(TKey id)
     {
-        return Repository.DeleteAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
+        await Repository.DeleteAsync(id);
+        return Succeed();
     }
 }
 

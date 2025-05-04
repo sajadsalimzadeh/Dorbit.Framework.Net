@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using AuthenticationException = MailKit.Security.AuthenticationException;
 
 namespace Dorbit.Framework.Filters;
 

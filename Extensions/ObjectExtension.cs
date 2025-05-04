@@ -70,21 +70,4 @@ public static class ObjectExtension
 
         return destination;
     }
-
-    public static T Patch<T>(this object source, T destination)
-    {
-        var sourceType = source.GetType();
-        var destType = typeof(T);
-        var sourceProperties = sourceType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
-        var destProperties = destType.GetProperties(BindingFlags.Instance | BindingFlags.Public);
-
-        foreach (var sourceProperty in sourceProperties)
-        {
-            var destProperty = destProperties.FirstOrDefault(
-                x => string.Equals(x.Name, sourceProperty.Name, StringComparison.CurrentCultureIgnoreCase) && x.PropertyType == sourceProperty.PropertyType);
-            destProperty?.SetValue(destination, sourceProperty.GetValue(source));
-        }
-
-        return destination;
-    }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Authentication;
 using AutoMapper;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Services.Abstractions;
@@ -19,7 +20,7 @@ public abstract class BaseController : ControllerBase
 
     protected IMapper Mapper => ServiceProvider.GetService<IMapper>();
 
-    protected T GetUserId<T>() => (T)UserResolver.User?.GetId() ?? throw new UnauthorizedAccessException();
+    protected T GetUserId<T>() => (UserResolver.User is not null ? (T)UserResolver.User.GetId() : throw new UnauthorizedAccessException());
     protected Guid GetUserId() => GetUserId<Guid>();
     protected QueryOptions QueryOptions => ODataQueryOptions.Parse(Request);
 
