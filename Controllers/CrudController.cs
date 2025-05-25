@@ -12,7 +12,6 @@ using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Controllers;
 
@@ -62,7 +61,7 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
         return Repository.InsertAsync(request.MapTo<TEntity>()).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
-    [HttpPut("{id}"), Auth("{type0}-Save")]
+    [HttpPut("{id}"), HttpPatch("{id}"), Auth("{type0}-Save")]
     public virtual async Task<QueryResult<TGet>> PatchAsync(TKey id, [FromBody] JsonElement obj)
     {
         var entity = await Repository.PatchAsync(id, obj);

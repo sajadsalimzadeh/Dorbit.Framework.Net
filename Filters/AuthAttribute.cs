@@ -2,13 +2,11 @@
 using System.Linq;
 using System.Reflection;
 using System.Security.Authentication;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Identities;
 using Dorbit.Framework.Controllers;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +16,8 @@ namespace Dorbit.Framework.Filters;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
 {
+    private string _access = access;
+
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor)
@@ -33,7 +33,7 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
             return;
         }
 
-        if (access.IsNotNullOrEmpty())
+        if (_access.IsNotNullOrEmpty())
         {
             var type = actionDescriptor.ControllerTypeInfo as Type;
             var preType = type;
@@ -44,7 +44,7 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
                     var index = 0;
                     foreach (var genericType in preType.GenericTypeArguments)
                     {
-                        access = access.Replace("{type" + index + "}", genericType.Name);
+                        _access = _access.Replace("{type" + index + "}", genericType.Name);
                         index++;
                     }
 
@@ -58,7 +58,7 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
 
         var identityRequest = new IdentityValidateRequest()
         {
-            Access = access
+            Access = _access
         };
         var httpRequest = context.HttpContext.Request;
 

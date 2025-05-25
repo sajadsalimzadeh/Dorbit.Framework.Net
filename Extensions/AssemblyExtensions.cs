@@ -6,37 +6,31 @@ namespace Dorbit.Framework.Extensions;
 
 public static class AssemblyExtensions
 {
-    public static List<Assembly> GetAssemblies(this Assembly entryAssembly, string[] namespaces)
+    public static List<Assembly> GetAllAssembly(this Assembly root, string[] prefixes)
     {
-        var returnAssemblies = new List<Assembly>();
-        var loadedAssemblies = new List<string>();
-        var assembliesToCheck = new Queue<Assembly>();
-        assembliesToCheck.Enqueue(entryAssembly);
-        while (assembliesToCheck.Any())
+        var visited = new List<Assembly>();
+        var queue = new Queue<Assembly>();
+
+        queue.Enqueue(root);
+
+        while (queue.Any())
         {
-            var assemblyToCheck = assembliesToCheck.Dequeue();
-            foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
-            {
-                if (loadedAssemblies.Contains(reference.FullName)) continue;
-                try
-                {
-                    var assembly = Assembly.Load(reference);
-                    assembliesToCheck.Enqueue(assembly);
-                }
-                catch
-                {
-                    // ignored
-                }
+            var assembly = queue.Dequeue();
+            var assemblyName = assembly.GetName().FullName ?? "";
+            if (visited.Any(x => x.FullName == assemblyName)) continue;
+            visited.Add(assembly);
 
-                loadedAssemblies.Add(reference.FullName);
-            }
-
-            if (namespaces.Any(x => assemblyToCheck.FullName != null && assemblyToCheck.FullName.StartsWith(x)))
+            var references = assembly.GetReferencedAssemblies();
+            foreach (var reference in references)
             {
-                returnAssemblies.Add(assemblyToCheck);
+                if (visited.Any(x => x.FullName == reference.FullName)) continue;
+                if (prefixes.Any(x => reference.Name.StartsWith(x)))
+                {
+                    queue.Enqueue(Assembly.Load(reference));
+                }
             }
         }
 
-        return returnAssemblies;
+        return visited;
     }
 }

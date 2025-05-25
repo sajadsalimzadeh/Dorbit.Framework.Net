@@ -17,6 +17,7 @@ public interface IWriterRepository<TEntity, TKey> : IReaderRepository<TEntity, T
     Task<TEntity> InsertAsync<TR>(TR dto);
     Task<TEntity> UpdateAsync<TR>(TKey id, TR dto);
     Task<TEntity> PatchAsync(TKey key, object patch);
+    Task<TEntity> PatchAsync(TEntity entity, object patch);
     Task<TEntity> DeleteAsync(TKey id);
 }
 

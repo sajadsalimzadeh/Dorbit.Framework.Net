@@ -48,14 +48,13 @@ public class CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
 
     public bool Validate(string key, string value)
     {
-        if (_captchas.ContainsKey(key))
+        lock (_captchas)
         {
-            var result = value.ToLower() == _captchas[key].ToLower();
+            if (!_captchas.TryGetValue(key, out var captcha)) return false;
+            var result = value.ToLower() == captcha.ToLower();
             lock (_captchas) _captchas.Remove(key);
             return result;
         }
-
-        return false;
     }
 
     public bool Validate(KeyValuePair<string, string> obj)

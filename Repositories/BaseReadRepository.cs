@@ -40,6 +40,11 @@ public class BaseReadRepository<TEntity, TKey>(IDbContext dbContext) : IReaderRe
         return Set().ToListAsync();
     }
 
+    public virtual Task<List<TEntity>> GetAllAsyncWithCache(TimeSpan timeToLive)
+    {
+        return Set().ToListAsyncWithCache($"[{typeof(TEntity).Name}]-{nameof(GetAllAsyncWithCache)}", timeToLive);
+    }
+
     public virtual Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
     {
         return Set().Where(predicate).ToListAsync();
@@ -52,7 +57,7 @@ public class BaseReadRepository<TEntity, TKey>(IDbContext dbContext) : IReaderRe
     
     public virtual Task<TEntity> GetByIdAsyncWithCache(TKey id, TimeSpan timeToLive)
     {
-        return Set().FirstOrDefaultAsyncWithCache(x => x.Id.Equals(id), $"{nameof(GetByIdAsyncWithCache)}-{typeof(TEntity).Name}-{id}", timeToLive);
+        return Set().FirstOrDefaultAsyncWithCache(x => x.Id.Equals(id), $"[{typeof(TEntity).Name}]-{nameof(GetByIdAsyncWithCache)}-{id}", timeToLive);
     }
 
     public Task<TEntity> FirstOrDefaultAsync()

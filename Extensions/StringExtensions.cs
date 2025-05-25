@@ -225,4 +225,17 @@ public static class StringExtensions
 
         return sb.ToString();
     }
+
+    public static long ToVersionNumber(this string version, char splitter = '.')
+    {
+        var segments = version.Split(splitter).Select(int.Parse).ToList();
+        long result = 0;
+        foreach (var segment in segments)
+        {
+            result *= 100;
+            result += segment;
+        }
+
+        return result;
+    }
 }

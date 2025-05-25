@@ -37,7 +37,7 @@ public class ExceptionMiddleware : IMiddleware
 
             logger?.Error(ex, ex.Message);
             var identityService = context.RequestServices.GetService<IIdentityService>();
-            if (identityService.Identity is not null && identityService.Identity.HasAccess("Developer"))
+            if (identityService?.Identity is not null && identityService.Identity.HasAccess("Developer"))
             {
                 op.Data = ex.Data;
                 op.StackTrace = ex.StackTrace;

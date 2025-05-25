@@ -7,12 +7,13 @@ using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Jwts;
 using Dorbit.Framework.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Dorbit.Framework.Services;
 
-[ServiceRegister]
+[ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
 {
     private readonly ConfigFrameworkSecurity _configFrameworkSecurity = securityOptions.Value;
@@ -47,7 +48,7 @@ public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
         return TryValidateToken(token, out _, out _);
     }
 
-    public bool TryValidateToken(string token, out SecurityToken securityToken, out ClaimsPrincipal claimsPrincipal)
+    public bool TryValidateToken(string token, out SecurityToken securityToken, out ClaimsPrincipal principals)
     {
         var secret = _configFrameworkSecurity.Secret.GetDecryptedValue();
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -61,7 +62,7 @@ public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret)),
             };
-            claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out securityToken);
+            principals = tokenHandler.ValidateToken(token, validationParameters, out securityToken);
             return securityToken.ValidTo > DateTime.UtcNow;
         }
         catch
@@ -69,7 +70,7 @@ public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
             // ignored
         }
 
-        claimsPrincipal = null;
+        principals = null;
         securityToken = null;
         return false;
     }
