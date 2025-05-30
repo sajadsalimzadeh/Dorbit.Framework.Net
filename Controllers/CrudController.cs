@@ -62,7 +62,7 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
         return Repository.InsertAsync(request.MapTo<TEntity>()).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
-    [HttpPut("{id}"), HttpPatch("{id}"), Auth("{type0}-Save")]
+    [HttpPatch("{id}"), HttpPut("{id}"), Auth("{type0}-Save")]
     public virtual async Task<QueryResult<TGet>> PatchAsync(TKey id, [FromBody] JsonElement obj)
     {
         var entity = await Repository.PatchAsync(id, obj);
