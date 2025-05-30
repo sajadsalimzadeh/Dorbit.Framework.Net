@@ -27,8 +27,8 @@ public static class PathUtil
             return string.Empty;
         }
 
-        var seperators = new[] { '/', '\\' };
-        var sp = path.Split(seperators);
+        var separators = new[] { '/', '\\' };
+        var sp = path.Split(separators);
         return sp[^1];
     }
 

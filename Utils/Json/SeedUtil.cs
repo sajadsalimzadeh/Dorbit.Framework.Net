@@ -19,7 +19,7 @@ public static class SeedUtil
     {
         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
         var content = await File.ReadAllTextAsync(path);
-        var items = JsonSerializer.Deserialize<List<TEntity>>(content);
+        var items = JsonSerializer.Deserialize<List<TEntity>>(content, JsonSerializerOptions.Web);
         await repository.SeedAsync(items, beforeInsertAction, ignorePredicate);
     }
 
