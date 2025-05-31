@@ -22,7 +22,7 @@ public class CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
 
     public KeyValuePair<string, string> Generate(CaptchaGenerateModel dto)
     {
-        if (dto.Width > 500 || dto.Height > 500) throw new OperationException(Errors.CaptchaSizeIsTooLarge);
+        if (dto.Width > 500 || dto.Height > 500) throw new OperationException(FrameworkErrors.CaptchaSizeIsTooLarge);
 
         if (dto.Dificulty == CaptchaDificulty.None) dto.Dificulty = _configCaptcha.Difficulty;
         if (dto.Length == 0) dto.Length = _configCaptcha.Length;
@@ -88,19 +88,19 @@ public class CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
             var captchaValidator = context.RequestServices.GetRequiredService<ICaptchaValidator>();
             if (!captchaValidator.IsCaptchaPassedAsync(recaptcha).Result)
             {
-                throw new OperationException(Errors.CaptchaNotCorrect);
+                throw new OperationException(FrameworkErrors.CaptchaNotCorrect);
             }
         }
         else if (captchaKey.IsNotNullOrEmpty() && captchaValue.IsNotNullOrEmpty())
         {
             if (!Validate(captchaKey, captchaValue))
             {
-                throw new OperationException(Errors.CaptchaNotCorrect);
+                throw new OperationException(FrameworkErrors.CaptchaNotCorrect);
             }
         }
         else
         {
-            throw new OperationException(Errors.CaptchaNotSet);
+            throw new OperationException(FrameworkErrors.CaptchaNotSet);
         }
 
         return true;

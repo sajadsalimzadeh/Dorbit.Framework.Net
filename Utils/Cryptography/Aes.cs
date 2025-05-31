@@ -48,8 +48,8 @@ public class Aes
         Key = key;
         Iv = iv;
 
-        if (key.Length != _size / 8) throw new OperationException(Errors.AesKeySizeIsInvalid);
-        if (key.Length != Iv.Length) throw new OperationException(Errors.AesKeySizeMostEqualIvSize);
+        if (key.Length != _size / 8) throw new OperationException(FrameworkErrors.AesKeySizeIsInvalid);
+        if (key.Length != Iv.Length) throw new OperationException(FrameworkErrors.AesKeySizeMostEqualIvSize);
 
         var aes = Create();
         _encryptor = aes.CreateEncryptor();

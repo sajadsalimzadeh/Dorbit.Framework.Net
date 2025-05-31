@@ -81,7 +81,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
             }
         }
 
-        throw new OperationException(Errors.SendMessageFailed);
+        throw new OperationException(FrameworkErrors.SendMessageFailed);
     }
 
     public async Task CheckSmsProviderCredit()

@@ -14,6 +14,11 @@ public class QueryResult<T> : CommandResult
     {
         Data = data;
     }
+    
+    public QueryResult(bool success)
+    {
+        Success = success;
+    }
 }
 
 public static class QueryResultExtensions

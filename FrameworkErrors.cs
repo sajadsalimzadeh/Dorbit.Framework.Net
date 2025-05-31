@@ -1,6 +1,6 @@
 ﻿namespace Dorbit.Framework;
 
-internal enum Errors
+public enum FrameworkErrors
 {
     CaptchaSizeIsTooLarge,
     CaptchaNotCorrect,

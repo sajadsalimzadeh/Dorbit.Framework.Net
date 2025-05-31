@@ -5,11 +5,12 @@ namespace Dorbit.Framework.Extensions;
 
 public static class HttpExtensions
 {
-    public static string GetToken(this HttpRequest request)
+    public static string GetAuthorizationToken(this HttpRequest request)
     {
         var token = string.Empty;
         var keyNames = new[]
         {
+            "ApiKey",
             "access_token",
             "Authorization",
         };

@@ -56,7 +56,7 @@ internal class EfSecondaryTransaction : ITransaction
 
     public Task RollbackAsync()
     {
-        throw new OperationException(Errors.TransactionRollback);
+        throw new OperationException(FrameworkErrors.TransactionRollback);
     }
 
     public void Dispose()

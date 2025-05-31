@@ -15,14 +15,14 @@ public class CaptchaAttribute : Attribute, IAsyncActionFilter
     {
         var captchaService = context.HttpContext.RequestServices.GetService<CaptchaService>();
         if (!context.HttpContext.Request.Headers.TryGetValue("Captcha", out var captcha))
-            throw new OperationException(Errors.CaptchaNotSet);
+            throw new OperationException(FrameworkErrors.CaptchaNotSet);
 
         var captchaKeyValue = captcha.ToString().Split(' ');
         if (captchaKeyValue.Length != 2)
-            throw new OperationException(Errors.CaptchaNotCorrect);
+            throw new OperationException(FrameworkErrors.CaptchaNotCorrect);
 
         if(!captchaService.Validate(captchaKeyValue[0], captchaKeyValue[1])) 
-            throw new OperationException(Errors.CaptchaNotCorrect);
+            throw new OperationException(FrameworkErrors.CaptchaNotCorrect);
         
         return next();
     }
