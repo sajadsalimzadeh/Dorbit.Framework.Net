@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Dorbit.Framework.Contracts.Jobs;
-using Dorbit.Framework.Contracts.Notifications;
 using Dorbit.Framework.Contracts.Settings;
 using Dorbit.Framework.Entities;
 
@@ -14,9 +13,6 @@ public class Profiles : Profile
             .ForMember(x => x.Downloadable, o => o.MapFrom(x => x.Download != null));
         CreateMap<JobLog, JobLogDto>();
 
-        CreateMap<NotificationDto, Notification>();
-        CreateMap<Notification, NotificationDto>();
-        
         CreateMap<Setting, SettingDto>();
     }
 }
