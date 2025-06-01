@@ -29,6 +29,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Sinks.Async;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using IStartup = Dorbit.Framework.Services.Abstractions.IStartup;
@@ -199,10 +200,16 @@ public static class FrameworkInstaller
         return app;
     }
 
-    public static WebApplicationBuilder UseDorbitSerilog(this WebApplicationBuilder builder)
+    public static WebApplicationBuilder UseDorbitSerilog(this WebApplicationBuilder builder, Action<LoggerConfiguration> configure = null)
     {
-        builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
-            loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration));
+        var loggerConfiuration = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
+            .Enrich.WithProperty("AppVersion", builder.Configuration.GetValue<string>("Version") ?? "1.0.0");
+
+        configure?.Invoke(loggerConfiuration);
+
+        var logger = loggerConfiuration.CreateLogger();
+        builder.Host.UseSerilog(logger);
 
         return builder;
     }

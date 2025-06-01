@@ -1,15 +1,9 @@
 ﻿[
   {
-    "Name": "AllAccess",
+    "Name": "Framework",
     "Children": [
       {
-        "Name": "Framework",
-        "Children": [
-          {
-            "Name": "Setting",
-            "Children": []
-          }
-        ]
+        "Name": "Setting"
       }
     ]
   }

@@ -53,7 +53,6 @@ public static class MapperExtensions
             if (property is null) continue;
             if (patchProperties.All(x => x.Name != property.Name)) continue;
             var pathValue = property.GetValue(patchObject);
-            if(pathValue is null) continue;
             property.SetValue(model, pathValue);
         }
 
