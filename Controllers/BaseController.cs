@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Authentication;
 using AutoMapper;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Services.Abstractions;

@@ -70,6 +70,8 @@ public static class FrameworkInstaller
         services.AddSwaggerGen(options =>
         {
             options.EnableAnnotations();
+            options.CustomSchemaIds(type => type.FullName);
+            options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
             foreach (var swagger in configs.SwaggerConfigs)
             {
                 options.SwaggerDoc(swagger.Name, new OpenApiInfo()
@@ -85,10 +87,10 @@ public static class FrameworkInstaller
                 if (docName == "all") return true;
                 if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
                 if (methodInfo.ReflectedType?.Namespace is null) return false;
-
+                
                 var swaggerConfigs = _configs.SwaggerConfigs.Where(x => x.Name == docName).ToList();
                 
-                if (swaggerConfigs.Any(x => x.Namespace != null && methodInfo.ReflectedType.Namespace.StartsWith(x.Namespace)))
+                if (swaggerConfigs.Any(x => x.PrefixNamespace != null && methodInfo.ReflectedType.Namespace.StartsWith(x.PrefixNamespace)))
                 {
                     return true;
                 }
@@ -276,7 +278,7 @@ public static class FrameworkInstaller
 
     public class Configs(IConfiguration configuration)
     {
-        public List<string> DependencyRegisterNamespaces { get; init; }
+        public required List<string> DependencyRegisterNamespaces { get; init; }
         public List<string> AllowedOrigins { get; set; } = configuration.GetSection("AllowedOrigins").Get<List<string>>();
 
         public IConfig<ConfigFile> ConfigFile { get; init; } = configuration.GetConfig<ConfigFile>("File");
@@ -291,10 +293,10 @@ public static class FrameworkInstaller
         public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
     }
 
-    public class ConfigSwaggerDoc(string name, string title)
+    public class ConfigSwaggerDoc(string name, string title, string prefixNamespace = null)
     {
         public string Name { get; } = name;
         public string Title { get; } = title;
-        public string Namespace { get; set; }
+        public string PrefixNamespace { get; set; } = prefixNamespace;
     }
 }

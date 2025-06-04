@@ -15,19 +15,18 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
 {
-    private readonly ConfigFrameworkSecurity _configFrameworkSecurity = securityOptions.Value;
 
     public string CreateToken(JwtCreateTokenRequest request)
     {
-        var secret = _configFrameworkSecurity.Secret.GetDecryptedValue();
+        var secret = request.Secret;
         var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret));
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
             Claims = new Dictionary<string, object>(),
-            Issuer = _configFrameworkSecurity.Issuer,
-            Audience = _configFrameworkSecurity.Audience,
-            Expires = request.Expires,
+            Issuer = request.Issuer,
+            Audience = request.Audience,
+            Expires = request.ExpireAt,
             SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
         };
         if (request.Claims is not null)
@@ -42,14 +41,13 @@ public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
         return tokenHandler.WriteToken(token);
     }
 
-    public bool TryValidateToken(string token)
+    public bool TryValidateToken(string token, string secret)
     {
-        return TryValidateToken(token, out _, out _);
+        return TryValidateToken(token, secret, out _, out _);
     }
 
-    public bool TryValidateToken(string token, out SecurityToken securityToken, out ClaimsPrincipal claimsPrincipal)
+    public bool TryValidateToken(string token, string secret, out SecurityToken securityToken, out ClaimsPrincipal claimsPrincipal)
     {
-        var secret = _configFrameworkSecurity.Secret.GetDecryptedValue();
         var tokenHandler = new JwtSecurityTokenHandler();
         try
         {

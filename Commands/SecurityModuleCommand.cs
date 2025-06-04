@@ -14,10 +14,8 @@ public class SecurityModuleCommand(IServiceProvider serviceProvider) : Command
 
     public override IEnumerable<ICommand> GetSubCommands(ICommandContext context)
     {
-        yield return serviceProvider.GetService<CreateTokenCommand>();
         yield return serviceProvider.GetService<DecryptCommand>();
         yield return serviceProvider.GetService<EncryptCommand>();
-        yield return serviceProvider.GetService<ValidateTokenCommand>();
     }
 
     public override Task InvokeAsync(ICommandContext context)
