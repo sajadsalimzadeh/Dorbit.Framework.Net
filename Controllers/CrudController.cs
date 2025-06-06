@@ -12,7 +12,6 @@ using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Controllers;
 
@@ -21,7 +20,7 @@ public abstract class CrudController : BaseController;
 public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudController
     where TEntity : class, IEntity<TKey>
 {
-    protected IBaseRepository<TEntity, TKey> Repository => ServiceProvider.GetService<IBaseRepository<TEntity, TKey>>();
+    protected IBaseRepository<TEntity, TKey> Repository => ServiceProvider.GetRequiredService<IBaseRepository<TEntity, TKey>>();
     
     protected virtual IQueryable<TEntity> Set() => Repository.Set();
 

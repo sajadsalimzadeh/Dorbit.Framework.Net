@@ -7,11 +7,18 @@ namespace Dorbit.Framework.Extensions;
 
 public static class CommandExtensions
 {
-    public static Task RunCliAsync(this WebApplication app)
+    public static async Task RunCliAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         var serviceProvider = scope.ServiceProvider;
         var cliRunnerService = serviceProvider.GetService<CliRunnerService>();
-        return cliRunnerService.RunAsync(app);
+        try
+        {
+            await cliRunnerService.RunAsync(app);
+        }
+        catch
+        {
+            await app.RunAsync();
+        }
     }
 }

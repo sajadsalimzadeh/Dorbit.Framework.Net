@@ -13,7 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
-public class JwtService(IOptions<ConfigFrameworkSecurity> securityOptions)
+public class JwtService()
 {
 
     public string CreateToken(JwtCreateTokenRequest request)
