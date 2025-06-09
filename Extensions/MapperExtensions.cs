@@ -50,13 +50,12 @@ public static class MapperExtensions
             PropertyNameCaseInsensitive = true
         };
         var patchObject = JsonSerializer.Deserialize<T>(jsonElement.GetRawText(), options);
-        var patchProperties = (pathType ?? patch.GetType()).GetProperties();
         var properties = typeof(T).GetProperties();
-        foreach (var jsonProperty in jsonElement.EnumerateObject())
+        var jsonProperties = jsonElement.EnumerateObject();
+        foreach (var jsonProperty in jsonProperties)
         {
             var property = properties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.CurrentCultureIgnoreCase));
             if (property is null) continue;
-            if (patchProperties.All(x => x.Name != property.Name)) continue;
             var pathValue = property.GetValue(patchObject);
             if(pathValue is null) continue;
             property.SetValue(model, pathValue);
