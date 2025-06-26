@@ -14,7 +14,7 @@ public class CancellationTokenMiddleware : IMiddleware
         var cancellationTokenService = context.RequestServices.GetService<ICancellationTokenService>();
         if (cancellationTokenService is not null)
         {
-            cancellationTokenService.CancellationToken = context.RequestAborted;
+            cancellationTokenService.RequestCancellationToken = context.RequestAborted;
         }
 
         return next(context);

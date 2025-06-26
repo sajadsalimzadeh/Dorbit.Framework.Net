@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace Dorbit.Framework.Controllers;
 
 [ApiExplorerSettings(GroupName = "framework")]
+[Route("Framework/[controller]")]
 public class JobsController(JobService jobService) : BaseController
 {
     [HttpGet]

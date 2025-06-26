@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Dorbit.Framework.Database.Abstractions;
@@ -16,99 +17,102 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
 {
     private readonly IDbContext _dbContext = dbContext;
 
-    public virtual Task<TEntity> InsertAsync(TEntity entity)
+    public virtual Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        return _dbContext.InsertEntityAsync<TEntity, TKey>(entity);
+        return _dbContext.InsertEntityAsync<TEntity, TKey>(entity, cancellationToken);
     }
 
-    public virtual Task BulkInsertAsync(Func<TEntity, bool> predicate)
+    public virtual Task BulkInsertAsync(Func<TEntity, bool> predicate, CancellationToken cancellationToken = default)
     {
-        return BulkInsertAsync(Set().AsEnumerable().Where(predicate).ToList());
+        var entities = Set().AsEnumerable().Where(predicate).ToList();
+        return BulkInsertAsync(entities, cancellationToken);
     }
 
-    public virtual Task BulkInsertAsync(List<TEntity> entities)
+    public virtual Task BulkInsertAsync(List<TEntity> entities, CancellationToken cancellationToken = default)
     {
-        return _dbContext.BulkInsertEntityAsync<TEntity, TKey>(entities);
+        return _dbContext.BulkInsertEntityAsync<TEntity, TKey>(entities, cancellationToken);
     }
 
-    public virtual Task<TEntity> UpdateAsync(TEntity entity)
+    public virtual Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        return _dbContext.UpdateEntityAsync<TEntity, TKey>(entity);
+        return _dbContext.UpdateEntityAsync<TEntity, TKey>(entity, cancellationToken);
     }
 
-    public virtual Task BulkUpdateAsync(Func<TEntity, bool> predicate)
+    public virtual Task BulkUpdateAsync(Func<TEntity, bool> predicate, CancellationToken cancellationToken = default)
     {
-        return BulkUpdateAsync(Set().AsEnumerable().Where(predicate).ToList());
+        return BulkUpdateAsync(Set().AsEnumerable().Where(predicate).ToList(), cancellationToken);
     }
 
-    public virtual Task BulkUpdateAsync(List<TEntity> entities)
+    public virtual Task BulkUpdateAsync(List<TEntity> entities, CancellationToken cancellationToken = default)
     {
-        return _dbContext.BulkUpdateEntityAsync<TEntity, TKey>(entities);
+        return _dbContext.BulkUpdateEntityAsync<TEntity, TKey>(entities, cancellationToken);
     }
 
-    public virtual Task<TEntity> DeleteAsync(TEntity entity)
+    public virtual Task<TEntity> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        return _dbContext.DeleteEntityAsync<TEntity, TKey>(entity);
+        return _dbContext.DeleteEntityAsync<TEntity, TKey>(entity, cancellationToken);
     }
 
-    public virtual Task BulkDeleteAsync(Func<TEntity, bool> predicate)
+    public virtual Task BulkDeleteAsync(Func<TEntity, bool> predicate, CancellationToken cancellationToken = default)
     {
-        return BulkDeleteAsync(Set().AsEnumerable().Where(predicate).ToList());
+        var entities = Set().AsEnumerable().Where(predicate).ToList();
+        return BulkDeleteAsync(entities, cancellationToken);
     }
 
-    public virtual Task BulkDeleteAsync(List<TEntity> entities)
+    public virtual Task BulkDeleteAsync(List<TEntity> entities, CancellationToken cancellationToken = default)
     {
-        return _dbContext.BulkDeleteEntityAsync<TEntity, TKey>(entities);
+        return _dbContext.BulkDeleteEntityAsync<TEntity, TKey>(entities, cancellationToken);
     }
 
-    public virtual Task<TEntity> SaveAsync(TEntity entity)
+    public virtual Task<TEntity> SaveAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         if (entity.Id is Guid guid)
         {
-            return guid != Guid.Empty ? UpdateAsync(entity) : InsertAsync(entity);
+            return guid != Guid.Empty ? UpdateAsync(entity, cancellationToken) : InsertAsync(entity, cancellationToken);
         }
 
         if (entity.Id.GetType().IsNumeric())
         {
             var longValue = Convert.ToInt64(entity.Id);
-            return longValue > 0 ? UpdateAsync(entity) : InsertAsync(entity);
+            return longValue > 0 ? UpdateAsync(entity, cancellationToken) : InsertAsync(entity, cancellationToken);
         }
 
-        return InsertAsync(entity);
+        return InsertAsync(entity, cancellationToken);
     }
 
     //================== Extended Methods ==================\\
-    public Task<TEntity> InsertAsync<TR>(TR dto)
+    public Task<TEntity> InsertAsync<TDto>(TDto dto, CancellationToken cancellationToken = default)
     {
         var mapper = _dbContext.ServiceProvider.GetService<IMapper>();
-        return InsertAsync(mapper.Map<TEntity>(dto));
+        return InsertAsync(mapper.Map<TEntity>(dto), cancellationToken);
     }
 
-    public async Task<TEntity> DeleteAsync(TKey id)
+    public async Task<TEntity> DeleteAsync(TKey id, CancellationToken cancellationToken = default)
     {
-        var entity = await GetByIdAsync(id);
-        return await DeleteAsync(entity);
+        var entity = await GetByIdAsync(id, cancellationToken);
+        return await DeleteAsync(entity, cancellationToken);
     }
 
-    public async Task<TEntity> UpdateAsync<TR>(TKey id, TR dto)
+    public async Task<TEntity> UpdateAsync<TDto>(TKey id, TDto dto, CancellationToken cancellationToken = default)
     {
-        var entity = await GetByIdAsync(id);
-        return await UpdateAsync(dto.MapTo(entity));
+        var entity = await GetByIdAsync(id, cancellationToken);
+        return await UpdateAsync(dto.MapTo(entity), cancellationToken);
     }
 
-    public async Task<TEntity> PatchAsync(TKey key, object patch)
+    public async Task<TEntity> PatchAsync(TKey key, object patch, CancellationToken cancellationToken = default)
     {
-        var entity = await GetByIdAsync(key);
+        var entity = await GetByIdAsync(key, cancellationToken);
         entity = entity.PatchObject(patch);
-        return await UpdateAsync(entity);
+        return await UpdateAsync(entity, cancellationToken);
     }
 
-    public async Task<TEntity> SaveAsync<TR>(TKey id, TR dto)
+    public async Task<TEntity> SaveAsync<TDto>(TKey id, TDto dto, CancellationToken cancellationToken = default)
     {
-        return await SaveAsync(await GetByIdAsync(id), dto);
+        var entity = await GetByIdAsync(id, cancellationToken);
+        return await SaveAsync(entity, dto, cancellationToken);
     }
 
-    public async Task<TEntity> SaveAsync<TR>(TEntity entity, TR dto)
+    public async Task<TEntity> SaveAsync<TDto>(TEntity entity, TDto dto, CancellationToken cancellationToken = default)
     {
         if (entity is not null)
         {
@@ -121,7 +125,7 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
             entity = dto.MapTo(Activator.CreateInstance<TEntity>());
         }
 
-        return await SaveAsync(entity);
+        return await SaveAsync(entity, cancellationToken);
     }
 }
 

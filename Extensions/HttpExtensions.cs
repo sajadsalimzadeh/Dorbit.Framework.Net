@@ -11,6 +11,7 @@ public static class HttpExtensions
         var keyNames = new[]
         {
             "access_token",
+            "ApiKey",
             "Authorization",
         };
         foreach (var key in keyNames)

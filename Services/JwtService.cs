@@ -4,10 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Dorbit.Framework.Attributes;
-using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Jwts;
-using Dorbit.Framework.Extensions;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Dorbit.Framework.Services;

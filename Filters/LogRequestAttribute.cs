@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 using Dorbit.Framework.Configs;
+using Dorbit.Framework.Contracts.Loggers;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Hosts;
+using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -14,9 +16,17 @@ namespace Dorbit.Framework.Filters;
 
 public class LogRequestAttribute : ActionFilterAttribute
 {
+    private string DirectoryName { get; }
     private static ConfigLogRequest _config;
 
-    public bool LogBody { get; set; }
+    public LogRequestAttribute()
+    {
+    }
+
+    public LogRequestAttribute(string directoryName)
+    {
+        DirectoryName = directoryName;
+    }
 
     public override void OnActionExecuting(ActionExecutingContext context)
     {
@@ -32,16 +42,22 @@ public class LogRequestAttribute : ActionFilterAttribute
             );
         }
 
-        if (!LogBody) return;
+        if (DirectoryName is null) return;
+        
         _config ??= context.HttpContext.RequestServices.GetService<IOptions<ConfigLogRequest>>().Value;
+        var loggerService = context.HttpContext.RequestServices.GetService<LoggerService>();
         if (_config?.BasePath.IsNotNullOrEmpty() != true) return;
+        if (Directory.Exists(_config.BasePath)) Directory.CreateDirectory(_config.BasePath);
+        var dirPath = Path.Combine(_config.BasePath, DirectoryName);
+        if (Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
+        
         foreach (var argument in context.ActionArguments)
         {
             if (argument.Value is byte[] bytes)
             {
-                FileLoggerHost.Add(new FileLoggerHost.LogRequest()
+                loggerService.LogToFile(new LogFileRequest()
                 {
-                    Path = Path.Combine(_config.BasePath, $"{DateTime.UtcNow:yyyy-MM-dd-HH-mm-ss-ffff}.txt"),
+                    Path = Path.Combine(dirPath, $"{DateTime.UtcNow:yyyy-MM-dd-HH-mm-ss-ffff}.txt"),
                     Content = bytes
                 });
             }

@@ -15,6 +15,7 @@ using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Hosts;
+using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Json;
 using EFCore.BulkExtensions;
@@ -28,6 +29,7 @@ namespace Dorbit.Framework.Database;
 
 public abstract class EfDbContext : DbContext, IDbContext
 {
+    private readonly LoggerService _loggerService;
     private static readonly ConcurrentDictionary<string, int> SequenceCounter = [];
     private readonly EfTransactionContext _efTransactionContext;
 
@@ -50,7 +52,6 @@ public abstract class EfDbContext : DbContext, IDbContext
     private EntityLoggerHost EntityLoggerHost => _entityLoggerHost ??= ServiceProvider.GetService<EntityLoggerHost>();
 
     public IServiceProvider ServiceProvider { get; }
-    public CancellationToken CancellationToken { get; set; }
     public bool AutoExcludeDeleted { get; set; } = true;
 
     private DatabaseProviderType? _providerType;
@@ -75,7 +76,8 @@ public abstract class EfDbContext : DbContext, IDbContext
     {
         ServiceProvider = serviceProvider;
         _efTransactionContext = new EfTransactionContext(this);
-        // CancellationToken = serviceProvider.GetService<ICancellationTokenService>()?.CancellationToken ?? default;
+        _loggerService = serviceProvider.GetService<LoggerService>();
+        
         ChangeTracker.AutoDetectChangesEnabled = false;
         ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
@@ -167,7 +169,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         return DbSet<TEntity, Guid>(excludeDeleted);
     }
 
-    public async Task<TEntity> InsertEntityAsync<TEntity, TKey>(TEntity entity) where TEntity : class, IEntity<TKey>
+    public async Task<TEntity> InsertEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
     {
         if (ProviderType == DatabaseProviderType.InMemory)
         {
@@ -194,18 +196,18 @@ public abstract class EfDbContext : DbContext, IDbContext
         if (entity is ISoftwareAudit softwareAudit) softwareAudit.IncludeSoftwareAudit(SoftwareResolver?.Software);
         if (entity is IChangeLog changeLog) changeLog.IncludeChangeLogs();
 
-        await AddAsync(entity, CancellationToken);
+        await AddAsync(entity, cancellationToken);
         await SaveIfNotInTransactionAsync();
         if (entity is ICreationLogging logging) Log(logging, LogAction.Insert);
         return entity;
     }
 
-    public Task<TEntity> InsertEntityAsync<TEntity>(TEntity entity) where TEntity : class, IEntity<Guid>
+    public Task<TEntity> InsertEntityAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
     {
-        return InsertEntityAsync<TEntity, Guid>(entity);
+        return InsertEntityAsync<TEntity, Guid>(entity, cancellationToken);
     }
 
-    public async Task<TEntity> UpdateEntityAsync<TEntity, TKey>(TEntity entity) where TEntity : class, IEntity<TKey>
+    public async Task<TEntity> UpdateEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
     {
         if (entity is IReadonly) throw new OperationException(Errors.EntityIsReadonly);
 
@@ -216,7 +218,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         var readonlyProperties = entity.GetReadonlyProperties<TEntity, TKey>();
         readonlyProperties.ForEach(property => Entry(entity).Property(property.Name).IsModified = false);
 
-        TEntity oldEntity = default;
+        TEntity oldEntity = null;
         if (entity is IHistorical)
         {
             oldEntity = DbSet<TEntity, TKey>().GetById(entity.Id);
@@ -234,7 +236,7 @@ public abstract class EfDbContext : DbContext, IDbContext
                 Entry(creationAudit).Property(x => x.CreatorName).IsModified = false;
             }
 
-            await InsertEntityAsync<TEntity, TKey>(entity);
+            await InsertEntityAsync<TEntity, TKey>(entity, cancellationToken);
             await transaction.CommitAsync();
         }
         else
@@ -263,12 +265,12 @@ public abstract class EfDbContext : DbContext, IDbContext
         return entity;
     }
 
-    public Task<TEntity> UpdateEntityAsync<TEntity>(TEntity entity) where TEntity : class, IEntity<Guid>
+    public Task<TEntity> UpdateEntityAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
     {
-        return UpdateEntityAsync<TEntity, Guid>(entity);
+        return UpdateEntityAsync<TEntity, Guid>(entity, cancellationToken);
     }
 
-    public async Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity entity) where TEntity : class, IEntity<TKey>
+    public async Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
     {
         if (entity is IUnDeletable) throw new OperationException(Errors.EntityIsUnDeletable);
 
@@ -297,22 +299,22 @@ public abstract class EfDbContext : DbContext, IDbContext
         return entity;
     }
 
-    public Task<TEntity> DeleteEntityAsync<TEntity>(TEntity entity) where TEntity : class, IEntity<Guid>
+    public Task<TEntity> DeleteEntityAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
     {
-        return DeleteEntityAsync<TEntity, Guid>(entity);
+        return DeleteEntityAsync<TEntity, Guid>(entity, cancellationToken);
     }
 
-    private async Task SaveIfNotInTransactionAsync()
+    private async Task SaveIfNotInTransactionAsync(CancellationToken cancellationToken = default)
     {
         if (_efTransactionContext.Transactions.Count == 0)
         {
-            await SaveChangesAsync(CancellationToken);
+            await SaveChangesAsync(cancellationToken);
         }
     }
 
     private void Log<TKey>(IEntity<TKey> newEntity, LogAction action, IEntity<TKey> oldEntity = null)
     {
-        EntityLoggerHost.Add(new LogRequest()
+        _loggerService.Log(new LogEntityRequest()
         {
             NewObj = newEntity,
             OldObj = oldEntity,
@@ -320,11 +322,6 @@ public abstract class EfDbContext : DbContext, IDbContext
             Module = GetType().Name.Replace("DbContext", ""),
             User = UserResolver?.User,
         });
-    }
-
-    public override int SaveChanges()
-    {
-        return SaveChangesAsync(CancellationToken).Result;
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -342,17 +339,17 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
     }
 
-    public Task MigrateAsync()
+    public Task MigrateAsync(CancellationToken cancellationToken = default)
     {
         if (ProviderType != DatabaseProviderType.InMemory)
         {
-            return Database.MigrateAsync(CancellationToken);
+            return Database.MigrateAsync(cancellationToken);
         }
 
         return Task.CompletedTask;
     }
 
-    public DbCommand CreateCommand(string query, Dictionary<string, object> parameters)
+    private DbCommand CreateCommand(string query, Dictionary<string, object> parameters)
     {
         var command = Database.GetDbConnection().CreateCommand();
         command.CommandText = query;
@@ -372,21 +369,21 @@ public abstract class EfDbContext : DbContext, IDbContext
         return command;
     }
 
-    public async Task<int> ExecuteCommandAsync(string query, Dictionary<string, object> parameters)
+    public async Task<int> ExecuteCommandAsync(string query, Dictionary<string, object> parameters, CancellationToken cancellationToken = default)
     {
         await using var command = CreateCommand(query, parameters);
-        await Database.OpenConnectionAsync(CancellationToken);
-        return await command.ExecuteNonQueryAsync(CancellationToken);
+        await Database.OpenConnectionAsync(cancellationToken);
+        return await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public async Task<List<TEntity>> ExecuteQueryAsync<TEntity>(string query, Dictionary<string, object> parameters)
+    public async Task<List<TEntity>> ExecuteQueryAsync<TEntity>(string query, Dictionary<string, object> parameters, CancellationToken cancellationToken = default)
     {
         var result = new List<TEntity>();
         await using var command = CreateCommand(query, parameters);
-        await Database.OpenConnectionAsync(CancellationToken);
-        await using var reader = await command.ExecuteReaderAsync(CancellationToken);
+        await Database.OpenConnectionAsync(cancellationToken);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         var properties = typeof(TEntity).GetProperties();
-        while (await reader.ReadAsync(CancellationToken))
+        while (await reader.ReadAsync(cancellationToken))
         {
             var columns = new List<string>();
             for (var i = 0; i < reader.FieldCount; i++) columns.Add(reader.GetName(i));
@@ -405,7 +402,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         return result;
     }
 
-    public async Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> entities) where TEntity : class, IEntity<TKey>
+    public async Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
     {
         var user = UserResolver?.User;
         var tenant = TenantResolver?.Tenant;
@@ -416,28 +413,28 @@ public abstract class EfDbContext : DbContext, IDbContext
             entity.ValidateCreation<TEntity, TKey>();
             entity.IncludeCreationAudit<TEntity, TKey>(user);
             entity.GenerateKey<TEntity, TKey>();
-            if(entity is ITenantAudit tenantAudit) tenantAudit.IncludeTenantAudit(tenant);
-            if(entity is IServerAudit serverAudit) serverAudit.IncludeServerAudit(server);
-            if(entity is ISoftwareAudit softwareAudit) softwareAudit.IncludeSoftwareAudit(software);
-            if(entity is IChangeLog changeLog) changeLog.IncludeChangeLogs();
+            if (entity is ITenantAudit tenantAudit) tenantAudit.IncludeTenantAudit(tenant);
+            if (entity is IServerAudit serverAudit) serverAudit.IncludeServerAudit(server);
+            if (entity is ISoftwareAudit softwareAudit) softwareAudit.IncludeSoftwareAudit(software);
+            if (entity is IChangeLog changeLog) changeLog.IncludeChangeLogs();
         });
 
         if (ProviderType == DatabaseProviderType.InMemory)
         {
-            await AddRangeAsync(entities, CancellationToken);
-            await SaveChangesAsync(CancellationToken);
+            await AddRangeAsync(entities, cancellationToken);
+            await SaveChangesAsync(cancellationToken);
             return;
         }
 
-        await this.BulkInsertAsync(entities, cancellationToken: CancellationToken);
+        await this.BulkInsertAsync(entities, cancellationToken: cancellationToken);
     }
 
-    public Task BulkInsertEntityAsync<TEntity>(List<TEntity> entities) where TEntity : class, IEntity<Guid>
+    public Task BulkInsertEntityAsync<TEntity>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
     {
-        return BulkInsertEntityAsync<TEntity, Guid>(entities);
+        return BulkInsertEntityAsync<TEntity, Guid>(entities, cancellationToken);
     }
 
-    public Task BulkUpdateEntityAsync<TEntity, TKey>(List<TEntity> entities) where TEntity : class, IEntity<TKey>
+    public Task BulkUpdateEntityAsync<TEntity, TKey>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
     {
         var user = UserResolver?.User;
         entities.ForEach(item => item.IncludeModificationAudit<TEntity, TKey>(user));
@@ -445,24 +442,24 @@ public abstract class EfDbContext : DbContext, IDbContext
         if (ProviderType == DatabaseProviderType.InMemory)
         {
             UpdateRange(entities);
-            return SaveChangesAsync(CancellationToken);
+            return SaveChangesAsync(cancellationToken);
         }
 
-        return this.BulkUpdateAsync(entities, cancellationToken: CancellationToken);
+        return this.BulkUpdateAsync(entities, cancellationToken: cancellationToken);
     }
 
-    public Task BulkUpdateEntityAsync<TEntity>(List<TEntity> entities) where TEntity : class, IEntity<Guid>
+    public Task BulkUpdateEntityAsync<TEntity>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
     {
-        return BulkUpdateEntityAsync<TEntity, Guid>(entities);
+        return BulkUpdateEntityAsync<TEntity, Guid>(entities, cancellationToken);
     }
 
-    public Task BulkDeleteEntityAsync<TEntity, TKey>(List<TEntity> entities) where TEntity : class, IEntity<TKey>
+    public Task BulkDeleteEntityAsync<TEntity, TKey>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
     {
-        return this.BulkDeleteAsync(entities, cancellationToken: CancellationToken);
+        return this.BulkDeleteAsync(entities, cancellationToken: cancellationToken);
     }
 
-    public Task BulkDeleteEntityAsync<TEntity>(List<TEntity> entities) where TEntity : class, IEntity<Guid>
+    public Task BulkDeleteEntityAsync<TEntity>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
     {
-        return BulkDeleteEntityAsync<TEntity, Guid>(entities);
+        return BulkDeleteEntityAsync<TEntity, Guid>(entities, cancellationToken);
     }
 }

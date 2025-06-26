@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Dorbit.Framework.Controllers;
 
 [ApiExplorerSettings(GroupName = "framework")]
+[Route("Framework/[controller]")]
 public class CaptchasController(CaptchaService captchaService) : BaseController
 {
     [HttpGet, Delay(Request = 300)]

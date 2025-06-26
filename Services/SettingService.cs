@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Contracts.Abstractions;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -31,16 +32,13 @@ public class SettingService(SettingRepository settingRepository)
         return Settings.GetValueOrDefault(key);
     }
 
-    public T Get<T>(string key, T defaultValue)
+    public T Get<T>(T defaultValue = null) where T : class, ISettingDto
     {
+        var key = Activator.CreateInstance<T>().GetKey();
         var setting = Get(key);
-        if (setting is null)
+        if (setting is null && defaultValue != null)
         {
-            setting = new Setting()
-            {
-                Key = key,
-            };
-            setting.SetValue(defaultValue);
+            setting = new Setting(key, defaultValue);
             try
             {
                 settingRepository.InsertAsync(setting).Wait();
@@ -53,17 +51,7 @@ public class SettingService(SettingRepository settingRepository)
             Settings[setting.Key] = setting;
         }
 
-        return setting.GetValue(defaultValue);
-    }
-
-    public Setting Get(Enum key)
-    {
-        return Get(key.ToString());
-    }
-
-    public T Get<T>(Enum key, T defaultValue)
-    {
-        return Get(key.ToString(), defaultValue);
+        return setting?.GetValue(defaultValue);
     }
 
     public List<Setting> GetAll()
@@ -72,22 +60,20 @@ public class SettingService(SettingRepository settingRepository)
         return Settings.Values.ToList();
     }
 
-    public async Task SaveAsync(string key, dynamic value)
+
+    public async Task SaveAsync<T>(T value) where T : class, ISettingDto
     {
+        var key = value.GetKey();
         _isChangeDetected = true;
         var setting = await settingRepository.Set().FirstOrDefaultAsync(x => x.Key == key);
         if (setting is null)
         {
-            setting = new Setting()
-            {
-                Key = key,
-                Value = value.ToString()
-            };
+            setting = new Setting(key, value);
             await settingRepository.InsertAsync(setting);
         }
     }
 
-    public async Task SaveAllAsync(Dictionary<string, dynamic> dict)
+    public async Task SaveAllAsync(Dictionary<string, object> dict)
     {
         var keys = dict.Keys;
         var settings = await settingRepository.Set().Where(x => keys.Contains(x.Key)).ToListAsync();
@@ -98,16 +84,12 @@ public class SettingService(SettingRepository settingRepository)
             var existsSetting = settings.FirstOrDefault(x => x.Key == keyValue.Key);
             if (existsSetting is not null)
             {
-                existsSetting.Value = keyValue.Value.ToString();
+                existsSetting.SetValue(keyValue.Value);
                 updateEntities.Add(existsSetting);
             }
             else
             {
-                insertEntities.Add(new Setting()
-                {
-                    Key = keyValue.Key,
-                    Value = keyValue.Value.ToString()
-                });
+                insertEntities.Add(new Setting(keyValue.Key, keyValue.Value));
             }
         }
 

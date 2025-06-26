@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Contracts.Settings;
@@ -12,25 +14,32 @@ using Microsoft.AspNetCore.Mvc;
 namespace Dorbit.Framework.Controllers;
 
 [ApiExplorerSettings(GroupName = "framework")]
+[Route("Framework/[controller]")]
 public class SettingsController(SettingService settingService) : BaseController
 {
-
     [HttpGet]
-    public QueryResult<List<SettingDto>> GetAll([FromQuery] List<string> keys)
+    public QueryResult<Dictionary<string, object>> GetAll([FromQuery] List<string> keys)
     {
         var settings = settingService.GetAll();
-        if(keys is { Count: > 0 }) settings = settings.Where(x => keys.Contains(x.Key)).ToList();
-        return settings.MapTo<Setting, SettingDto>().ToQueryResult();
+        if (keys is { Count: > 0 }) settings = settings.Where(x => keys.Contains(x.Key)).ToList();
+        var result = new Dictionary<string, object>();
+        foreach (var setting in settings)
+        {
+            result.Add(setting.Key.ToLower(), setting.GetValue<object>());
+        }
+
+        return result.ToQueryResult();
     }
-    
+
     [HttpGet("{key}")]
-    public QueryResult<SettingDto> Get(string key)
+    public QueryResult<object> Get(string key)
     {
-        return settingService.Get(key).MapTo<SettingDto>().ToQueryResult();
+        var setting = settingService.Get(key);
+        return (setting?.GetValue<object>()).ToQueryResult();
     }
-    
+
     [HttpPost, Auth("Setting")]
-    public async Task<CommandResult> SaveAllAsync([FromBody] Dictionary<string, dynamic> dict)
+    public async Task<CommandResult> SaveAsync([FromBody] Dictionary<string, dynamic> dict)
     {
         await settingService.SaveAllAsync(dict);
         return Succeed();

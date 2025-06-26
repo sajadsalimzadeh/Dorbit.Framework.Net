@@ -7,32 +7,45 @@ using Serilog;
 
 namespace Dorbit.Framework.Hosts;
 
-public abstract class BaseHost(IServiceProvider serviceProvider) : BackgroundService
+public abstract class BaseHost(IServiceProvider serviceProvider, bool isConcurrent = false) : BackgroundService
 {
+    protected bool IsConcurrent { get; } = isConcurrent;
     protected readonly ILogger Logger = serviceProvider.GetService<ILogger>();
     protected readonly IServiceProvider ServiceProvider = serviceProvider;
-    private static readonly CancellationTokenSource MainCancellationTokenSource = new();
 
     static BaseHost()
     {
         new Thread(() =>
         {
+            var mainCancellationTokenSource = new CancellationTokenSource();
+            App.MainCancellationToken = mainCancellationTokenSource.Token;
             while (App.MainThread.IsAlive) Thread.Sleep(1000);
-            MainCancellationTokenSource.Cancel();
+            mainCancellationTokenSource.Cancel();
         }).Start();
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        new Thread(Start).Start();
-        return Task.CompletedTask;
+        if (IsConcurrent)
+        {
+            new Thread(() =>
+            {
+                Start().Wait(stoppingToken);
+            }).Start();
+        }
+        else
+        {
+            await Start();
+        }
 
-        async void Start()
+        return;
+
+        async Task Start()
         {
             try
             {
                 using var scope = ServiceProvider.CreateScope();
-                await InvokeAsync(scope.ServiceProvider, MainCancellationTokenSource.Token);
+                await InvokeAsync(scope.ServiceProvider, stoppingToken);
             }
             catch (Exception ex)
             {

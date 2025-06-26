@@ -5,16 +5,27 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Hosts;
 
-public abstract class BaseHostInterval(IServiceProvider serviceProvider) : BaseHost(serviceProvider)
+public abstract class BaseHostInterval(IServiceProvider serviceProvider) : BaseHost(serviceProvider, true)
 {
     protected abstract TimeSpan Interval { get; }
     
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        new Thread(Start).Start();
-        return Task.CompletedTask;
+        if (IsConcurrent)
+        {
+            new Thread(() =>
+            {
+                Start().Wait(stoppingToken);
+            }).Start();
+        }
+        else
+        {
+            await Start();
+        }
 
-        async void Start()
+        return;
+
+        async Task Start()
         {
             using var timer = new PeriodicTimer(Interval);
             while (await timer.WaitForNextTickAsync(stoppingToken))

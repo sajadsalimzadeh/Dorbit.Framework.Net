@@ -77,7 +77,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
             }
             catch (Exception ex)
             {
-                logger.Error(ex.Message, ex);
+                logger.Error(ex, ex.Message);
             }
         }
 

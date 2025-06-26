@@ -1,12 +1,7 @@
-﻿using Dorbit.Framework.Contracts.Abstractions;
-
 namespace Dorbit.Framework.Contracts.Loggers;
 
-public class LogRequest
+public class LogFileRequest
 {
-    public string Module { get; set; }
-    public object OldObj { get; set; }
-    public object NewObj { get; set; }
-    public LogAction Action { get; set; }
-    public IUserDto User { get; set; }
+    public string Path { get; set; }
+    public object Content { get; set; }
 }

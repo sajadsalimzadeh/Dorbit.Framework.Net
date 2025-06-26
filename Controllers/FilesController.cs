@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 namespace Dorbit.Framework.Controllers;
 
 [ApiExplorerSettings(GroupName = "framework")]
+[Route("Framework/[controller]")]
 public class FilesController(IOptions<ConfigFile> options, IMemoryCache memoryCache) : BaseController
 {
     private readonly ConcurrentDictionary<string, object> _monitors = new();

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Database.Abstractions;
@@ -25,29 +26,29 @@ public class BaseReadRepository<TEntity, TKey>(IDbContext dbContext) : IReaderRe
         return dbContext.DbSet<TEntity, TKey>(excludeDeleted);
     }
 
-    public virtual Task<int> CountAsync()
+    public virtual Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
-        return Set().CountAsync();
+        return Set().CountAsync(cancellationToken: cancellationToken);
     }
 
-    public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
+    public virtual Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return Set().CountAsync(predicate);
+        return Set().CountAsync(predicate, cancellationToken: cancellationToken);
     }
 
-    public virtual Task<List<TEntity>> GetAllAsync()
+    public virtual Task<List<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return Set().ToListAsync();
+        return Set().ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public virtual Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate)
+    public virtual Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return Set().Where(predicate).ToListAsync();
+        return Set().Where(predicate).ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public virtual Task<TEntity> GetByIdAsync(TKey id)
+    public virtual Task<TEntity> GetByIdAsync(TKey id, CancellationToken cancellationToken = default)
     {
-        return Set().FirstOrDefaultAsync(x => x.Id.Equals(id));
+        return Set().FirstOrDefaultAsync(x => x.Id.Equals(id), cancellationToken: cancellationToken);
     }
     
     public virtual Task<TEntity> GetByIdAsyncWithCache(TKey id, TimeSpan timeToLive)
@@ -55,27 +56,27 @@ public class BaseReadRepository<TEntity, TKey>(IDbContext dbContext) : IReaderRe
         return Set().FirstOrDefaultAsyncWithCache(x => x.Id.Equals(id), $"{nameof(GetByIdAsyncWithCache)}-{typeof(TEntity).Name}-{id}", timeToLive);
     }
 
-    public Task<TEntity> FirstOrDefaultAsync()
+    public Task<TEntity> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        return Set().FirstOrDefaultAsync();
+        return Set().FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
 
-    public Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
+    public Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return Set().FirstOrDefaultAsync(predicate);
+        return Set().FirstOrDefaultAsync(predicate, cancellationToken: cancellationToken);
     }
 
-    public Task<TEntity> LastOrDefaultAsync()
+    public Task<TEntity> LastOrDefaultAsync(CancellationToken cancellationToken = default)
     {
-        return Set().OrderByDescending(x => x.Id).FirstOrDefaultAsync();
+        return Set().OrderByDescending(x => x.Id).FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
 
-    public Task<TEntity> LastOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
+    public Task<TEntity> LastOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return Set().OrderByDescending(x => x.Id).FirstOrDefaultAsync(predicate);
+        return Set().OrderByDescending(x => x.Id).FirstOrDefaultAsync(predicate, cancellationToken: cancellationToken);
     }
 
-    public virtual Task<PagedListResult<TEntity>> SelectAsync(QueryOptions queryOptions)
+    public virtual Task<PagedListResult<TEntity>> SelectAsync(QueryOptions queryOptions, CancellationToken cancellationToken = default)
     {
         return Set().ApplyToPagedListAsync(queryOptions);
     }

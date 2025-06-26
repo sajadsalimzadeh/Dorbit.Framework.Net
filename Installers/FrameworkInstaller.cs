@@ -29,7 +29,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using Serilog.Sinks.Async;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using IStartup = Dorbit.Framework.Services.Abstractions.IStartup;

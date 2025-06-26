@@ -32,14 +32,14 @@ public class Setting : Entity
 
     public void SetValue(object value)
     {
-        Value = JsonSerializer.Serialize(value);
+        Value = JsonSerializer.Serialize(value, JsonSerializerOptions.Web);
     }
 
-    public T GetValue<T>(T defaultValue)
+    public T GetValue<T>(T defaultValue = null) where T : class
     {
         try
         {
-            return JsonSerializer.Deserialize<T>(Value);
+            return JsonSerializer.Deserialize<T>(Value, JsonSerializerOptions.Web);
         }
         catch (Exception)
         {

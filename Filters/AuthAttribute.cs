@@ -2,14 +2,11 @@
 using System.Linq;
 using System.Reflection;
 using System.Security.Authentication;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Identities;
 using Dorbit.Framework.Controllers;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,12 +58,9 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
         {
             Access = access
         };
+
         var httpRequest = context.HttpContext.Request;
-
-        if (httpRequest.Headers.ContainsKey("Authorization")) identityRequest.AccessToken = httpRequest.Headers["Authorization"];
-        else if (httpRequest.Query.ContainsKey("ApiKey")) identityRequest.AccessToken = httpRequest.Query["ApiKey"];
-        else if (httpRequest.Cookies.ContainsKey("ApiKey")) identityRequest.AccessToken = httpRequest.Cookies["ApiKey"];
-
+        identityRequest.AccessToken = httpRequest.GetToken();
         if (identityRequest.AccessToken.IsNullOrEmpty())
             throw new AuthenticationException("Access token not set");
 

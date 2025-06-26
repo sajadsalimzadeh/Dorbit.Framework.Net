@@ -33,6 +33,3 @@ public abstract class BaseController : ControllerBase
         return new CommandResult(message);
     }
 }
-
-[Route("api/[controller]")]
-public class BaseApiController : BaseController;
