@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Dorbit.Framework.Contracts.Abstractions;
+using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Contracts.Identities;
 
