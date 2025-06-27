@@ -196,7 +196,7 @@ public class HttpHelper : IDisposable
             {
                 if (ResponseContentType == ContentType.Json)
                 {
-                    httpModelType.Result = JsonSerializer.Deserialize<T>(httpModelType.Content);
+                    httpModelType.Result = JsonSerializer.Deserialize<T>(httpModelType.Content, JsonSerializerOptions.Web);
                 }
                 else if (ResponseContentType == ContentType.Xml)
                 {
