@@ -60,6 +60,9 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
         {
             Access = _access
         };
+        identityRequest.IpV4 = context.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+        identityRequest.IpV6 = context.HttpContext.Connection.RemoteIpAddress?.MapToIPv6().ToString();
+        identityRequest.UserAgent = context.HttpContext.Request.Headers.FirstValueOrDefault("User-Agent");
         var httpRequest = context.HttpContext.Request;
 
         if (httpRequest.Headers.ContainsKey("Authorization")) identityRequest.AccessToken = httpRequest.Headers["Authorization"];
@@ -75,9 +78,6 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
 
         if (identityRequest.CsrfToken.IsNullOrEmpty())
             throw new AuthenticationException("Csrf token not set");
-
-        if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var userAgent))
-            identityRequest.UserAgent = userAgent;
 
         var serviceProvider = context.HttpContext.RequestServices;
         var identityService = serviceProvider.GetService<IIdentityService>();
