@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.Extensions.Hosting;
 
 namespace Dorbit.Framework.Utils;
@@ -18,6 +19,13 @@ public static class EnvironmentUtil
 
     public static bool IsDevelopment()
     {
+        if (InMemory()) return true;
         return string.Equals(GetEnvironment(), Environments.Development, StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    public static bool InMemory()
+    {
+        var args = Environment.GetCommandLineArgs();
+        return args.Contains("inmemory");
     }
 }

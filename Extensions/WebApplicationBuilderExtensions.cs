@@ -15,6 +15,7 @@ public static class WebApplicationBuilderExtensions
     public static IConfiguration BuildDorbit(this IConfigurationBuilder configurationBuilder)
     {
         var environment = EnvironmentUtil.GetEnvironment();
+        Console.WriteLine($"Environment: {environment}");
         configurationBuilder.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
         configurationBuilder.AddJsonFile("appsettings.json", true);
         configurationBuilder.AddJsonFile($"appsettings.{environment}.json", true);

@@ -246,6 +246,7 @@ public static class FrameworkInstaller
 
     public static async Task RunDorbitAsync(this WebApplication app, string[] args)
     {
+        App.InMemory = args.Contains("inmemory");
         app.MapControllers();
         
         if (app.Environment.IsDevelopment())
