@@ -28,44 +28,44 @@
 <!--        <PackageReference Include="FluentValidation" Version="11.10.0" />-->
 <!--        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.10.0" />-->
 <!--        <PackageReference Include="Innofactor.EfCoreJsonValueConverter" Version="6.0.0" />-->
-        <PackageReference Include="Google.Protobuf" Version="3.31.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.31.1" />
         <PackageReference Include="ConsoleMenu-simple" Version="2.7.0" />
         <PackageReference Include="kavenegar" Version="1.2.5" />
         <PackageReference Include="LettuceEncrypt" Version="1.3.3" />
         <PackageReference Include="Melipayamak.RestClient" Version="1.0.0" />
         <PackageReference Include="Fare" Version="2.2.1" />
         <PackageReference Include="GoogleReCaptcha.V3" Version="1.3.1" />
-        <PackageReference Include="MailKit" Version="4.12.1" />
-        <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.3.1" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.5" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.5" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.5" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
-        <PackageReference Include="MimeKit" Version="4.12.0" />
+        <PackageReference Include="MailKit" Version="4.13.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.3.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.6" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.6" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
+        <PackageReference Include="MimeKit" Version="4.13.0" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
         <PackageReference Include="NRedisStack" Version="1.0.0" />
         <PackageReference Include="prometheus-net" Version="8.2.1" />
         <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
         <PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="8.2.1" />
         <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-        <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.1.2" />
+        <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.2.0" />
         <PackageReference Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
         <PackageReference Include="Serilog.Settings.AppSettings" Version="3.0.0" />
         <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
         <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="5.0.0" />
         <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.6" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="8.1.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="8.1.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="8.1.1" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.10.0" />
-        <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.4" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.1" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.1" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
+        <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.6" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
         <PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="9.0.1" />
         <PackageReference Include="System.ServiceModel.Duplex" Version="6.0.0" />

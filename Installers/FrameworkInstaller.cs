@@ -46,6 +46,9 @@ public static class FrameworkInstaller
         _configs.SwaggerConfigs.Insert(0, new ConfigSwaggerDoc("all", "All"));
         _configs.SwaggerConfigs.Add(new ConfigSwaggerDoc("framework", "Framework"));
 
+        var wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");
+        if (!Directory.Exists(wwwrootPath)) Directory.CreateDirectory(wwwrootPath);
+
         Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
         App.MainThread = Thread.CurrentThread;
 
