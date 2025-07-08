@@ -50,7 +50,7 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
     }
 
     [HttpGet("{id}"), Auth("{type0}-View")]
-    public virtual Task<QueryResult<TGet>> GetById(TKey id)
+    public virtual Task<QueryResult<TGet>> GetByIdAsync(TKey id)
     {
         return Repository.GetByIdAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }

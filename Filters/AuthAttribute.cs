@@ -60,14 +60,10 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
         };
 
         var httpRequest = context.HttpContext.Request;
-        identityRequest.AccessToken = httpRequest.GetToken();
+        identityRequest.AccessToken = httpRequest.GetAccessToken();
         if (identityRequest.AccessToken.IsNullOrEmpty())
             throw new AuthenticationException("Access token not set");
-
-        identityRequest.AccessToken = identityRequest.AccessToken!.Replace("Bearer ", "");
-
-        if (httpRequest.Cookies.ContainsKey("CsrfToken")) identityRequest.CsrfToken = httpRequest.Cookies["CsrfToken"];
-
+        identityRequest.CsrfToken = httpRequest.GetCsrfToken();
         if (identityRequest.CsrfToken.IsNullOrEmpty())
             throw new AuthenticationException("Csrf token not set");
 
@@ -76,7 +72,8 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
 
         var serviceProvider = context.HttpContext.RequestServices;
         var identityService = serviceProvider.GetService<IIdentityService>();
-        if (await identityService.ValidateAsync(identityRequest))
+        var identity = await identityService.ValidateAsync(identityRequest);
+        if (identity is not null)
         {
             await next.Invoke();
         }

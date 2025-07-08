@@ -5,28 +5,46 @@ namespace Dorbit.Framework.Extensions;
 
 public static class HttpExtensions
 {
-    public static string GetToken(this HttpRequest request)
+    private static string GetByNames(this HttpRequest request, string[] names)
     {
-        var token = string.Empty;
-        var keyNames = new[]
+        
+        var value = string.Empty;
+        foreach (var key in names)
         {
+            if (request.Query.Keys.Contains(key)) value = request.Query[key];
+            else if (request.Query.Keys.Contains(key.ToLower())) value = request.Query[key.ToLower()];
+            else if (request.Headers.Keys.Contains(key)) value = request.Headers[key].FirstOrDefault();
+            else if (request.Headers.Keys.Contains(key.ToLower())) value = request.Headers[key.ToLower()].FirstOrDefault();
+            else if (request.Cookies.Keys.Contains(key)) value = request.Cookies[key];
+            else if (request.Cookies.Keys.Contains(key.ToLower())) value = request.Cookies[key.ToLower()];
+            if (!string.IsNullOrEmpty(value)) break;
+        }
+
+        return value;
+    }
+    
+    public static string GetAccessToken(this HttpRequest request)
+    {
+        var token = request.GetByNames([
             "access_token",
             "ApiKey",
             "Authorization",
-        };
-        foreach (var key in keyNames)
-        {
-            if (request.Query.Keys.Contains(key)) token = request.Query[key];
-            else if (request.Query.Keys.Contains(key.ToLower())) token = request.Query[key.ToLower()];
-            else if (request.Headers.Keys.Contains(key)) token = request.Headers[key].FirstOrDefault();
-            else if (request.Headers.Keys.Contains(key.ToLower())) token = request.Headers[key.ToLower()].FirstOrDefault();
-            else if (request.Cookies.Keys.Contains(key)) token = request.Cookies[key];
-            else if (request.Cookies.Keys.Contains(key.ToLower())) token = request.Cookies[key.ToLower()];
-            if (!string.IsNullOrEmpty(token)) break;
-        }
-
+        ]);
         if (token is not null) token = token.Replace("Bearer", "").Trim();
-
         return token;
+    }
+
+    public static string GetCsrfToken(this HttpRequest request)
+    {
+        return request.GetByNames([
+            "csrf_token",
+            "Csrf-Token",
+            "CsrfToken",
+        ]);
+    }
+
+    public static string GetUserAgent(this HttpRequest request)
+    {
+        return request.Headers.ContainsKey("User-Agent") ? request.Headers["User-Agent"] : string.Empty;
     }
 }
