@@ -14,22 +14,20 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
+public class AuthAttribute : Attribute, IAsyncActionFilter
 {
+    private string _access;
+
+    public AuthAttribute(string access = null)
+    {
+        _access = access;
+    }
+
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
+        var access = _access;
         if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor)
             throw new Exception("Context is not type of ControllerActionDescriptor");
-
-        var controllerAuthAttributes = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<AuthAttribute>();
-        var methodAttributes = actionDescriptor.MethodInfo.GetCustomAttributes<AuthAttribute>();
-        var methodHasAuthAttribute = controllerAuthAttributes.Any(x => Equals(x, this)) && methodAttributes.Any();
-        var hasIgnoreAuthIgnoreAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null;
-        if (methodHasAuthAttribute || hasIgnoreAuthIgnoreAttribute)
-        {
-            await next.Invoke();
-            return;
-        }
 
         if (access.IsNotNullOrEmpty())
         {
@@ -52,6 +50,15 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
                 preType = type;
                 type = type.BaseType;
             }
+        }
+
+        var controllerAuthAttributes = actionDescriptor.ControllerTypeInfo.GetCustomAttributes<AuthAttribute>();
+        var methodAttributes = actionDescriptor.MethodInfo.GetCustomAttributes<AuthAttribute>();
+        var methodHasAuthAttribute = controllerAuthAttributes.Any(x => Equals(x, this)) && methodAttributes.Any();
+        var hasIgnoreAuthIgnoreAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null;
+        if (methodHasAuthAttribute || hasIgnoreAuthIgnoreAttribute)
+        {
+            access = string.Empty;
         }
 
         var identityRequest = new IdentityValidateRequest()
