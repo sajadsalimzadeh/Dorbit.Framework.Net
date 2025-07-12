@@ -37,7 +37,7 @@ public class ExceptionMiddleware : IMiddleware
 
             logger?.Error(ex, ex.Message);
             var identityService = context.RequestServices.GetService<IIdentityService>();
-            if (identityService.Identity is not null && identityService.Identity.HasAccess("Developer"))
+            if (identityService?.Identity is not null && identityService.Identity.HasAccess("Developer"))
             {
                 op.Data = ex.Data;
                 op.StackTrace = ex.StackTrace;
@@ -51,13 +51,13 @@ public class ExceptionMiddleware : IMiddleware
                 case UnauthorizedAccessException unauthorizedAccessException:
                     op.Code = StatusCodes.Status403Forbidden;
                     op.Message = unauthorizedAccessException.Message.IsNullOrEmpty()
-                        ? Errors.UnAuthorize.ToString()
+                        ? FrameworkErrors.UnAuthorize.ToString()
                         : unauthorizedAccessException.Message;
                     break;
                 case AuthenticationException authenticationException:
                     op.Code = StatusCodes.Status401Unauthorized;
                     op.Message = authenticationException.Message.IsNullOrEmpty()
-                        ? Errors.AuthenticationFailed.ToString()
+                        ? FrameworkErrors.AuthenticationFailed.ToString()
                         : authenticationException.Message;
                     break;
                 case OperationException operationException:
@@ -79,7 +79,7 @@ public class ExceptionMiddleware : IMiddleware
                     break;
                 default:
                     op.Code = (int)HttpStatusCode.InternalServerError;
-                    op.Message ??= Errors.ServerError.ToString();
+                    op.Message ??= FrameworkErrors.ServerError.ToString();
                     break;
             }
 

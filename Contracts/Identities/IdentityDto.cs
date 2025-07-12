@@ -7,11 +7,12 @@ namespace Dorbit.Framework.Contracts.Identities;
 public class IdentityDto
 {
     public IUserDto User { get; set; }
-    public bool IsAdmin { get; set; }
-    public HashSet<string> Accessibility { get; set; }
+    public bool IsFullAccess { get; set; }
+    public List<string> Accessibility { get; set; }
+    public HashSet<string> DeepAccessibility { get; set; }
 
     public bool HasAccess(string access)
     {
-        return IsAdmin || Accessibility.Contains(access);
+        return IsFullAccess || DeepAccessibility.Contains(access);
     }
 }

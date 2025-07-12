@@ -18,6 +18,7 @@ public interface IWriterRepository<TEntity, TKey> : IReaderRepository<TEntity, T
     Task<TEntity> InsertAsync<TR>(TR dto, CancellationToken cancellationToken = default);
     Task<TEntity> UpdateAsync<TR>(TKey id, TR dto, CancellationToken cancellationToken = default);
     Task<TEntity> PatchAsync(TKey key, object patch, CancellationToken cancellationToken = default);
+    Task<TEntity> PatchAsync(TEntity entity, object patch);
     Task<TEntity> DeleteAsync(TKey id, CancellationToken cancellationToken = default);
 }
 

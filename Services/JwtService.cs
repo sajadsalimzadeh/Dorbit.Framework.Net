@@ -5,11 +5,12 @@ using System.Security.Claims;
 using System.Text;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Jwts;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Dorbit.Framework.Services;
 
-[ServiceRegister]
+[ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
 public class JwtService()
 {
 
@@ -43,7 +44,7 @@ public class JwtService()
         return TryValidateToken(token, secret, out _, out _);
     }
 
-    public bool TryValidateToken(string token, string secret, out SecurityToken securityToken, out ClaimsPrincipal claimsPrincipal)
+    public bool TryValidateToken(string token, string secret, out SecurityToken securityToken, out ClaimsPrincipal principals)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         try
@@ -56,7 +57,7 @@ public class JwtService()
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret)),
             };
-            claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out securityToken);
+            principals = tokenHandler.ValidateToken(token, validationParameters, out securityToken);
             return securityToken.ValidTo > DateTime.UtcNow;
         }
         catch
@@ -64,7 +65,7 @@ public class JwtService()
             // ignored
         }
 
-        claimsPrincipal = null;
+        principals = null;
         securityToken = null;
         return false;
     }

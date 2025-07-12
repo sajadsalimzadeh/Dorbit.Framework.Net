@@ -137,6 +137,7 @@ public static class FrameworkInstaller
         services.AddControllersWithViews()
             .AddJsonOptions(options =>
             {
+                options.JsonSerializerOptions.WriteIndented = false;
                 options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             });
@@ -149,6 +150,7 @@ public static class FrameworkInstaller
         var frameworkDbContextConfiguration = configs.DbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
         services.AddDbContext<FrameworkDbContext>(frameworkDbContextConfiguration);
 
+        configs.ConfigProject?.Configure(services);
         configs.ConfigFile?.Configure(services);
         configs.ConfigMessageProviders?.Configure(services);
         configs.ConfigLogRequest?.Configure(services);
@@ -284,6 +286,7 @@ public static class FrameworkInstaller
         public required List<string> DependencyRegisterNamespaces { get; init; }
         public List<string> AllowedOrigins { get; set; } = configuration.GetSection("AllowedOrigins").Get<List<string>>();
 
+        public IConfig<ConfigProject> ConfigProject { get; init; } = configuration.GetConfig<ConfigProject>("Project");
         public IConfig<ConfigFile> ConfigFile { get; init; } = configuration.GetConfig<ConfigFile>("File");
         public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; } = configuration.GetConfig<ConfigMessageProviders>("MessageProviders");
         public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; } = configuration.GetConfig<ConfigFrameworkSecurity>("Security");

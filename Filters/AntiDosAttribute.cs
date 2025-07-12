@@ -46,6 +46,6 @@ public class AntiDosAttribute(AntiDosAttribute.DurationType type, int count) : A
         var requests = AllUserRequests.GetOrAdd(key, []);
         requests.Add(new RequestModel { Time = now });
         requests.RemoveAll(x => x.Time.Add(_time) < now);
-        if (requests.Count > Count) throw new OperationException(Errors.TooMuchRequest);
+        if (requests.Count > Count) throw new OperationException(FrameworkErrors.TooMuchRequest);
     }
 }

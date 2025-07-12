@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Serialization;
 using Dorbit.Framework.Contracts.Results;
+using Dorbit.Framework.Utils.Json;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Dorbit.Framework.Utils.Http;
@@ -196,7 +197,7 @@ public class HttpHelper : IDisposable
             {
                 if (ResponseContentType == ContentType.Json)
                 {
-                    httpModelType.Result = JsonSerializer.Deserialize<T>(httpModelType.Content, JsonSerializerOptions.Web);
+                    httpModelType.Result = JsonUtil.DeserializeCamelCase<T>(httpModelType.Content, JsonSerializerOptions.Web);
                 }
                 else if (ResponseContentType == ContentType.Xml)
                 {

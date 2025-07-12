@@ -12,7 +12,7 @@ namespace Dorbit.Framework.Controllers;
 [Route("Framework/[controller]")]
 public class CaptchasController(CaptchaService captchaService) : BaseController
 {
-    [HttpGet, Delay(Request = 300)]
+    [HttpGet, AntiDos(AntiDosAttribute.DurationType.Minute, 30)]
     public QueryResult<KeyValuePair<string, string>> Generate([FromQuery] CaptchaRequest request)
     {
         var dto = new CaptchaGenerateModel

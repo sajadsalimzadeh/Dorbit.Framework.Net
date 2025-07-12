@@ -1,11 +1,29 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+﻿using System;
+using System.Threading.Tasks;
+using Dorbit.Framework.Exceptions;
+using Dorbit.Framework.Services;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Filters;
 
-public class CaptchaAttribute : ActionFilterAttribute
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+public class CaptchaAttribute : Attribute, IAsyncActionFilter
 {
-    public override void OnActionExecuting(ActionExecutingContext context)
+
+    public Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
+        var captchaService = context.HttpContext.RequestServices.GetService<CaptchaService>();
+        if (!context.HttpContext.Request.Headers.TryGetValue("Captcha", out var captcha))
+            throw new OperationException(FrameworkErrors.CaptchaNotSet);
+
+        var captchaKeyValue = captcha.ToString().Split(' ');
+        if (captchaKeyValue.Length != 2)
+            throw new OperationException(FrameworkErrors.CaptchaNotCorrect);
+
+        if(!captchaService.Validate(captchaKeyValue[0], captchaKeyValue[1])) 
+            throw new OperationException(FrameworkErrors.CaptchaNotCorrect);
         
+        return next();
     }
 }

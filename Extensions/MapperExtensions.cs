@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Dorbit.Framework.Extensions;
@@ -43,15 +43,19 @@ public static class MapperExtensions
             var doc = JsonDocument.Parse(json);
             jsonElement = doc.RootElement;
         }
-
-        var patchObject = JsonConvert.DeserializeObject<T>(jsonElement.GetRawText());
-        var patchProperties = (pathType ?? typeof(T)).GetProperties();
+        
+        var options = new JsonSerializerOptions
+        {
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+            PropertyNameCaseInsensitive = true
+        };
+        var patchObject = JsonSerializer.Deserialize<T>(jsonElement.GetRawText(), options);
         var properties = typeof(T).GetProperties();
-        foreach (var jsonProperty in jsonElement.EnumerateObject())
+        var jsonProperties = jsonElement.EnumerateObject();
+        foreach (var jsonProperty in jsonProperties)
         {
             var property = properties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.CurrentCultureIgnoreCase));
             if (property is null) continue;
-            if (patchProperties.All(x => x.Name != property.Name)) continue;
             var pathValue = property.GetValue(patchObject);
             property.SetValue(model, pathValue);
         }

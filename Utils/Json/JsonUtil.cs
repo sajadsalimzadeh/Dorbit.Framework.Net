@@ -14,4 +14,13 @@ public static class JsonUtil
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         });
     }
+    
+    public static T DeserializeCamelCase<T>(string json)
+    {
+        return JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions()
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+    }
 }

@@ -209,7 +209,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public async Task<TEntity> UpdateEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
     {
-        if (entity is IReadonly) throw new OperationException(Errors.EntityIsReadonly);
+        if (entity is IReadonly) throw new OperationException(FrameworkErrors.EntityIsReadonly);
 
         entity.ValidateModification<TEntity, TKey>();
         entity.IncludeVersionAudit<TEntity, TKey>();
@@ -272,7 +272,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public async Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
     {
-        if (entity is IUnDeletable) throw new OperationException(Errors.EntityIsUnDeletable);
+        if (entity is IUnDeletable) throw new OperationException(FrameworkErrors.EntityIsUnDeletable);
 
         entity.ValidateDeletion<TEntity, TKey>();
 

@@ -29,7 +29,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor)
             throw new Exception("Context is not type of ControllerActionDescriptor");
 
-        if (access.IsNotNullOrEmpty())
+        if (_access.IsNotNullOrEmpty())
         {
             var type = actionDescriptor.ControllerTypeInfo as Type;
             var preType = type;
@@ -40,7 +40,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
                     var index = 0;
                     foreach (var genericType in preType.GenericTypeArguments)
                     {
-                        access = access.Replace("{type" + index + "}", genericType.Name);
+                        _access = _access.Replace("{type" + index + "}", genericType.Name);
                         index++;
                     }
 
@@ -63,9 +63,12 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
 
         var identityRequest = new IdentityValidateRequest()
         {
-            Access = access
+            Access = _access
         };
 
+        identityRequest.IpV4 = context.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+        identityRequest.IpV6 = context.HttpContext.Connection.RemoteIpAddress?.MapToIPv6().ToString();
+        identityRequest.UserAgent = context.HttpContext.Request.Headers.FirstValueOrDefault("User-Agent");
         var httpRequest = context.HttpContext.Request;
         identityRequest.AccessToken = httpRequest.GetAccessToken();
         if (identityRequest.AccessToken.IsNullOrEmpty())
@@ -73,9 +76,6 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         identityRequest.CsrfToken = httpRequest.GetCsrfToken();
         if (identityRequest.CsrfToken.IsNullOrEmpty())
             throw new AuthenticationException("Csrf token not set");
-
-        if (context.HttpContext.Request.Headers.TryGetValue("User-Agent", out var userAgent))
-            identityRequest.UserAgent = userAgent;
 
         var serviceProvider = context.HttpContext.RequestServices;
         var identityService = serviceProvider.GetService<IIdentityService>();
