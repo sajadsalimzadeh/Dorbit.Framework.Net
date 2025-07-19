@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Dorbit.Framework.Extensions;
 
 public static class StringExtensions
 {
     private static readonly char[] HexChars = ['A', 'B', 'C', 'D', 'E', 'F'];
+    private static readonly Regex FloatRegex = new Regex("^([0-9]+|[0-9]\\.[0-9]+)$");
+    private static readonly Regex HexRegex = new Regex("^(0x|)[0-9a-fA-F]+$");
 
     public static string ToCamelCase(this string str)
     {
@@ -57,6 +60,17 @@ public static class StringExtensions
         {
             return 0;
         }
+    }
+
+    public static float ToFloat(this string input, bool hex = false)
+    {
+        if (HexRegex.IsMatch(input) || hex)
+        {
+            return (int)new System.ComponentModel.Int32Converter().ConvertFromString(input)!;
+        }
+
+        if (float.TryParse(input, out var value)) return value;
+        return 0;
     }
 
     public static string ToStringBy(this string format, params object[] args)

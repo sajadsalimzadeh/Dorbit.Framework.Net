@@ -32,7 +32,7 @@ public class Job
             Type = type;
             if (userDto is not null)
             {
-                UserId = userDto.GetId()?.ToString();
+                UserId = userDto.GetId().ToString();
                 UserName = userDto.GetUsername();
             }
         }
