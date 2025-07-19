@@ -61,7 +61,7 @@ internal class EntityLoggerHost(IServiceProvider serviceProvider, LoggerService 
                     }),
                     Action = request.Action,
                     CreationTime = DateTime.UtcNow,
-                    CreatorId = request.User?.GetId()?.ToString(),
+                    CreatorId = request.User?.GetId().ToString(),
                     CreatorName = request.User?.GetUsername(),
                 };
                 logs.Add(entity);

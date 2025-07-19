@@ -1,8 +1,12 @@
-﻿namespace Dorbit.Framework.Contracts.Abstractions;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Dorbit.Framework.Contracts.Abstractions;
 
 public interface IUserDto
 {
-    object GetId();
+    Guid GetId();
     string GetUsername();
     bool IsActive();
+    List<string> GetFirebaseTokens();
 }

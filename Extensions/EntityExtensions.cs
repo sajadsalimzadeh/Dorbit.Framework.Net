@@ -25,7 +25,7 @@ public static class EntityExtensions
     public static TEntity IncludeCreationAudit<TEntity>(this TEntity entity, IUserDto user) where TEntity : ICreationAudit
     {
         entity.IncludeCreationTime();
-        entity.CreatorId = user?.GetId()?.ToString();
+        entity.CreatorId = user?.GetId().ToString();
         entity.CreatorName = user?.GetUsername();
         return entity;
     }
@@ -39,7 +39,7 @@ public static class EntityExtensions
     public static TEntity IncludeModificationAudit<TEntity>(this TEntity entity, IUserDto user) where TEntity : IModificationAudit
     {
         entity.IncludeModificationTime();
-        entity.ModifierId = user?.GetId()?.ToString();
+        entity.ModifierId = user?.GetId().ToString();
         entity.ModifierName = user?.GetUsername();
         return entity;
     }
@@ -53,7 +53,7 @@ public static class EntityExtensions
     public static TEntity IncludeDeletionAudit<TEntity>(this TEntity entity, IUserDto user) where TEntity : IDeletionAudit
     {
         entity.IncludeDeletionTime();
-        entity.DeleterId = user?.GetId()?.ToString();
+        entity.DeleterId = user?.GetId().ToString();
         entity.DeleterName = user?.GetUsername();
         return entity;
     }
