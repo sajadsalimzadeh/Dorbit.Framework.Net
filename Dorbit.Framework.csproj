@@ -28,7 +28,6 @@
 <!--        <PackageReference Include="FluentValidation" Version="11.10.0" />-->
 <!--        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.10.0" />-->
 <!--        <PackageReference Include="Innofactor.EfCoreJsonValueConverter" Version="6.0.0" />-->
-        <PackageReference Include="FirebaseAdmin" Version="3.3.0" />
         <PackageReference Include="Google.Protobuf" Version="3.31.1" />
         <PackageReference Include="ConsoleMenu-simple" Version="2.7.0" />
         <PackageReference Include="kavenegar" Version="1.2.5" />

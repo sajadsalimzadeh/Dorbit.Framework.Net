@@ -17,8 +17,6 @@ using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Middlewares;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Services.AppSecurities;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -56,15 +54,6 @@ public static class FrameworkInstaller
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
-
-        configs.FirebaseFilePath ??= Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "firebase.json");
-        if (File.Exists(configs.FirebaseFilePath))
-        {
-            FirebaseApp.Create(new AppOptions()
-            {
-                Credential = GoogleCredential.FromFile(configs.FirebaseFilePath),
-            });
-        }
 
         var appSettingPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.custom.json");
 
@@ -305,8 +294,6 @@ public static class FrameworkInstaller
         public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
 
         public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
-
-        public string FirebaseFilePath { get; set; }
     }
 
     public class ConfigSwaggerDoc(string name, string title, string prefixNamespace = null)
