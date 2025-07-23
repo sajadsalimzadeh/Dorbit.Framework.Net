@@ -16,7 +16,7 @@ namespace Dorbit.Framework.Filters;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthAttribute : Attribute, IAsyncActionFilter
 {
-    private string _access;
+    private readonly string _access;
 
     public AuthAttribute(string access = null)
     {
@@ -80,9 +80,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         var serviceProvider = context.HttpContext.RequestServices;
         var identityService = serviceProvider.GetService<IIdentityService>();
         var identity = await identityService.ValidateAsync(identityRequest);
-        if (identity is not null)
-        {
-            await next.Invoke();
-        }
+        if (identity is null) throw new AuthenticationException();
+        await next.Invoke();
     }
 }
