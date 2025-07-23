@@ -5,7 +5,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Abstractions;
+using Dorbit.Framework.Contracts.Entities;
 using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Exceptions;
 
@@ -14,6 +16,22 @@ namespace Dorbit.Framework.Extensions;
 public static class EntityExtensions
 {
     private static readonly ConcurrentDictionary<Type, List<PropertyInfo>> AllReadonlyProperties = new();
+
+    public static TEntity IncludeAudit<TEntity>(this TEntity entity, LogAction action, IUserDto user) where TEntity : IAuditHistory
+    {
+        if (user is not null)
+        {
+            entity.Audits ??= [];
+            entity.Audits.Add(new Audit()
+            {
+                UserId = user.GetId(),
+                Action = action,
+                Time = DateTime.UtcNow,
+            });
+        }
+
+        return entity;
+    }
 
     public static TEntity IncludeCreationTime<TEntity>(this TEntity entity) where TEntity : ICreationTime
     {

@@ -191,13 +191,14 @@ public abstract class EfDbContext : DbContext, IDbContext
         entity.GenerateHistoricalId<TEntity, TKey>();
 
         entity.IncludeCreationAudit<TEntity, TKey>(UserResolver?.User);
+        if (entity is IAuditHistory auditHistory) auditHistory.IncludeAudit(LogAction.Insert, UserResolver?.User);
         if (entity is ITenantAudit tenantAudit) tenantAudit.IncludeTenantAudit(TenantResolver?.Tenant);
         if (entity is IServerAudit serverAudit) serverAudit.IncludeServerAudit(ServerResolver?.Server);
         if (entity is ISoftwareAudit softwareAudit) softwareAudit.IncludeSoftwareAudit(SoftwareResolver?.Software);
         if (entity is IChangeLog changeLog) changeLog.IncludeChangeLogs();
 
         await AddAsync(entity, cancellationToken);
-        await SaveIfNotInTransactionAsync();
+        await SaveIfNotInTransactionAsync(cancellationToken);
         if (entity is ICreationLogging logging) Log(logging, LogAction.Insert);
         return entity;
     }
@@ -251,6 +252,7 @@ public abstract class EfDbContext : DbContext, IDbContext
             }
         }
 
+        if (entity is IAuditHistory auditHistory) auditHistory.IncludeAudit(LogAction.Update, UserResolver?.User);
         if (entity is IChangeLog changeLog)
         {
             oldEntity ??= DbSet<TEntity, TKey>().GetById(entity.Id);
@@ -260,7 +262,7 @@ public abstract class EfDbContext : DbContext, IDbContext
             }
         }
 
-        await SaveIfNotInTransactionAsync();
+        await SaveIfNotInTransactionAsync(cancellationToken);
         if (entity is ILogging) Log(entity, LogAction.Update, oldEntity);
         return entity;
     }
@@ -288,6 +290,8 @@ public abstract class EfDbContext : DbContext, IDbContext
             {
                 Entry(softDelete).State = EntityState.Detached;
             }
+            
+            if (entity is IAuditHistory auditHistory) auditHistory.IncludeAudit(LogAction.Delete, UserResolver?.User);
         }
         else
         {

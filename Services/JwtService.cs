@@ -21,19 +21,12 @@ public class JwtService()
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
-            Claims = new Dictionary<string, object>(),
+            Subject  = request.Claims,
             Issuer = request.Issuer,
             Audience = request.Audience,
             Expires = request.ExpireAt,
             SigningCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature)
         };
-        if (request.Claims is not null)
-        {
-            foreach (var claim in request.Claims)
-            {
-                tokenDescriptor.Claims.Add(claim.Key, claim.Value);
-            }
-        }
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);

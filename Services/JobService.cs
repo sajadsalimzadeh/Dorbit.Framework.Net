@@ -6,11 +6,12 @@ using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Jobs;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
-public class JobService(IMemoryCache memoryCache, IUserResolver userResolver)
+public class JobService(IMemoryCache memoryCache, IServiceProvider serviceProvider)
 {
     public Task<List<Job>> GetAllAsync()
     {
@@ -32,7 +33,12 @@ public class JobService(IMemoryCache memoryCache, IUserResolver userResolver)
         {
             Name = request.Name
         };
-        job.AuditLogs.Add(new Job.AuditLog(Job.AuditLogType.Create, userResolver.User));
+        var userResolver = serviceProvider.GetService<IUserResolver>();
+        if (userResolver is not null)
+        {
+            job.AuditLogs.Add(new Job.AuditLog(Job.AuditLogType.Create, userResolver.User));
+        }
+
         jobs.Add(job);
         return job;
     }

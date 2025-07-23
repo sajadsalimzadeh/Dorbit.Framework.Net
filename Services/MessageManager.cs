@@ -67,7 +67,8 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
             {
                 if (!string.IsNullOrEmpty(request.TemplateType))
                 {
-                    request.TemplateId = configuration.Templates[request.TemplateType];
+                    if (!configuration.Templates.TryGetValue(request.TemplateType, out var template)) continue;
+                    request.TemplateId = template;
                 }
 
                 var provider = GetProvider(providers, configuration);
@@ -87,7 +88,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
     public async Task CheckSmsProviderCredit()
     {
         if (_configs?.Sms is null) return;
-        
+
         var providers = serviceProvider.GetServices<IMessageProviderSms>().ToList();
         foreach (var configuration in _configs.Sms)
         {
@@ -114,6 +115,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
                             To = number
                         });
                     }
+
                     RemainCreditNotifies.Add(key);
 
                     return;

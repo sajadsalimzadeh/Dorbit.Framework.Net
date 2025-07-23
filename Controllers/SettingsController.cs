@@ -34,8 +34,8 @@ public class SettingsController(SettingService settingService) : BaseController
     [HttpGet("{key}")]
     public QueryResult<object> Get(string key)
     {
-        var setting = settingService.Get(key);
-        return (setting?.GetValue<object>()).ToQueryResult();
+        var value = settingService.Get<object>(key);
+        return value.ToQueryResult();
     }
 
     [HttpPost, Auth("Setting")]

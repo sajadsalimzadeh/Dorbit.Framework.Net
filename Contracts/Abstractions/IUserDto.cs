@@ -8,5 +8,4 @@ public interface IUserDto
     Guid GetId();
     string GetUsername();
     bool IsActive();
-    List<string> GetFirebaseTokens();
 }

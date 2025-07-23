@@ -35,7 +35,7 @@ public class Setting : Entity
         Value = JsonSerializer.Serialize(value, JsonSerializerOptions.Web);
     }
 
-    public T GetValue<T>(T defaultValue = null) where T : class
+    public T GetValue<T>(T defaultValue = default)
     {
         try
         {

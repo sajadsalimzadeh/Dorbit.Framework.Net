@@ -207,7 +207,7 @@ public static class StringExtensions
         return str;
     }
 
-    public static string CombineUrl(this string str, params string[] urls)
+    public static string AppendUrl(this string str, params string[] urls)
     {
         foreach (var url in urls)
         {

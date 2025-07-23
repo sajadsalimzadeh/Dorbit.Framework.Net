@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Messages;
 using Dorbit.Framework.Contracts.Results;
+using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using Kavenegar;
@@ -32,8 +33,10 @@ public class KavenegarProvider : IMessageProviderSms
     public void Configure(ConfigMessageSmsProvider configuration)
     {
         _sender = configuration.Sender;
+        if (configuration.ApiKey is null)
+            throw new OperationException(FrameworkErrors.KavenegarNeedApiKeyAsProtectedPropertyInSetting);
         _apKey = configuration.ApiKey.GetDecryptedValue();
-        _api = new Kavenegar.KavenegarApi(_apKey);
+        _api = new KavenegarApi(_apKey);
     }
 
     public Task<QueryResult<string>> SendAsync(MessageSmsRequest request)

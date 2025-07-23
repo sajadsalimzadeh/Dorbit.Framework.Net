@@ -26,32 +26,31 @@ public class SettingService(SettingRepository settingRepository)
         }
     }
 
-    public Setting Get(string key)
-    {
-        Load();
-        return Settings.GetValueOrDefault(key);
-    }
-
     public T Get<T>(T defaultValue = null) where T : class, ISettingDto
     {
-        var key = Activator.CreateInstance<T>().GetKey();
-        var setting = Get(key);
-        if (setting is null && defaultValue != null)
+        var instance = Activator.CreateInstance<T>();
+        return Get(instance.GetKey(), defaultValue ?? instance);
+    }
+    
+    public T Get<T>(string key, T defaultValue = default)
+    {
+        Load();
+        var setting = Settings.GetValueOrDefault(key);
+        if (setting is not null) return setting.GetValue(defaultValue);
+        
+        setting = new Setting(key, defaultValue);
+        try
         {
-            setting = new Setting(key, defaultValue);
-            try
-            {
-                settingRepository.InsertAsync(setting).Wait();
-            }
-            catch
-            {
-                // ignored
-            }
-
-            Settings[setting.Key] = setting;
+            settingRepository.InsertAsync(setting).Wait();
+        }
+        catch
+        {
+            // ignored
         }
 
-        return setting?.GetValue(defaultValue);
+        Settings[setting.Key] = setting;
+
+        return setting.GetValue(defaultValue);
     }
 
     public List<Setting> GetAll()

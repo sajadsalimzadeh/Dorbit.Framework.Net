@@ -102,10 +102,10 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
     public async Task<TEntity> PatchAsync(TKey key, object patch, CancellationToken cancellationToken = default)
     {
         var entity = await GetByIdAsync(key, cancellationToken);
-        return await PatchAsync(entity, patch);
+        return await PatchAsync(entity, patch, cancellationToken);
     }
 
-    public async Task<TEntity> PatchAsync(TEntity entity, object patch)
+    public async Task<TEntity> PatchAsync(TEntity entity, object patch, CancellationToken cancellationToken = default)
     {
         entity = entity.PatchObject(patch);
         return await UpdateAsync(entity, cancellationToken);

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Messages;
 using Dorbit.Framework.Contracts.Results;
+using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Http;
@@ -27,6 +28,8 @@ public class MeliPayamakProvider : IMessageProviderSms
     public void Configure(ConfigMessageSmsProvider configuration)
     {
         _username = configuration.Username;
+        if (configuration.Password is null)
+            throw new OperationException(FrameworkErrors.MeliPayamakNeedPasswordAsProtectedPropertyInSetting);
         _password = configuration.Password.GetDecryptedValue();
     }
 
@@ -41,8 +44,9 @@ public class MeliPayamakProvider : IMessageProviderSms
             text = string.Join(';', request.Args)
         };
         var response = (await _client.PostAsync<SendResponse>($"SendSMS/BaseServiceNumber", data)).Result;
-        return response.Value switch
+        var result = response.Value switch
         {
+            "-10" => throw new Exception("داده نامعتبر"),
             "-7" => throw new Exception(" خطایی در شماره فرستنده رخ داده است با پشتیبانی تماس بگیرید"),
             "-6" => throw new Exception(" خطای داخلی رخ داده است با پشتیبانی تماس بگیرید"),
             "-5" => throw new Exception(" متن ارسالی باتوجه به متغیرهای مشخص شده در متن پیشفرض همخوانی ندارد"),
@@ -57,8 +61,13 @@ public class MeliPayamakProvider : IMessageProviderSms
             "10" => throw new Exception("کاربر موردنظر فعال نمی‌باشد"),
             "11" => throw new Exception("ارسال نشده"),
             "12" => throw new Exception("مدارک کاربر کامل نمی‌باشد"),
-            _ => new QueryResult<string>(response.Value) { Success = true }
+            _ => new QueryResult<string>() { Data = response.Value }
         };
+
+        if (response.Value.Length > 2)
+            result.Success = true;
+
+        return result;
     }
 
     public async Task<long> GetCreditMessageCountAsync()

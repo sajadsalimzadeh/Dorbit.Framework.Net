@@ -14,5 +14,7 @@ public enum FrameworkErrors
     TransactionRollback,
     SendMessageFailed,
     AesKeySizeIsInvalid,
-    AesKeySizeMostEqualIvSize
+    AesKeySizeMostEqualIvSize,
+    MeliPayamakNeedPasswordAsProtectedPropertyInSetting,
+    KavenegarNeedApiKeyAsProtectedPropertyInSetting
 }

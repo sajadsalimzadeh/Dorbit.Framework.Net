@@ -14,22 +14,15 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthAttribute : Attribute, IAsyncActionFilter
+public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
 {
-    private readonly string _access;
-
-    public AuthAttribute(string access = null)
-    {
-        _access = access;
-    }
-
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var access = _access;
+        var tempAccess = access;
         if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor)
             throw new Exception("Context is not type of ControllerActionDescriptor");
 
-        if (_access.IsNotNullOrEmpty())
+        if (tempAccess.IsNotNullOrEmpty())
         {
             var type = actionDescriptor.ControllerTypeInfo as Type;
             var preType = type;
@@ -40,7 +33,7 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
                     var index = 0;
                     foreach (var genericType in preType.GenericTypeArguments)
                     {
-                        _access = _access.Replace("{type" + index + "}", genericType.Name);
+                        tempAccess = tempAccess.Replace("{type" + index + "}", genericType.Name);
                         index++;
                     }
 
@@ -58,12 +51,12 @@ public class AuthAttribute : Attribute, IAsyncActionFilter
         var hasIgnoreAuthIgnoreAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null;
         if (methodHasAuthAttribute || hasIgnoreAuthIgnoreAttribute)
         {
-            access = string.Empty;
+            tempAccess = string.Empty;
         }
 
         var identityRequest = new IdentityValidateRequest()
         {
-            Access = _access
+            Access = tempAccess
         };
 
         identityRequest.IpV4 = context.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();

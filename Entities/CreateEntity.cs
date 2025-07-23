@@ -15,4 +15,4 @@ public class CreateEntity<TKey> : Entity<TKey>, ICreationAudit
     public virtual string CreatorName { get; set; }
 }
 
-public class CreateEntity : CreateEntity<Guid>;
+public class CreateEntity : CreateEntity<Guid>, IEntity;
