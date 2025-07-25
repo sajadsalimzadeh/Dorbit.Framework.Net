@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Dorbit.Framework.Migrations
 {
     [DbContext(typeof(FrameworkDbContext))]
-    [Migration("20250701082450_AddMessageEntity")]
-    partial class AddMessageEntity
+    [Migration("20250725215300_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ namespace Dorbit.Framework.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("framework")
-                .HasAnnotation("ProductVersion", "9.0.6")
+                .HasAnnotation("ProductVersion", "9.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
