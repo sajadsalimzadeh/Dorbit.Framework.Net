@@ -23,6 +23,13 @@ public static class EnvironmentUtil
         return string.Equals(GetEnvironment(), Environments.Development, StringComparison.CurrentCultureIgnoreCase);
     }
 
+    public static string GetArgValue(string name)
+    {
+        name = $"--{name}=";
+        var args = Environment.GetCommandLineArgs();
+        return args.FirstOrDefault(x => x.StartsWith(name))?.Replace(name, "");
+    }
+
     public static bool InMemory()
     {
         var args = Environment.GetCommandLineArgs();
