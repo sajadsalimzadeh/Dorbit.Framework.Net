@@ -1,7 +1,9 @@
-﻿namespace Dorbit.Framework.Contracts.Abstractions;
+﻿using System;
+
+namespace Dorbit.Framework.Contracts.Abstractions;
 
 public interface ISoftwareDto
 {
-    object GetId();
+    Guid? GetId();
     string GetName();
 }

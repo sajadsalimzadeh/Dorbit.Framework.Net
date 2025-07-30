@@ -71,7 +71,7 @@ public class FilesController(IOptions<ConfigFile> options, IMemoryCache memoryCa
     {
         var file = Request.Form.Files[0];
         var ext = Path.GetExtension(file.FileName);
-        var filename = Guid.CreateVersion7() + ext;
+        var filename = Guid.NewGuid() + ext;
         var filePath = GetFilePath(filename);
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms);

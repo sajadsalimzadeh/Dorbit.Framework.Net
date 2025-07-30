@@ -46,6 +46,11 @@ public class HubService
         connections.Add(connectionId);
     }
 
+    public int Count()
+    {
+        return ConnectionToUsers.Count;
+    }
+
     public void Remove(string connectionId)
     {
         if (ConnectionToUsers.TryGetValue(connectionId, out var userId))

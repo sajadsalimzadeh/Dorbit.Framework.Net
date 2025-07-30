@@ -4,5 +4,5 @@ namespace Dorbit.Framework.Services.Abstractions;
 
 public interface ITenantResolver
 {
-    ITenantDto Tenant { get; set; }
+    ITenantDto Tenant { get; }
 }
