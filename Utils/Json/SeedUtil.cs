@@ -31,11 +31,14 @@ public static class SeedUtil
         var existsItems = await repository.Set(false).ToListAsync();
         if (ignorePredicate is not null) items = items.Where(x => !existsItems.Any(y => ignorePredicate(x, y))).ToList();
         using var transaction = repository.DbContext.BeginTransaction();
+        var insertItems = new List<TEntity>();
         foreach (var entity in items.Where(x => !existsItems.Contains(x)))
         {
             if (beforeInsertAction is not null) await beforeInsertAction(entity);
-            await repository.InsertAsync(entity);
+            insertItems.Add(entity);
         }
+
+        await repository.BulkInsertAsync(insertItems);
 
         await transaction.CommitAsync();
     }

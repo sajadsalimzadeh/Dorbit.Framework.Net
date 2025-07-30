@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Reflection;
 using System.Security.Authentication;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Identities;
 using Dorbit.Framework.Controllers;
 using Dorbit.Framework.Extensions;
@@ -73,7 +75,36 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
         var serviceProvider = context.HttpContext.RequestServices;
         var identityService = serviceProvider.GetService<IIdentityService>();
         var identity = await identityService.ValidateAsync(identityRequest);
-        if (identity is null) throw new AuthenticationException();
+        if (identity is null)
+            throw new AuthenticationException();
+
+        for (var i = 0; i < context.ActionDescriptor.Parameters.Count; i++)
+        {
+            var parameter = context.ActionDescriptor.Parameters[i];
+            var fromClaimAttribute = parameter.ParameterType.GetCustomAttribute<FromClaimAttribute>();
+            if (fromClaimAttribute is null) continue;
+
+            if (!identity.Claims.TryGetValue(fromClaimAttribute.Name, out var claimValue))
+                throw new UnauthorizedAccessException($"claim {fromClaimAttribute.Name} not found");
+
+            if (parameter.ParameterType == typeof(Guid))
+            {
+                context.ActionArguments[parameter.Name] = Guid.Parse(claimValue);
+            }
+            else if (parameter.ParameterType == typeof(int))
+            {
+                context.ActionArguments[parameter.Name] = int.Parse(claimValue);
+            }
+            else if (parameter.ParameterType == typeof(string))
+            {
+                context.ActionArguments[parameter.Name] = claimValue;
+            }
+            else
+            {
+                context.ActionArguments[parameter.Name] = JsonSerializer.Deserialize(claimValue, parameter.ParameterType);
+            }
+        }
+
         await next.Invoke();
     }
 }

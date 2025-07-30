@@ -70,6 +70,11 @@ public class SettingService(SettingRepository settingRepository)
             setting = new Setting(key, value);
             await settingRepository.InsertAsync(setting);
         }
+        else
+        {
+            setting.SetValue(value);
+            await settingRepository.UpdateAsync(setting);
+        }
     }
 
     public async Task SaveAllAsync(Dictionary<string, object> dict)
