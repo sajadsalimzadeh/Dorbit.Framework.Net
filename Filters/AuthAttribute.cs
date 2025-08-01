@@ -65,12 +65,9 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
         identityRequest.IpV6 = context.HttpContext.Connection.RemoteIpAddress?.MapToIPv6().ToString();
         identityRequest.UserAgent = context.HttpContext.Request.Headers.FirstValueOrDefault("User-Agent");
         var httpRequest = context.HttpContext.Request;
+        
         identityRequest.AccessToken = httpRequest.GetAccessToken();
-        if (identityRequest.AccessToken.IsNullOrEmpty())
-            throw new AuthenticationException("Access token not set");
         identityRequest.CsrfToken = httpRequest.GetCsrfToken();
-        if (identityRequest.CsrfToken.IsNullOrEmpty())
-            throw new AuthenticationException("Csrf token not set");
 
         var serviceProvider = context.HttpContext.RequestServices;
         var identityService = serviceProvider.GetService<IIdentityService>();

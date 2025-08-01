@@ -58,12 +58,15 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
     [HttpPost, Auth("{type0}-Save")]
     public virtual Task<QueryResult<TGet>> AddAsync([FromBody] TAdd request)
     {
+        MemoryCache.Remove(typeof(TEntity));
         return Repository.InsertAsync(request.MapTo<TEntity>()).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
     [HttpPatch("{id}"), HttpPut("{id}"), Auth("{type0}-Save")]
     public virtual async Task<QueryResult<TGet>> PatchAsync(TKey id, [FromBody] JsonElement obj)
     {
+        MemoryCache.Remove(id.ToString() ?? string.Empty);
+        MemoryCache.Remove(typeof(TEntity));
         var entity = await Repository.PatchAsync(id, obj);
         return entity.MapTo<TGet>().ToQueryResult();
     }
@@ -71,6 +74,8 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
     [HttpDelete("{id}"), Auth("{type0}-Delete")]
     public virtual async Task<CommandResult> DeleteAsync(TKey id)
     {
+        MemoryCache.Remove(id.ToString() ?? string.Empty);
+        MemoryCache.Remove(typeof(TEntity));
         await Repository.DeleteAsync(id);
         return Succeed();
     }

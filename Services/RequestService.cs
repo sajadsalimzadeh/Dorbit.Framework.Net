@@ -7,5 +7,5 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 internal class RequestService : IRequestService
 {
-    public Guid CorrelationId { get; } = Guid.CreateVersion7();
+    public Guid CorrelationId { get; } = Guid.NewGuid();
 }

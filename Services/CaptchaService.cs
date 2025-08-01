@@ -35,7 +35,7 @@ public class CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
             Difficulty = dto.Dificulty,
         };
 
-        var key = Guid.CreateVersion7().ToString();
+        var key = Guid.NewGuid().ToString();
         var value = dto.Pattern.Random(dto.Length);
         lock (_captchas)
         {

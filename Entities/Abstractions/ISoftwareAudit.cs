@@ -1,11 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Dorbit.Framework.Entities.Abstractions;
 
 public interface ISoftwareAudit
 {
-    [MaxLength(64)]
-    string SoftwareId { get; set; }
+    Guid? SoftwareId { get; set; }
     [MaxLength(64)]
     string SoftwareName { get; set; }
 }

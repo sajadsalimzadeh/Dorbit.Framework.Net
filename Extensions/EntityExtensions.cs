@@ -99,7 +99,7 @@ public static class EntityExtensions
 
     public static TEntity IncludeTenantAudit<TEntity>(this TEntity entity, ITenantDto tenant) where TEntity : ITenantAudit
     {
-        entity.TenantId = tenant?.GetId()?.ToString();
+        entity.TenantId = tenant?.GetId();
         entity.TenantName = tenant?.GetName();
 
         return entity;
@@ -107,7 +107,7 @@ public static class EntityExtensions
 
     public static TEntity IncludeServerAudit<TEntity>(this TEntity entity, IServerDto server) where TEntity : IServerAudit
     {
-        entity.ServerId = server?.GetId().ToString();
+        entity.ServerId = server?.GetId();
         entity.ServerName = server?.GetName();
 
         return entity;
@@ -115,7 +115,7 @@ public static class EntityExtensions
 
     public static TEntity IncludeSoftwareAudit<TEntity>(this TEntity entity, ISoftwareDto software) where TEntity : ISoftwareAudit
     {
-        entity.SoftwareId = software?.GetId().ToString();
+        entity.SoftwareId = software?.GetId();
         entity.SoftwareName = software?.GetName();
         return entity;
     }
@@ -149,7 +149,7 @@ public static class EntityExtensions
         if (entity is IHistorical historical)
         {
             historical.IsHistorical = false;
-            historical.HistoryId = Guid.CreateVersion7();
+            historical.HistoryId = Guid.NewGuid();
         }
 
         return entity;
@@ -169,7 +169,7 @@ public static class EntityExtensions
     {
         if (entity is IEntity<Guid> guidEntity)
         {
-            if (guidEntity.Id == Guid.Empty) guidEntity.Id = Guid.CreateVersion7();
+            if (guidEntity.Id == Guid.Empty) guidEntity.Id = Guid.NewGuid();
         }
 
         return entity;

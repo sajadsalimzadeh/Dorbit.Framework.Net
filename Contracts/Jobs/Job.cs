@@ -52,7 +52,7 @@ public class Job
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly Semaphore _semaphore = new(0, 1);
 
-    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public Guid Id { get; set; } = Guid.NewGuid();
     public Exception Exception { get; private set; }
     public string Name { get; set; }
     public List<JobLog> Logs { get; } = [];
