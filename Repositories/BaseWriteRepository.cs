@@ -114,7 +114,19 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
     public async Task<TEntity> SaveAsync<TDto>(TKey id, TDto dto, CancellationToken cancellationToken = default)
     {
         var entity = await GetByIdAsync(id, cancellationToken);
-        return await SaveAsync(entity, dto, cancellationToken);
+        if (entity is not null)
+        {
+            entity = entity.PatchObject(dto);
+            entity.Id = id;
+            return await UpdateAsync(entity, cancellationToken);
+        }
+        else
+        {
+            entity = dto.MapTo(Activator.CreateInstance<TEntity>());
+            entity.Id = id;
+            return await InsertAsync(entity, cancellationToken);
+        }
+
     }
 
     public async Task<TEntity> SaveAsync<TDto>(TEntity entity, TDto dto, CancellationToken cancellationToken = default)
