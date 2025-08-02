@@ -22,6 +22,13 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
         return _dbContext.InsertEntityAsync<TEntity, TKey>(entity, cancellationToken);
     }
 
+    public virtual async Task<TEntity> InsertIfExistsAsync(TEntity entity, CancellationToken cancellationToken = default)
+    {
+        var existsEntity = await GetByIdAsync(entity.Id);
+        if (existsEntity is not null) return existsEntity;
+        return await InsertAsync(entity, cancellationToken);
+    }
+
     public virtual Task BulkInsertAsync(Func<TEntity, bool> predicate, CancellationToken cancellationToken = default)
     {
         var entities = Set().AsEnumerable().Where(predicate).ToList();
@@ -126,7 +133,6 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
             entity.Id = id;
             return await InsertAsync(entity, cancellationToken);
         }
-
     }
 
     public async Task<TEntity> SaveAsync<TDto>(TEntity entity, TDto dto, CancellationToken cancellationToken = default)
