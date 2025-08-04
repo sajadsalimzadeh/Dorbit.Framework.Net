@@ -72,7 +72,7 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
     }
 
     [HttpDelete("{id}"), Auth("{type0}-Delete")]
-    public virtual async Task<CommandResult> Remove(TKey id)
+    public virtual async Task<CommandResult> DeleteAsync(TKey id)
     {
         MemoryCache.Remove(id.ToString() ?? string.Empty);
         MemoryCache.Remove(typeof(TEntity));
