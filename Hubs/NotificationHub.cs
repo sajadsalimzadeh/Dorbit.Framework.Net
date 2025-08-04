@@ -12,7 +12,7 @@ public abstract class NotificationHub(HubService hubService) : Hub
     public const string GroupUserOnline = "User-Online";
     public const string OnOnlineUserUpdated = nameof(OnOnlineUserUpdated);
     
-    protected HubService HubService = hubService;
+    protected readonly HubService HubService = hubService;
 
     public override async Task OnConnectedAsync()
     {

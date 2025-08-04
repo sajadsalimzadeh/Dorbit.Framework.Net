@@ -15,7 +15,7 @@ public class HubService
 
     public List<Guid> GetAllUserId()
     {
-        return UserToConnections.Keys.ToList();
+        return UserToConnections.Where(x => x.Value.Count > 0).Select(x => x.Key).ToList();
     }
 
     public List<string> GetAllConnectionId(Guid userId)
@@ -53,17 +53,13 @@ public class HubService
 
     public void Remove(string connectionId)
     {
-        if (ConnectionToUsers.TryGetValue(connectionId, out var userId))
+        if (!ConnectionToUsers.TryGetValue(connectionId, out var userId)) return;
+        ConnectionToUsers.TryRemove(connectionId, out _);
+        if (!UserToConnections.TryGetValue(userId, out var connections)) return;
+        connections.Remove(connectionId);
+        if (connections.Count == 0)
         {
-            ConnectionToUsers.TryRemove(connectionId, out _);
-            if (UserToConnections.TryGetValue(userId, out var connections))
-            {
-                connections.Remove(connectionId);
-                if (connections.Count == 0)
-                {
-                    UserToConnections.Remove(userId, out _);
-                }
-            }
+            UserToConnections.Remove(userId, out _);
         }
     }
 }
