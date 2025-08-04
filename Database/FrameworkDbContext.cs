@@ -19,4 +19,5 @@ public class FrameworkDbContext(DbContextOptions<FrameworkDbContext> options, IS
     public DbSet<ChangeLog> Logs { get; set; }
     public DbSet<Setting> Settings { get; set; }
     public DbSet<Message> Messages { get; set; }
+    public DbSet<Attachment> Attachments { get; set; }
 }

@@ -16,5 +16,6 @@ public enum FrameworkErrors
     AesKeySizeIsInvalid,
     AesKeySizeMostEqualIvSize,
     MeliPayamakNeedPasswordAsProtectedPropertyInSetting,
-    KavenegarNeedApiKeyAsProtectedPropertyInSetting
+    KavenegarNeedApiKeyAsProtectedPropertyInSetting,
+    EntityNotFound
 }
