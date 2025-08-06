@@ -111,9 +111,9 @@ public static class FrameworkInstaller
             });
         });
 
-        if (!configs.DependencyRegisterNamespaces.Contains("Dorbit"))
+        if (!configs.Namespaces.Contains("Dorbit"))
         {
-            configs.DependencyRegisterNamespaces.Add("Dorbit");
+            configs.Namespaces.Add("Dorbit");
         }
 
         services.AddCors(options =>
@@ -128,7 +128,7 @@ public static class FrameworkInstaller
                     .AllowCredentials();
             });
         });
-        services.RegisterServicesByAssembly(typeof(T).Assembly, configs.DependencyRegisterNamespaces.ToArray());
+        services.RegisterServicesByAssembly(typeof(T).Assembly, configs.Namespaces.ToArray());
 
         services.AddScoped<IPrincipal>(sp => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
 
@@ -283,7 +283,7 @@ public static class FrameworkInstaller
 
     public class Configs(IConfiguration configuration)
     {
-        public required List<string> DependencyRegisterNamespaces { get; init; }
+        public List<string> Namespaces { get; init; } = configuration.GetSection("Namespaces").Get<List<string>>();
         public List<string> AllowedOrigins { get; set; } = configuration.GetSection("AllowedOrigins").Get<List<string>>();
 
         public IConfig<ConfigProject> ConfigProject { get; init; } = configuration.GetConfig<ConfigProject>("Project");
