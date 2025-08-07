@@ -15,13 +15,13 @@ public abstract class BaseHost(IServiceProvider serviceProvider, bool isConcurre
 
     static BaseHost()
     {
-        new Thread(() =>
-        {
-            var mainCancellationTokenSource = new CancellationTokenSource();
-            App.MainCancellationToken = mainCancellationTokenSource.Token;
-            while (App.MainThread.IsAlive) Thread.Sleep(1000);
-            mainCancellationTokenSource.Cancel();
-        }).Start();
+        // new Thread(() =>
+        // {
+        //     var mainCancellationTokenSource = new CancellationTokenSource();
+        //     App.MainCancellationToken = mainCancellationTokenSource.Token;
+        //     while (App.MainThread.IsAlive) Thread.Sleep(1000);
+        //     mainCancellationTokenSource.Cancel();
+        // }).Start();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
