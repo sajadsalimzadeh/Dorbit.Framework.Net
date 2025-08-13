@@ -1,9 +1,10 @@
-﻿using System.Security.Cryptography;
+﻿using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Dorbit.Framework.Utils.Cryptography;
 
-public static class Hash
+public static class HashUtil
 {
     public static string Sha1(string text)
     {
@@ -31,8 +32,18 @@ public static class Hash
         return builder.ToString();
     }
 
-    public static string Sha256(string text, string secretKey)
+    public static string PasswordV1(string password, string secretKey)
     {
-        return Sha256(text + secretKey + secretKey);
+        return Sha256(password + secretKey + secretKey);
+    }
+
+    public static string PasswordV2(string password, string secretKey)
+    {
+        return Sha256(secretKey + password + secretKey);
+    }
+
+    public static string PasswordV3(string password, string secretKey)
+    {
+        return Sha256(secretKey + secretKey + password);
     }
 }
