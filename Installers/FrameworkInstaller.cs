@@ -14,6 +14,7 @@ using Dorbit.Framework.Configs;
 using Dorbit.Framework.Configs.Abstractions;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Hosts;
 using Dorbit.Framework.Middlewares;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Services.AppSecurities;
@@ -49,8 +50,9 @@ public static class FrameworkInstaller
         var wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");
         if (!Directory.Exists(wwwrootPath)) Directory.CreateDirectory(wwwrootPath);
 
-        Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
         App.MainThread = Thread.CurrentThread;
+        
+        Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
@@ -61,7 +63,7 @@ public static class FrameworkInstaller
         {
             File.WriteAllText(appSettingPath, "{}");
         }
-
+        
         services.TryAddSingleton(services);
         services.AddResponseCaching();
         services.AddMemoryCache();
@@ -203,6 +205,10 @@ public static class FrameworkInstaller
         app.UseMiddleware<ExceptionMiddleware>();
         app.UseMiddleware<CancellationTokenMiddleware>();
         app.UseResponseCaching();
+
+        var appLifetime = app.Services.GetService<IHostApplicationLifetime>();
+        App.StoppingToken = appLifetime.ApplicationStopping;
+        
         return app;
     }
 

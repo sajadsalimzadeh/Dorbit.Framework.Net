@@ -3,7 +3,7 @@
 namespace Dorbit.Framework.Attributes;
 
 [AttributeUsage(AttributeTargets.Parameter)]
-public class FromClaimAttribute(string name) : Attribute
+public class FromClaimAttribute(string type) : Attribute
 {
-    public string Name { get; } = name;
+    public string Type { get; } = type;
 }

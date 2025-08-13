@@ -87,24 +87,25 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
                 var fromClaimAttribute = parameter.ParameterType.GetCustomAttribute<FromClaimAttribute>();
                 if (fromClaimAttribute is null) continue;
 
-                if (!identity.Claims.TryGetValue(fromClaimAttribute.Name, out var claimValue))
-                    throw new UnauthorizedAccessException($"claim {fromClaimAttribute.Name} not found");
+                var claimDto = identity.Claims.FirstOrDefault(x => x.Type.Equals(fromClaimAttribute.Type, StringComparison.CurrentCultureIgnoreCase));
+                if (claimDto == null || claimDto.Value.IsNullOrEmpty())
+                    throw new UnauthorizedAccessException($"claim {fromClaimAttribute.Type} not found");
 
                 if (parameter.ParameterType == typeof(Guid))
                 {
-                    context.ActionArguments[parameter.Name] = Guid.Parse(claimValue);
+                    context.ActionArguments[parameter.Name] = Guid.Parse(claimDto.Value);
                 }
                 else if (parameter.ParameterType == typeof(int))
                 {
-                    context.ActionArguments[parameter.Name] = int.Parse(claimValue);
+                    context.ActionArguments[parameter.Name] = int.Parse(claimDto.Value);
                 }
                 else if (parameter.ParameterType == typeof(string))
                 {
-                    context.ActionArguments[parameter.Name] = claimValue;
+                    context.ActionArguments[parameter.Name] = claimDto.Value;
                 }
                 else
                 {
-                    context.ActionArguments[parameter.Name] = JsonSerializer.Deserialize(claimValue, parameter.ParameterType);
+                    context.ActionArguments[parameter.Name] = JsonSerializer.Deserialize(claimDto.Value, parameter.ParameterType);
                 }
             }
         }
