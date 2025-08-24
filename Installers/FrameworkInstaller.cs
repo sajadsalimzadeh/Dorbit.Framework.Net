@@ -14,6 +14,7 @@ using Dorbit.Framework.Configs;
 using Dorbit.Framework.Configs.Abstractions;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Hosts;
 using Dorbit.Framework.Middlewares;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Services.AppSecurities;
@@ -49,8 +50,9 @@ public static class FrameworkInstaller
         var wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");
         if (!Directory.Exists(wwwrootPath)) Directory.CreateDirectory(wwwrootPath);
 
-        Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
         App.MainThread = Thread.CurrentThread;
+        
+        Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
@@ -61,7 +63,7 @@ public static class FrameworkInstaller
         {
             File.WriteAllText(appSettingPath, "{}");
         }
-
+        
         services.TryAddSingleton(services);
         services.AddResponseCaching();
         services.AddMemoryCache();
@@ -111,9 +113,9 @@ public static class FrameworkInstaller
             });
         });
 
-        if (!configs.DependencyRegisterNamespaces.Contains("Dorbit"))
+        if (!configs.Namespaces.Contains("Dorbit"))
         {
-            configs.DependencyRegisterNamespaces.Add("Dorbit");
+            configs.Namespaces.Add("Dorbit");
         }
 
         services.AddCors(options =>
@@ -128,7 +130,7 @@ public static class FrameworkInstaller
                     .AllowCredentials();
             });
         });
-        services.RegisterServicesByAssembly(typeof(T).Assembly, configs.DependencyRegisterNamespaces.ToArray());
+        services.RegisterServicesByAssembly(typeof(T).Assembly, configs.Namespaces.ToArray());
 
         services.AddScoped<IPrincipal>(sp => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
 
@@ -203,6 +205,10 @@ public static class FrameworkInstaller
         app.UseMiddleware<ExceptionMiddleware>();
         app.UseMiddleware<CancellationTokenMiddleware>();
         app.UseResponseCaching();
+
+        var appLifetime = app.Services.GetService<IHostApplicationLifetime>();
+        App.StoppingToken = appLifetime.ApplicationStopping;
+        
         return app;
     }
 
@@ -283,7 +289,7 @@ public static class FrameworkInstaller
 
     public class Configs(IConfiguration configuration)
     {
-        public required List<string> DependencyRegisterNamespaces { get; init; }
+        public List<string> Namespaces { get; init; } = configuration.GetSection("Namespaces").Get<List<string>>();
         public List<string> AllowedOrigins { get; set; } = configuration.GetSection("AllowedOrigins").Get<List<string>>();
 
         public IConfig<ConfigProject> ConfigProject { get; init; } = configuration.GetConfig<ConfigProject>("Project");

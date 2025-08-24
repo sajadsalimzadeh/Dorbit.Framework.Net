@@ -18,6 +18,8 @@ namespace Dorbit.Framework.Filters;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
 {
+    public bool IsOptional { get; set; }
+    
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var tempAccess = access;
@@ -70,35 +72,48 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
         identityRequest.CsrfToken = httpRequest.GetCsrfToken();
 
         var serviceProvider = context.HttpContext.RequestServices;
-        var identityService = serviceProvider.GetService<IIdentityService>();
-        var identity = await identityService.ValidateAsync(identityRequest);
-        if (identity is null)
-            throw new AuthenticationException();
 
-        for (var i = 0; i < context.ActionDescriptor.Parameters.Count; i++)
+        try
         {
-            var parameter = context.ActionDescriptor.Parameters[i];
-            var fromClaimAttribute = parameter.ParameterType.GetCustomAttribute<FromClaimAttribute>();
-            if (fromClaimAttribute is null) continue;
+            var identityService = serviceProvider.GetService<IIdentityService>();
+            var identity = await identityService.ValidateAsync(identityRequest);
+            if (identity is null)
+                throw new AuthenticationException();
 
-            if (!identity.Claims.TryGetValue(fromClaimAttribute.Name, out var claimValue))
-                throw new UnauthorizedAccessException($"claim {fromClaimAttribute.Name} not found");
 
-            if (parameter.ParameterType == typeof(Guid))
+            for (var i = 0; i < context.ActionDescriptor.Parameters.Count; i++)
             {
-                context.ActionArguments[parameter.Name] = Guid.Parse(claimValue);
+                var parameter = context.ActionDescriptor.Parameters[i];
+                var fromClaimAttribute = parameter.ParameterType.GetCustomAttribute<FromClaimAttribute>();
+                if (fromClaimAttribute is null) continue;
+
+                var claimDto = identity.Claims.FirstOrDefault(x => x.Type.Equals(fromClaimAttribute.Type, StringComparison.CurrentCultureIgnoreCase));
+                if (claimDto == null || claimDto.Value.IsNullOrEmpty())
+                    throw new UnauthorizedAccessException($"claim {fromClaimAttribute.Type} not found");
+
+                if (parameter.ParameterType == typeof(Guid))
+                {
+                    context.ActionArguments[parameter.Name] = Guid.Parse(claimDto.Value);
+                }
+                else if (parameter.ParameterType == typeof(int))
+                {
+                    context.ActionArguments[parameter.Name] = int.Parse(claimDto.Value);
+                }
+                else if (parameter.ParameterType == typeof(string))
+                {
+                    context.ActionArguments[parameter.Name] = claimDto.Value;
+                }
+                else
+                {
+                    context.ActionArguments[parameter.Name] = JsonSerializer.Deserialize(claimDto.Value, parameter.ParameterType);
+                }
             }
-            else if (parameter.ParameterType == typeof(int))
+        }
+        catch
+        {
+            if (!IsOptional)
             {
-                context.ActionArguments[parameter.Name] = int.Parse(claimValue);
-            }
-            else if (parameter.ParameterType == typeof(string))
-            {
-                context.ActionArguments[parameter.Name] = claimValue;
-            }
-            else
-            {
-                context.ActionArguments[parameter.Name] = JsonSerializer.Deserialize(claimValue, parameter.ParameterType);
+                throw;
             }
         }
 

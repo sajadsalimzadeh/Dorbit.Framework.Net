@@ -11,7 +11,7 @@ public static class App
 {
     public static bool InMemory { get; set; }
     public static Thread MainThread { get; internal set; }
-    public static CancellationToken MainCancellationToken { get; internal set; }
+    public static CancellationToken StoppingToken { get; internal set; }
     public static IServiceProvider ServiceProvider { get; internal set; }
     public static IApplication Current { get; internal set; }
     public static IMemoryCache MemoryCache { get; internal set; }

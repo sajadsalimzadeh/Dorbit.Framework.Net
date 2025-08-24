@@ -45,18 +45,25 @@ public class FilesController(
 
     private bool ValidateAccess(Attachment attachment)
     {
-        if (!attachment.IsPrivate) return true;
-        if (attachment.Access.IsNullOrEmpty()) return true;
-        if (identityService.Identity.HasAccess(attachment.Access)) return true;
-        if (
-            attachment.UserIds != null &&
-            attachment.UserIds.Contains(identityService.Identity.User.GetId())
-        ) return true;
-        if (
-            attachment.AccessTokens != null &&
-            Request.Headers.TryGetValue("FileAccessToken", out var accessToken) &&
-            attachment.AccessTokens.Contains(accessToken)
-        ) return true;
+        if (!attachment.IsPrivate) 
+            return true;
+        
+        if (attachment.Access.IsNullOrEmpty())
+            return true;
+        
+        var identity = identityService.Identity;
+        if (identity.HasAccess(attachment.Access)) 
+            return true;
+        
+        if (attachment.UserIds != null && attachment.UserIds.Contains(identity.User.GetId())) 
+            return true;
+        
+        if (attachment.AccessTokens != null)
+        {
+            if (Request.Headers.TryGetValue("FileAccessToken", out var accessToken) && attachment.AccessTokens.Contains(accessToken))
+                return true;
+        }
+
         return false;
     }
 
@@ -115,7 +122,7 @@ public class FilesController(
         return File(fileDto.Content, MimeTypeUtil.GetMimeTypeByFilename(filename));
     }
 
-    [HttpGet("{filename}/Download")]
+    [HttpGet("{filename}/Download"), Auth(IsOptional = true)]
     public async Task<IActionResult> DownloadAsync([FromRoute] string filename)
     {
         var fileDto = await GetFileAsync(filename);
