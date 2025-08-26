@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Dorbit.Framework.Contracts.Abstractions;
+using Dorbit.Framework.Extensions;
 using Newtonsoft.Json;
 
 namespace Dorbit.Framework.Contracts.Identities;
@@ -15,6 +16,6 @@ public class IdentityDto
 
     public bool HasAccess(string access)
     {
-        return IsFullAccess || DeepAccessibility.Contains(access);
+        return IsFullAccess || access.IsNullOrEmpty() || DeepAccessibility.Contains(access);
     }
 }

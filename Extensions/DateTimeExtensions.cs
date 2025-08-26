@@ -39,7 +39,9 @@ public static class DateTimeExtensions
             .Replace("YY", pc.GetYear(dateTime).ToString().Substring(2))
             .Replace("Y", pc.GetYear(dateTime).ToString().Substring(3))
             .Replace("MM", pc.GetMonth(dateTime).ToString().PadLeft(2, '0'))
+            .Replace("M", pc.GetMonth(dateTime).ToString())
             .Replace("DD", pc.GetDayOfMonth(dateTime).ToString().PadLeft(2, '0'))
+            .Replace("D", pc.GetDayOfMonth(dateTime).ToString())
             .Replace("hh", pc.GetHour(dateTime).ToString().PadLeft(2, '0'))
             .Replace("mm", pc.GetMinute(dateTime).ToString().PadLeft(2, '0'))
             .Replace("ss", pc.GetSecond(dateTime).ToString().PadLeft(2, '0'));
