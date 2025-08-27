@@ -34,17 +34,17 @@ public static class HashUtil
 
     public static string PasswordV1(string password, string secretKey)
     {
-        return Sha256(password + secretKey + secretKey);
+        return Sha1(password + secretKey + secretKey);
     }
 
     public static string PasswordV2(string password, string secretKey)
     {
-        return Sha256(secretKey + password + secretKey);
+        return Sha1(secretKey + password + secretKey);
     }
 
     public static string PasswordV3(string password, string secretKey)
     {
-        return Sha256(secretKey + secretKey + password);
+        return Sha1(secretKey + secretKey + password);
     }
     
     public static string Md5(string input, string salt)
