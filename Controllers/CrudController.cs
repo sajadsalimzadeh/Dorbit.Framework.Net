@@ -17,7 +17,7 @@ namespace Dorbit.Framework.Controllers;
 
 public abstract class CrudController : BaseController;
 
-public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudController
+public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController
     where TEntity : class, IEntity<TKey>
 {
     protected IBaseRepository<TEntity, TKey> Repository => ServiceProvider.GetRequiredService<IBaseRepository<TEntity, TKey>>();
@@ -81,10 +81,8 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd, TEdit> : CrudCon
     }
 }
 
-public abstract class CrudController<TEntity> : CrudController<TEntity, Guid, TEntity, TEntity, TEntity> where TEntity : class, IEntity<Guid>;
+public abstract class CrudController<TEntity> : CrudController<TEntity, Guid, TEntity, TEntity> where TEntity : class, IEntity<Guid>;
 
-public abstract class CrudController<TEntity, TKey> : CrudController<TEntity, TKey, TEntity, TEntity, TEntity> where TEntity : class, IEntity<TKey>;
+public abstract class CrudController<TEntity, TKey> : CrudController<TEntity, TKey, TEntity, TEntity> where TEntity : class, IEntity<TKey>;
 
-public abstract class CrudController<TEntity, TKey, TGet> : CrudController<TEntity, TKey, TGet, TEntity, TEntity> where TEntity : class, IEntity<TKey>;
-
-public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController<TEntity, TKey, TGet, TAdd, TEntity> where TEntity : class, IEntity<TKey>;
+public abstract class CrudController<TEntity, TKey, TGet> : CrudController<TEntity, TKey, TGet, TEntity> where TEntity : class, IEntity<TKey>;
