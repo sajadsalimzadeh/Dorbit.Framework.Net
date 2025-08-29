@@ -5,4 +5,5 @@ public abstract class MessageRequest
     public string ProviderName { get; set; }
     public string TemplateType { get; set; }
     public string TemplateId { get; set; }
+    public string Body { get; set; }
 }

@@ -7,6 +7,7 @@ using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Messages;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Exceptions;
+using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -67,9 +68,18 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
             {
                 if (!string.IsNullOrEmpty(request.TemplateType))
                 {
-                    if (!configuration.Templates.TryGetValue(request.TemplateType, out var template)) continue;
-                    request.TemplateId = template;
+                    if (configuration.Templates is not null && configuration.Templates.TryGetValue(request.TemplateType, out var templateId))
+                    {
+                        request.TemplateId = templateId;
+                    }
+
+                    if (configuration.TemplateBodies is not null && configuration.TemplateBodies.TryGetValue(request.TemplateType, out var templateBody))
+                    {
+                        request.Body = templateBody;
+                    }
                 }
+
+                if (request.TemplateId.IsNullOrEmpty() && request.Body.IsNullOrEmpty()) continue;
 
                 var provider = GetProvider(providers, configuration);
                 if (provider is null) continue;

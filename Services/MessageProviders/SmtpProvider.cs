@@ -23,6 +23,7 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest, ConfigMessageE
     private string _senderEmail;
     private string _username;
     private string _password;
+    private string _apiKey;
 
     public void Configure(ConfigMessageEmailProvider configuration)
     {
@@ -31,7 +32,8 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest, ConfigMessageE
         _senderName = configuration.SenderName;
         _senderEmail = configuration.Sender;
         _username = configuration.Username;
-        _password = configuration.Password.GetDecryptedValue();
+        _password = configuration.Password?.GetDecryptedValue();
+        _apiKey = configuration.ApiKey?.GetDecryptedValue();
     }
 
     public async Task<QueryResult<string>> SendAsync(MessageEmailRequest request)
@@ -58,7 +60,8 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest, ConfigMessageE
         using var logger = new ProtocolLogger(Console.OpenStandardError());
         using var smtp = new SmtpClient(logger);
         await smtp.ConnectAsync(_server, _port);
-        await smtp.AuthenticateAsync(_username, _password);
+        if (_apiKey.IsNotNullOrEmpty()) await smtp.AuthenticateAsync("apikey", _apiKey);
+        else if(_password.IsNotNullOrEmpty()) await smtp.AuthenticateAsync(_username, _password);
         await smtp.SendAsync(message);
         await smtp.DisconnectAsync(true);
 

@@ -73,6 +73,7 @@
         <PackageReference Include="System.ServiceModel.NetTcp" Version="8.1.2" />
         <PackageReference Include="System.ServiceModel.Security" Version="6.0.0" />
         <PackageReference Include="System.ServiceModel.Federation" Version="8.1.2" />
+        <PackageReference Include="Twilio" Version="7.12.2" />
     </ItemGroup>
     
     <ItemGroup>

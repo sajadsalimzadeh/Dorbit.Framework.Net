@@ -15,4 +15,5 @@ public class ConfigMessageProvider
     public string Name { get; set; }
     public string ProviderName { get; set; }
     public Dictionary<string, string> Templates { get; set; }
+    public Dictionary<string, string> TemplateBodies { get; set; }
 }
