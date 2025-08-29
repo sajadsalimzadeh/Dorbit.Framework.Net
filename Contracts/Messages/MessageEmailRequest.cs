@@ -25,10 +25,11 @@ public class MessageEmailRequestAttachment
 
 public class ConfigMessageEmailProvider : ConfigMessageProvider
 {
+    public string SenderName { get; set; }
     public string Sender { get; set; }
     public string Username { get; set; }
-    public ProtectedProperty ApiKey { get; set; }
     public ProtectedProperty Password { get; set; }
+    public ProtectedProperty ApiKey { get; set; }
     public string Server { get; set; }
     public short Port { get; set; }
 }
