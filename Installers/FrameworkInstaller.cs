@@ -42,6 +42,8 @@ public static class FrameworkInstaller
 
     public static IServiceCollection AddDorbitFramework<T>(this IServiceCollection services, Configs configs)
     {
+        Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+        
         _configs = configs;
 
         _configs.SwaggerConfigs.Insert(0, new ConfigSwaggerDoc("all", "All"));
