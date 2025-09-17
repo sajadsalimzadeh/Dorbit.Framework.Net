@@ -19,6 +19,7 @@ using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Json;
 using EFCore.BulkExtensions;
+using EFCore.BulkExtensions.SqlAdapters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -61,12 +62,13 @@ public abstract class EfDbContext : DbContext, IDbContext
         get
         {
             if (_providerType.HasValue) return _providerType.Value;
-            var providerName = Database.ProviderName?.ToLower();
+            var providerName = Database.ProviderName;
+            var ignoreCase = StringComparison.InvariantCultureIgnoreCase;
             if (providerName == null) _providerType = DatabaseProviderType.Unknown;
-            else if (providerName.Contains("inmemory")) _providerType = DatabaseProviderType.InMemory;
-            else if (providerName.Contains("mysql")) _providerType = DatabaseProviderType.MySql;
-            else if (providerName.Contains("sqlserver")) _providerType = DatabaseProviderType.SqlServer;
-            else if (providerName.Contains("postgresql")) _providerType = DatabaseProviderType.Postgres;
+            else if (providerName.Contains("inmemory", ignoreCase)) _providerType = DatabaseProviderType.InMemory;
+            else if (providerName.Contains("mysql", ignoreCase)) _providerType = DatabaseProviderType.MySql;
+            else if (providerName.Contains("sqlserver", ignoreCase)) _providerType = DatabaseProviderType.SqlServer;
+            else if (providerName.Contains("postgresql", ignoreCase)) _providerType = DatabaseProviderType.Postgres;
             else _providerType = DatabaseProviderType.Unknown;
             return _providerType.Value;
         }
@@ -77,7 +79,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         ServiceProvider = serviceProvider;
         _efTransactionContext = new EfTransactionContext(this);
         _loggerService = serviceProvider.GetService<LoggerService>();
-        
+
         ChangeTracker.AutoDetectChangesEnabled = false;
         ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
@@ -291,7 +293,7 @@ public abstract class EfDbContext : DbContext, IDbContext
             {
                 Entry(softDelete).State = EntityState.Detached;
             }
-            
+
             if (entity is IAuditHistory auditHistory) auditHistory.IncludeAudit(LogAction.Delete, UserResolver?.User);
         }
         else

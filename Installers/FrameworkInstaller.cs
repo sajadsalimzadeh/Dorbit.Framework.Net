@@ -258,13 +258,19 @@ public static class FrameworkInstaller
     public static async Task RunDorbitAsync(this WebApplication app, string[] args)
     {
         App.InMemory = args.Contains("inmemory");
-        app.MapControllers();
         
+        var isMigrate = false;
+        if (args.Contains("migrate"))
+        {
+            isMigrate = true;
+            await app.MigrateAll();
+        }
+
         if (app.Environment.IsDevelopment())
         {
             if (args.Contains("run"))
             {
-                await app.MigrateAll();
+                if(!isMigrate) await app.MigrateAll();
                 await app.RunWithStartupsAsync();
             }
             else
@@ -280,7 +286,7 @@ public static class FrameworkInstaller
             }
             else
             {
-                await app.MigrateAll();
+                if(!isMigrate) await app.MigrateAll();
                 await app.RunWithStartupsAsync();
             }
         }
