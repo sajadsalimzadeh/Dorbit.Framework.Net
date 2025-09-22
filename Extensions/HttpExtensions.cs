@@ -5,7 +5,7 @@ namespace Dorbit.Framework.Extensions;
 
 public static class HttpExtensions
 {
-    private static string GetByNames(this HttpRequest request, string[] names)
+    public static string GetByNames(this HttpRequest request, string[] names)
     {
         
         var value = string.Empty;
@@ -21,6 +21,13 @@ public static class HttpExtensions
         }
 
         return value;
+    }
+    
+    public static bool TryGetByNames(this HttpRequest request, string[] names, out string value)
+    {
+        
+        value = request.GetByNames(names);
+        return value.IsNotNullOrEmpty();
     }
     
     public static string GetAccessToken(this HttpRequest request)

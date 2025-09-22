@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace Dorbit.Framework.Controllers;
 
+[Route("Framework/[controller]")]
 public class EnumsController(IOptions<ConfigProject> configProjects) : BaseController
 {
     private static Dictionary<string, Dictionary<int, string>> _items;

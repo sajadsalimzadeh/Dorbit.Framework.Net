@@ -71,7 +71,10 @@ internal class EntityLoggerHost(IServiceProvider serviceProvider, LoggerService 
             {
                 using var scope = _serviceProvider.CreateScope();
                 var dbContext = scope.ServiceProvider.GetService<FrameworkDbContext>();
-                await dbContext.BulkInsertAsync(logs, cancellationToken: cancellationToken);
+                if (dbContext is not null)
+                {
+                    await dbContext.BulkInsertAsync(logs, cancellationToken: cancellationToken);
+                }
             }
         }
         catch (Exception ex)

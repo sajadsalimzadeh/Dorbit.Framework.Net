@@ -19,12 +19,12 @@ public static class MigrationExtensions
     public static async Task MigrateAll(this IServiceProvider serviceProvider)
     {
         var logger = serviceProvider.GetService<ILogger>();
-        var dbContexts = serviceProvider.GetServices<IDbContext>();
-        foreach (var dbContext in dbContexts)
+        var dbContextMigrators = serviceProvider.GetServices<IDbContextMigrator>();
+        foreach (var migrator in dbContextMigrators)
         {
             try
             {
-                await dbContext.MigrateAsync();
+                await migrator.MigrateAsync();
             }
             catch(Exception ex)
             {

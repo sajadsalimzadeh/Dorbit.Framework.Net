@@ -469,4 +469,10 @@ public abstract class EfDbContext : DbContext, IDbContext
     {
         return BulkDeleteEntityAsync<TEntity, Guid>(entities, cancellationToken);
     }
+
+    public Task MigrateAsync()
+    {
+        if(ProviderType == DatabaseProviderType.InMemory) return Task.CompletedTask;
+        return Database.MigrateAsync();
+    }
 }

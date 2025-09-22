@@ -8,7 +8,7 @@ using Dorbit.Framework.Entities.Abstractions;
 
 namespace Dorbit.Framework.Database.Abstractions;
 
-public interface IDbContext
+public interface IDbContext : IDbContextMigrator
 {
     IServiceProvider ServiceProvider { get; }
     bool AutoExcludeDeleted { get; set; }

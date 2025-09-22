@@ -16,17 +16,18 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Filters;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
+public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFilter
 {
+    public string[] Accesses { get; set; } = accesses;
     public bool IsOptional { get; set; }
-    
+
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var tempAccess = access;
+        var accesses = Accesses;
         if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor)
             throw new Exception("Context is not type of ControllerActionDescriptor");
 
-        if (tempAccess.IsNotNullOrEmpty())
+        if (accesses.IsNotNullOrEmpty())
         {
             var type = actionDescriptor.ControllerTypeInfo as Type;
             var preType = type;
@@ -37,7 +38,7 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
                     var index = 0;
                     foreach (var genericType in preType.GenericTypeArguments)
                     {
-                        tempAccess = tempAccess.Replace("{type" + index + "}", genericType.Name);
+                        accesses = accesses.Select(x => x.Replace("{type" + index + "}", genericType.Name)).ToArray();
                         index++;
                     }
 
@@ -55,19 +56,14 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
         var hasIgnoreAuthIgnoreAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<AuthIgnoreAttribute>() != null;
         if (methodHasAuthAttribute || hasIgnoreAuthIgnoreAttribute)
         {
-            tempAccess = string.Empty;
+            accesses = [];
         }
 
-        var identityRequest = new IdentityValidateRequest()
-        {
-            Access = tempAccess
-        };
-
+        var identityRequest = new IdentityValidateRequest();
         identityRequest.IpV4 = context.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
         identityRequest.IpV6 = context.HttpContext.Connection.RemoteIpAddress?.MapToIPv6().ToString();
         identityRequest.UserAgent = context.HttpContext.Request.Headers.FirstValueOrDefault("User-Agent");
         var httpRequest = context.HttpContext.Request;
-        
         identityRequest.AccessToken = httpRequest.GetAccessToken();
         identityRequest.CsrfToken = httpRequest.GetCsrfToken();
 
@@ -77,9 +73,14 @@ public class AuthAttribute(string access = null) : Attribute, IAsyncActionFilter
         {
             var identityService = serviceProvider.GetService<IIdentityService>();
             var identity = await identityService.ValidateAsync(identityRequest);
+            
+            
             if (identity is null)
                 throw new AuthenticationException();
-
+            
+            
+            if (accesses is not null && accesses.Length > 0 && !identity.IsFullAccess && !accesses.Any(x => identity.DeepAccessibility.Contains(x)))
+                throw new UnauthorizedAccessException();
 
             for (var i = 0; i < context.ActionDescriptor.Parameters.Count; i++)
             {

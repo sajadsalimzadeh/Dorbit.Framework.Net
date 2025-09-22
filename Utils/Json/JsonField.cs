@@ -32,9 +32,9 @@ public static class ModelBuilderExtensions
         if (modelBuilder == null)
             throw new ArgumentNullException(nameof(modelBuilder));
 
+        var typeBase = typeof(TypeBase);
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            var typeBase = typeof(TypeBase);
             if (skipConventionalEntities)
             {
                 var typeConfigurationSource = typeBase.GetField("_configurationSource", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(entityType)?.ToString();
