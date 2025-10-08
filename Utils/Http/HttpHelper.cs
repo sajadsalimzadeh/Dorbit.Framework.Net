@@ -37,7 +37,8 @@ public class HttpHelper : IDisposable
     public bool IsRetryAfterUnAuthorized { get; set; } = true;
     public ContentType RequestContentType { get; set; } = ContentType.Json;
     public ContentType ResponseContentType { get; set; } = ContentType.Json;
-    public HttpClient HttpClient { get; set; }
+    public HttpClient HttpClient { get; private set; }
+    public CookieContainer CookieContainer { get; } = new ();
     public CancellationToken CancellationToken { get; set; }
 
     public event Action OnUnAuthorizedHandler;
@@ -50,6 +51,7 @@ public class HttpHelper : IDisposable
         {
             Proxy = null,
             UseProxy = false,
+            CookieContainer = CookieContainer,
             ServerCertificateCustomValidationCallback = delegate { return true; },
         };
 
@@ -134,7 +136,7 @@ public class HttpHelper : IDisposable
                     {
                         if (RequestContentType == ContentType.Json)
                         {
-                            var json = JsonSerializer.Serialize(httpRequest.Parameter);
+                            var json = JsonSerializer.Serialize(httpRequest.Parameter, JsonSerializerOptions.Web);
                             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                         }
                         else if (RequestContentType == ContentType.Xml)
@@ -190,9 +192,7 @@ public class HttpHelper : IDisposable
 
         if (httpModel.Response.IsSuccessStatusCode)
         {
-            await using var stream = await httpModel.Response.Content.ReadAsStreamAsync(CancellationToken);
-            using var reader = new StreamReader(stream);
-            httpModelType.Content = await reader.ReadToEndAsync(CancellationToken);
+            httpModelType.Content = await httpModel.Response.Content.ReadAsStringAsync(CancellationToken);
             try
             {
                 if (ResponseContentType == ContentType.Json)
