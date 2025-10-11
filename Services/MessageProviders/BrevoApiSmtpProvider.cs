@@ -54,7 +54,7 @@ public class BrevoApiSmtpProvider(ILogger logger) : IMessageProvider<MessageEmai
 
         if (httpModel.Result is null)
         {
-            logger.Error("Brevo result is null content: {@Content}", httpModel.Content);
+            logger.Error("Brevo result is null content: {@Content}", httpModel.Response);
             return new QueryResult<string>() { Success = false, Message = "Decode failed" };
         }
 
