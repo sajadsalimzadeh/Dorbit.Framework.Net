@@ -47,7 +47,7 @@ public static class HashUtil
         return Sha1(secretKey + secretKey + password);
     }
     
-    public static string Md5(string input, string salt)
+    public static string Md5(string input, string salt = "")
     {
         byte[] data;
         using (var md5Hash = MD5.Create())
