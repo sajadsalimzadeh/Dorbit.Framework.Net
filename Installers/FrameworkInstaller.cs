@@ -160,6 +160,7 @@ public static class FrameworkInstaller
         configs.ConfigLogRequest?.Configure(services);
         configs.ConfigCaptcha?.Configure(services);
         configs.ConfigGeo?.Configure(services);
+        configs.ConfigOpenAi?.Configure(services);
 
         if (configs.ConfigSecurity is not null)
         {
@@ -175,6 +176,25 @@ public static class FrameworkInstaller
         }
 
         return services;
+    }
+
+    public class Configs(IConfiguration configuration)
+    {
+        public List<string> Namespaces { get; init; } = configuration.GetSection("Namespaces").Get<List<string>>();
+        public List<string> AllowedOrigins { get; set; } = configuration.GetSection("AllowedOrigins").Get<List<string>>();
+
+        public IConfig<ConfigProject> ConfigProject { get; init; } = configuration.GetConfig<ConfigProject>("Project");
+        public IConfig<ConfigFile> ConfigFile { get; init; } = configuration.GetConfig<ConfigFile>("File");
+        public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; } = configuration.GetConfig<ConfigMessageProviders>("MessageProviders");
+        public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; } = configuration.GetConfig<ConfigFrameworkSecurity>("Security");
+        public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; } = configuration.GetConfig<ConfigLogRequest>("LogRequest");
+        public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; } = configuration.GetConfig<ConfigCaptcha>("Captcha");
+        public IConfig<ConfigGeo> ConfigGeo { get; init; } = configuration.GetConfig<ConfigGeo>("Geo");
+        public IConfig<ConfigOpenAi> ConfigOpenAi { get; set; } = configuration.GetConfig<ConfigOpenAi>("OpenAi");
+
+        public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
+
+        public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
     }
     
     public static WebApplication UseDorbit(this WebApplication app)
@@ -292,25 +312,6 @@ public static class FrameworkInstaller
                 await app.RunWithStartupsAsync();
             }
         }
-    }
-
-
-    public class Configs(IConfiguration configuration)
-    {
-        public List<string> Namespaces { get; init; } = configuration.GetSection("Namespaces").Get<List<string>>();
-        public List<string> AllowedOrigins { get; set; } = configuration.GetSection("AllowedOrigins").Get<List<string>>();
-
-        public IConfig<ConfigProject> ConfigProject { get; init; } = configuration.GetConfig<ConfigProject>("Project");
-        public IConfig<ConfigFile> ConfigFile { get; init; } = configuration.GetConfig<ConfigFile>("File");
-        public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; } = configuration.GetConfig<ConfigMessageProviders>("MessageProviders");
-        public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; } = configuration.GetConfig<ConfigFrameworkSecurity>("Security");
-        public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; } = configuration.GetConfig<ConfigLogRequest>("LogRequest");
-        public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; } = configuration.GetConfig<ConfigCaptcha>("Captcha");
-        public IConfig<ConfigGeo> ConfigGeo { get; init; } = configuration.GetConfig<ConfigGeo>("Geo");
-
-        public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
-
-        public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
     }
 
     public class ConfigSwaggerDoc(string name, string title, string prefixNamespace = null)
