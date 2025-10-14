@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Configs.Abstractions;
+using Dorbit.Framework.Converters;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Hosts;
@@ -139,6 +140,7 @@ public static class FrameworkInstaller
         services.AddControllersWithViews()
             .AddJsonOptions(options =>
             {
+                options.JsonSerializerOptions.Converters.Add(new UtcDateTimeConverter());
                 options.JsonSerializerOptions.WriteIndented = false;
                 options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;

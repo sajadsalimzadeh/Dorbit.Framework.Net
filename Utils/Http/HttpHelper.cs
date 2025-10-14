@@ -38,12 +38,12 @@ public class HttpHelper : IDisposable
     public ContentType RequestContentType { get; set; } = ContentType.Json;
     public ContentType ResponseContentType { get; set; } = ContentType.Json;
     public HttpClient HttpClient { get; private set; }
-    public CookieContainer CookieContainer { get; } = new ();
+    public CookieContainer CookieContainer { get; } = new();
     public CancellationToken CancellationToken { get; set; }
 
     public event Action OnUnAuthorizedHandler;
     public event Action OnForbiddenHandler;
-    public event Action<Exception, HttpRequestMessage, HttpResponseMessage> OnException;
+    public event Action<Exception, HttpModel> OnException;
 
     public HttpHelper(string baseUrl, HttpMessageHandler handler = null)
     {
@@ -190,9 +190,9 @@ public class HttpHelper : IDisposable
             Response = httpModel.Response,
         };
 
+        httpModelType.Content = await httpModel.Response.Content.ReadAsStringAsync(CancellationToken);
         if (httpModel.Response.IsSuccessStatusCode)
         {
-            httpModelType.Content = await httpModel.Response.Content.ReadAsStringAsync(CancellationToken);
             try
             {
                 if (ResponseContentType == ContentType.Json)
@@ -209,16 +209,12 @@ public class HttpHelper : IDisposable
             catch (Exception ex)
             {
                 OnException?.Invoke(
-                    new Exception($"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}", ex),
-                    httpModel.Request,
-                    httpModel.Response
-                );
+                    new Exception($"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}", ex), httpModel);
             }
         }
         else
         {
-            OnException?.Invoke(new Exception($"[{httpModel.Response.StatusCode}]"), httpModel.Request,
-                httpModel.Response);
+            OnException?.Invoke(new Exception($"[{httpModel.Response.StatusCode}]"), httpModel);
         }
 
         return httpModelType;
@@ -274,9 +270,9 @@ public class HttpHelper : IDisposable
         HttpClient?.Dispose();
     }
 
-    protected virtual void RaiseException(Exception arg1, HttpRequestMessage arg2, HttpResponseMessage arg3)
+    protected virtual void RaiseException(Exception arg1, HttpModel arg2)
     {
-        OnException?.Invoke(arg1, arg2, arg3);
+        OnException?.Invoke(arg1, arg2);
     }
 }
 
