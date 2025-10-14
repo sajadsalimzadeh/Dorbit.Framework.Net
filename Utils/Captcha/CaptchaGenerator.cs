@@ -6,6 +6,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.Fonts;
 using System;
 using System.IO;
+using System.Linq;
 using Dorbit.Framework.Contracts;
 
 namespace Dorbit.Framework.Utils.Captcha;
@@ -16,15 +17,7 @@ public class CaptchaGenerator
     public int Width { get; set; } = 80;
     public int Height { get; set; } = 200;
     
-    private static readonly string[] FontNames =
-    {
-        "Comic Sans MS",
-        "Arial",
-        "Times New Roman",
-        "Georgia",
-        "Verdana",
-        "Geneva"
-    };
+    private static readonly FontFamily[] FontFamilies = SystemFonts.Families.ToArray();
     
     public string GenerateBase64(string text, int width, int height)
     {
@@ -77,18 +70,18 @@ public class CaptchaGenerator
         };
     }
 
-    private string GetFontName(Random rnd)
+    private FontFamily GetFontFamily(Random rnd)
     {
         switch (Difficulty)
         {
-            case CaptchaDificulty.VeryEasy: return FontNames[0];
-            case CaptchaDificulty.Easy: return FontNames[rnd.Next(0, 1)];
-            case CaptchaDificulty.Normal: return FontNames[rnd.Next(0, 2)];
-            case CaptchaDificulty.Hard: return FontNames[rnd.Next(0, 4)];
+            case CaptchaDificulty.VeryEasy: return FontFamilies[0];
+            case CaptchaDificulty.Easy: return FontFamilies[rnd.Next(0, 1)];
+            case CaptchaDificulty.Normal: return FontFamilies[rnd.Next(0, 2)];
+            case CaptchaDificulty.Hard: return FontFamilies[rnd.Next(0, 4)];
             case CaptchaDificulty.VeryHard:
             case CaptchaDificulty.None:
             default:
-                return FontNames[rnd.Next(0, 5)];
+                return FontFamilies[rnd.Next(0, 5)];
         }
     }
 
@@ -109,11 +102,11 @@ public class CaptchaGenerator
                 var y = Height / 2 - 20;
 
                 var color = GetColor(rnd);
-                var fontName = GetFontName(rnd);
+                var font = GetFontFamily(rnd);
                 var fontSize = GetFontSize(rnd);
                 var fontStyle = GetFontStyle();
                 var location = new PointF(x, y);
-                ctx.DrawText(text[i].ToString(), SystemFonts.CreateFont(fontName, fontSize, fontStyle), color, location);
+                ctx.DrawText(text[i].ToString(), font.CreateFont(fontSize, fontStyle), color, location);
                 
             }
             
