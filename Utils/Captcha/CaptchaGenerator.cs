@@ -51,11 +51,11 @@ public class CaptchaGenerator
     {
         return Difficulty switch
         {
-            CaptchaDificulty.VeryEasy => rnd.Next(35, 40),
-            CaptchaDificulty.Easy => rnd.Next(30, 35),
-            CaptchaDificulty.Normal => rnd.Next(25, 30),
-            CaptchaDificulty.Hard => rnd.Next(20, 25),
-            _ => rnd.Next(20, 40),
+            CaptchaDificulty.VeryEasy => rnd.Next((int)(Height * .6), (int)(Height * .7)),
+            CaptchaDificulty.Easy => rnd.Next((int)(Height * .5), (int)(Height * .6)),
+            CaptchaDificulty.Normal => rnd.Next((int)(Height * .4), (int)(Height * .5)),
+            CaptchaDificulty.Hard => rnd.Next((int)(Height * .3), (int)(Height * .4)),
+            _ => rnd.Next((int)(Height * .2), (int)(Height * .3)),
         };
     }
 
