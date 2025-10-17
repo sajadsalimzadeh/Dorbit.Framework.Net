@@ -191,6 +191,11 @@ public static class StringExtensions
         return !string.IsNullOrEmpty(value?.Trim());
     }
 
+    public static string IfNotNullOrEmpty(this string value, string defaultValue)
+    {
+        return !string.IsNullOrEmpty(value?.Trim()) ? value : defaultValue;
+    }
+
     public static string Truncate(this string value, int maxLength)
     {
         if (string.IsNullOrEmpty(value)) return value;
