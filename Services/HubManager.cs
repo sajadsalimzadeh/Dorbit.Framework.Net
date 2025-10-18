@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-public class HubService
+public class HubManager
 {
     private ConcurrentDictionary<Guid, List<string>> UserToConnections { get; } = new();
     private ConcurrentDictionary<string, Guid> ConnectionToUsers { get; } = new();

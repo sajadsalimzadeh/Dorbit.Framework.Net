@@ -7,12 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Hubs;
 
-public abstract class NotificationHub(HubService hubService) : Hub
+public abstract class NotificationHub(HubManager hubManager) : Hub
 {
     public const string GroupUserOnline = "User-Online";
     public const string OnOnlineUserUpdated = nameof(OnOnlineUserUpdated);
     
-    protected readonly HubService HubService = hubService;
+    protected readonly HubManager HubManager = hubManager;
 
     public override async Task OnConnectedAsync()
     {
@@ -26,7 +26,7 @@ public abstract class NotificationHub(HubService hubService) : Hub
                 return;
             }
             var userId = (Guid)userResolver.User.GetId();
-            HubService.Add(userId, Context.ConnectionId);
+            HubManager.Add(userId, Context.ConnectionId);
         }
 
         await updateOnlineUsers();
@@ -35,12 +35,12 @@ public abstract class NotificationHub(HubService hubService) : Hub
 
     public override Task OnDisconnectedAsync(Exception exception)
     {
-        HubService.Remove(Context.ConnectionId);
+        HubManager.Remove(Context.ConnectionId);
         return base.OnDisconnectedAsync(exception);
     }
 
     public async Task updateOnlineUsers()
     {
-        await Clients.Group(GroupUserOnline).SendCoreAsync(OnOnlineUserUpdated, [HubService.GetAllUserId()]);
+        await Clients.Group(GroupUserOnline).SendCoreAsync(OnOnlineUserUpdated, [HubManager.GetAllUserId()]);
     }
 }
