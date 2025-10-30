@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Messages;
@@ -5,14 +6,13 @@ using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Http;
-using Serilog;
 
 namespace Dorbit.Framework.Services.MessageProviders;
 
 [ServiceRegister]
-public class BrevoApiSmtpProvider(ILogger logger) : IMessageProvider<MessageEmailRequest, ConfigMessageEmailProvider>
+public class BrevoEmailProvider : IMessageProvider<MessageEmailRequest, ConfigMessageEmailProvider>
 {
-    public string Name { get; } = "BrevoSmtpApi";
+    public string Name { get; } = "BrevoEmail";
 
     private string _sender;
     private string _senderName;
@@ -53,10 +53,7 @@ public class BrevoApiSmtpProvider(ILogger logger) : IMessageProvider<MessageEmai
         });
 
         if (httpModel.Result is null)
-        {
-            logger.Error("Brevo result is null content: {@Content}", httpModel.Response);
-            return new QueryResult<string>() { Success = false, Message = "Decode failed" };
-        }
+            throw new Exception($"Brevo result is null content: {httpModel.Content}");
 
         return new QueryResult<string>() { Success = true, Data = httpModel.Result.MessageId };
     }

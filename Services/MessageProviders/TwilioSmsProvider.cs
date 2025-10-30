@@ -34,7 +34,7 @@ public class TwilioSmsProvider : IMessageProviderSms
             from: new Twilio.Types.PhoneNumber(_sender),
             to: new Twilio.Types.PhoneNumber(request.To));
 
-        return new QueryResult<string>() { Success = true, Data = "" };
+        return new QueryResult<string>() { Success = !message.ErrorCode.HasValue, Data = "" };
     }
 
     public Task<long> GetCreditMessageCountAsync()
