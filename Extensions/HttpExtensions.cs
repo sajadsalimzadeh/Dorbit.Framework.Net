@@ -54,4 +54,9 @@ public static class HttpExtensions
     {
         return request.Headers.ContainsKey("User-Agent") ? request.Headers["User-Agent"] : string.Empty;
     }
+
+    public static string GetOrigin(this HttpRequest request)
+    {
+        return $"{request.Scheme}://{request.Host.Value}";
+    }
 }
