@@ -88,7 +88,8 @@ public class FilesController(
         return fileDto;
     }
 
-    [HttpPost, Auth, AntiDos(AntiDosAttribute.DurationType.Minute, 10)]
+    [HttpPost, Auth, AntiDos(AntiDosAttribute.DurationType.Hour, 50)]
+    [RequestSizeLimit(10_000_000)] 
     public async Task<QueryResult<string>> UploadAsync([FromForm] AttachmentUploadPrivateRequest request)
     {
         var file = Request.Form.Files[0];
