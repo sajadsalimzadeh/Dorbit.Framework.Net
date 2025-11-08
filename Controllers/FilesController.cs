@@ -27,13 +27,11 @@ public class FilesController(
     IIdentityService identityService,
     AttachmentRepository attachmentRepository) : BaseController
 {
-    private readonly ConcurrentDictionary<string, object> _monitors = new();
-    private readonly ConfigFile _configFile = options.Value;
-
     private string GetFilePath(string filename)
     {
-        if (!Directory.Exists(_configFile.BasePath)) Directory.CreateDirectory(_configFile.BasePath);
-        return Path.Combine(_configFile.BasePath, filename);
+        var configFile = options.Value;
+        if (!Directory.Exists(configFile.BasePath)) Directory.CreateDirectory(configFile.BasePath);
+        return Path.Combine(configFile.BasePath, filename);
     }
 
     private class FileDto
