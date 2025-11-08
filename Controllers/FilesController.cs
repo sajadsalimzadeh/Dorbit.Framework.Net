@@ -50,6 +50,9 @@ public class FilesController(
             return true;
         
         var identity = identityService.Identity;
+        if (identity is null)
+            return false;
+        
         if (identity.HasAccess(attachment.Access)) 
             return true;
         
@@ -58,7 +61,7 @@ public class FilesController(
         
         if (attachment.AccessTokens != null)
         {
-            if (Request.Headers.TryGetValue("FileAccessToken", out var accessToken) && attachment.AccessTokens.Contains(accessToken))
+            if (Request.Headers.TryGetValue("FileAuthorization", out var accessToken) && attachment.AccessTokens.Contains(accessToken))
                 return true;
         }
 
