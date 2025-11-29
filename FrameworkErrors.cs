@@ -17,5 +17,6 @@ public enum FrameworkErrors
     AesKeySizeMostEqualIvSize,
     MeliPayamakNeedPasswordAsProtectedPropertyInSetting,
     KavenegarNeedApiKeyAsProtectedPropertyInSetting,
-    EntityNotFound
+    EntityNotFound,
+    MaxSizeOverflow
 }

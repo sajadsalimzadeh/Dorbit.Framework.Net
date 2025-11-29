@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Net;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -30,19 +31,35 @@ public abstract class HttpClientApi<T> where T : ConfigClientApi
 
     protected virtual HttpHelper GetHttpHelper()
     {
-        var http = Config.GetHttpHelper(Logger);
-        http.AuthorizationToken = GetUserToken();
-        return http;
-    }
-    
-    
-    protected string GetUserToken()
-    {
-        if (HttpContextAccessor.HttpContext is null || !HttpContextAccessor.HttpContext.Request.Headers.TryGetValue("Authorization", out var tokenHeader))
+        var http = GetHttpHelperWithoutClientInfo();
+        http.AddHeader("Accept", "application/json");
+        http.AddHeader("Accept-Encoding", "none");
+
+        if (HttpContextAccessor.HttpContext is not null)
         {
-            return null;
+            if (HttpContextAccessor.HttpContext.Request.Headers.TryGetValue("Authorization", out var tokenHeader))
+            {
+                http.AuthorizationToken = tokenHeader;
+            }
+            
+            var hostname = HttpContextAccessor.HttpContext.Request.Host.Host;
+            foreach (var keyValuePair in HttpContextAccessor.HttpContext.Request.Cookies)
+            {
+                if (keyValuePair.Key == "CsrfToken")
+                {
+                    http.CookieContainer.Add(new Cookie(keyValuePair.Key, keyValuePair.Value)
+                    {
+                        Domain = hostname
+                    });
+                }
+            }
         }
 
-        return tokenHeader.FirstOrDefault();
+        return http;
+    }
+
+    protected virtual HttpHelper GetHttpHelperWithoutClientInfo()
+    {
+        return Config.GetHttpHelper(Logger);
     }
 }
