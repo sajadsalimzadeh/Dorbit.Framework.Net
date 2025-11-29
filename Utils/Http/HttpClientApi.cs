@@ -21,11 +21,11 @@ public abstract class HttpClientApi<T> where T : ConfigClientApi
         Logger = serviceProvider.GetRequiredService<ILogger>();
         HttpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
         Config = serviceProvider.GetRequiredService<IOptions<T>>().Value;
-        
-        if(Config.ApiUrl.IsNullOrEmpty())
+
+        if (Config.ApiUrl.IsNullOrEmpty())
             throw new Exception($"{GetType().Name}: ApiUrl is null or empty");
-        
-        if(Config.ApiKey is not null && Config.ApiKey.Value.IsNullOrEmpty())
+
+        if (Config.ApiKey is not null && Config.ApiKey.Value.IsNullOrEmpty())
             throw new Exception($"{GetType().Name}: ApiKey.Value is null or empty");
     }
 
@@ -41,15 +41,15 @@ public abstract class HttpClientApi<T> where T : ConfigClientApi
             {
                 http.AuthorizationToken = tokenHeader;
             }
-            
-            var hostname = HttpContextAccessor.HttpContext.Request.Host.Host;
+
+            var uri = new Uri(Config.ApiUrl);
             foreach (var keyValuePair in HttpContextAccessor.HttpContext.Request.Cookies)
             {
-                if (keyValuePair.Key == "CsrfToken")
+                if (string.Equals(keyValuePair.Key, "CsrfToken", StringComparison.OrdinalIgnoreCase))
                 {
                     http.CookieContainer.Add(new Cookie(keyValuePair.Key, keyValuePair.Value)
                     {
-                        Domain = hostname
+                        Domain = uri.Host
                     });
                 }
             }
