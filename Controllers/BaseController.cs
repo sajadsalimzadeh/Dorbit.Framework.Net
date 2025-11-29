@@ -6,6 +6,7 @@ using Dorbit.Framework.Utils.Queries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace Dorbit.Framework.Controllers;
 
@@ -17,6 +18,9 @@ public abstract class BaseController : ControllerBase
 
     private IUserResolver _userResolver;
     protected IUserResolver UserResolver => _userResolver ??= ServiceProvider.GetRequiredService<IUserResolver>();
+    
+    private ILogger _logger;
+    protected ILogger Logger => _logger ??= ServiceProvider.GetRequiredService<ILogger>();
     
     private IMemoryCache _memoryCache;
     protected IMemoryCache MemoryCache => _memoryCache ??= ServiceProvider.GetRequiredService<IMemoryCache>();

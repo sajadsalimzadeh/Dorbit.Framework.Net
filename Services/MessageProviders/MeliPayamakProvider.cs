@@ -28,9 +28,8 @@ public class MeliPayamakProvider : IMessageProviderSms
     public void Configure(ConfigMessageSmsProvider configuration)
     {
         _username = configuration.Username;
-        if (configuration.Password is null)
+        _password = configuration.ApiKey?.GetDecryptedValue() ?? configuration.Password?.GetDecryptedValue() ??
             throw new OperationException(FrameworkErrors.MeliPayamakNeedPasswordAsProtectedPropertyInSetting);
-        _password = configuration.Password.GetDecryptedValue();
     }
 
     public async Task<QueryResult<string>> SendAsync(MessageSmsRequest request)
