@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Dorbit.Framework.Contracts.Identities;
 using Microsoft.AspNetCore.Http;
 
 namespace Dorbit.Framework.Extensions;
@@ -48,6 +49,17 @@ public static class HttpExtensions
             "Csrf-Token",
             "CsrfToken",
         ]);
+    }
+
+    public static IdentityValidateRequest GetIdentityRequest(this HttpContext context)
+    {
+        var request = new IdentityValidateRequest(); 
+        request.IpV4 = context.Connection.RemoteIpAddress?.MapToIPv4().ToString();
+        request.IpV6 = context.Connection.RemoteIpAddress?.MapToIPv6().ToString();
+        request.UserAgent = context.Request.Headers.FirstValueOrDefault("User-Agent");
+        request.AccessToken = context.Request.GetAccessToken();
+        request.CsrfToken = context.Request.GetCsrfToken();
+        return request;
     }
 
     public static string GetUserAgent(this HttpRequest request)

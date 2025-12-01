@@ -5,12 +5,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Abstractions;
+using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Dorbit.Framework.Contracts.Jobs;
 
 public class Job
 {
+    private readonly IJobHub _jobHub;
+
     public enum AuditLogType
     {
         Create = 0,
@@ -54,6 +57,7 @@ public class Job
 
     public Guid Id { get; set; } = Guid.NewGuid();
     public Exception Exception { get; private set; }
+    public string Step { get; set; }
     public string Name { get; set; }
     public List<JobLog> Logs { get; } = [];
     public List<AuditLog> AuditLogs { get; } = [];
@@ -91,8 +95,9 @@ public class Job
         }
     }
 
-    public Job()
+    public Job(IJobHub jobHub)
     {
+        _jobHub = jobHub;
         Logger = new JobLogger(this);
     }
 
@@ -121,6 +126,7 @@ public class Job
             {
                 EndTime = DateTime.UtcNow;
                 Status = (Logs.Any(x => x.Level == LogLevel.Error || x.Level == LogLevel.Critical) ? JobStatus.FinishError : JobStatus.Finish);
+                await UpdateStatusAsync();
                 _semaphore.Release();
             }
         }
@@ -149,5 +155,29 @@ public class Job
     {
         _semaphore.WaitOne();
         return Task.CompletedTask;
+    }
+
+    public Task UpdateStatusAsync()
+    {
+        return _jobHub?.UpdateJobAsync(this) ?? Task.CompletedTask;
+    }
+    
+    public Task UpdateStatusAsync(string step)
+    {
+        Step = step;
+        return _jobHub?.UpdateJobAsync(this) ?? Task.CompletedTask;
+    }
+    
+    public Task UpdateStatusAsync(double progress)
+    {
+        Progress = progress;
+        return _jobHub?.UpdateJobAsync(this) ?? Task.CompletedTask;
+    }
+    
+    public Task UpdateStatusAsync(string step, double progress)
+    {
+        Step = step;
+        Progress = progress;
+        return _jobHub?.UpdateJobAsync(this) ?? Task.CompletedTask;
     }
 }

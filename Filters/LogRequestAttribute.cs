@@ -3,7 +3,6 @@ using System.IO;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Loggers;
 using Dorbit.Framework.Extensions;
-using Dorbit.Framework.Hosts;
 using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;

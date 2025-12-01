@@ -14,6 +14,7 @@ public class JobDto
     public bool Pausable { get; set; }
     public bool Downloadable { get; set; }
     public string DownloadFilename { get; set; }
+    public string Step { get; set; }
     public double Progress { get; set; }
     public List<Job.AuditLog> AuditLogs { get; set; }
 }

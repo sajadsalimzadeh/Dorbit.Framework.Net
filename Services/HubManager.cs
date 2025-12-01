@@ -3,13 +3,16 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister(Lifetime = ServiceLifetime.Singleton)]
-public class HubManager
+public class HubManager(IHubContext<BaseHub> hubContext)
 {
+    public IHubContext<BaseHub> HubContext => hubContext;
     private ConcurrentDictionary<Guid, List<string>> UserToConnections { get; } = new();
     private ConcurrentDictionary<string, Guid> ConnectionToUsers { get; } = new();
 

@@ -59,13 +59,8 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
             accesses = [];
         }
 
-        var identityRequest = new IdentityValidateRequest();
-        identityRequest.IpV4 = context.HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
-        identityRequest.IpV6 = context.HttpContext.Connection.RemoteIpAddress?.MapToIPv6().ToString();
-        identityRequest.UserAgent = context.HttpContext.Request.Headers.FirstValueOrDefault("User-Agent");
-        var httpRequest = context.HttpContext.Request;
-        identityRequest.AccessToken = httpRequest.GetAccessToken();
-        identityRequest.CsrfToken = httpRequest.GetCsrfToken();
+        var identityRequest = context.HttpContext.GetIdentityRequest();
+        
 
         var serviceProvider = context.HttpContext.RequestServices;
 

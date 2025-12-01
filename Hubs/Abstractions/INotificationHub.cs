@@ -5,6 +5,6 @@ namespace Dorbit.Framework.Hubs.Abstractions;
 
 public interface INotificationHub
 {
-    NotificationHub Hub { get; }
+    BaseHub Hub { get; }
     ConcurrentDictionary<Guid, string> Connections { get; }
 }

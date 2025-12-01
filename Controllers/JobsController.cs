@@ -24,23 +24,6 @@ public class JobsController(JobService jobService) : BaseController
         return jobs.MapTo<List<JobDto>>().ToQueryResult();
     }
 
-    [HttpGet("Watch")]
-    public async IAsyncEnumerable<JobStatusDto> WatchAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.CancelAfter(TimeSpan.FromSeconds(30));
-
-        var jobs = await jobService.GetAllAsync();
-        while (!cts.IsCancellationRequested)
-        {
-            await Task.Delay(250, cancellationToken);
-            foreach (var statusDto in jobs.Select(x => new JobStatusDto() { Id = x.Id, Progress = x.Progress, Status = x.Status, }))
-            {
-                yield return statusDto;
-            }
-        }
-    }
-
     [HttpGet("{id:guid}/Logs")]
     public async Task<QueryResult<List<JobLogDto>>> GetAllLogsAsync(Guid id, LogLevel? logLevel)
     {
