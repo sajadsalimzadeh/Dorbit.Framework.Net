@@ -87,11 +87,6 @@ public class HttpHelper : IDisposable
     {
         var request = new HttpRequestMessage(httpRequest.Method, httpRequest.Url);
 
-        if (AuthorizationToken is not null)
-        {
-            request.Headers.Add("Authorization", AuthorizationToken);
-        }
-
         if (Username is not null && Password is not null)
         {
             var authenticationString = $"{Username}:{Password}";
@@ -160,7 +155,15 @@ public class HttpHelper : IDisposable
 
     public async Task<HttpModel> SendAsync(HttpRequestMessage request)
     {
-        foreach (var item in _headers) request.Headers.Add(item.Key, item.Value);
+        if (AuthorizationToken is not null)
+        {
+            request.Headers.Add("Authorization", AuthorizationToken);
+        }
+
+        foreach (var item in _headers)
+        {
+            request.Headers.Add(item.Key, item.Value);
+        }
 
         var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
         return new HttpModel()

@@ -35,7 +35,7 @@ public static class MapperExtensions
         return App.Mapper.Map<List<TR>>(await task);
     }
 
-    public static T PatchObject<T>(this T model, object patch, Type pathType = null)
+    public static T PatchObject<T>(this T model, object patch)
     {
         if (patch is not JsonElement jsonElement)
         {

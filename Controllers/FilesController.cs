@@ -21,13 +21,13 @@ namespace Dorbit.Framework.Controllers;
 [Route("Framework/[controller]")]
 public class FilesController(
     IMemoryCache memoryCache,
-    IOptions<ConfigFile> options,
+    IOptions<ConfigFile> configFileOptions,
     IIdentityService identityService,
     AttachmentRepository attachmentRepository) : BaseController
 {
     private string GetFilePath(string filename)
     {
-        var configFile = options.Value;
+        var configFile = configFileOptions.Value;
         if (!Directory.Exists(configFile.BasePath)) Directory.CreateDirectory(configFile.BasePath);
         return Path.Combine(configFile.BasePath, filename);
     }
@@ -41,22 +41,22 @@ public class FilesController(
 
     private bool ValidateAccess(Attachment attachment)
     {
-        if (!attachment.IsPrivate) 
+        if (!attachment.IsPrivate)
             return true;
-        
+
         if (attachment.Access.IsNullOrEmpty())
             return true;
-        
+
         var identity = identityService.Identity;
         if (identity is null)
             return false;
-        
-        if (identity.HasAccess(attachment.Access)) 
+
+        if (identity.HasAccess(attachment.Access))
             return true;
-        
-        if (attachment.UserIds != null && attachment.UserIds.Contains(identity.User.GetId())) 
+
+        if (attachment.UserIds != null && attachment.UserIds.Contains(identity.User.GetId()))
             return true;
-        
+
         if (attachment.AccessTokens != null)
         {
             if (Request.Headers.TryGetValue("FileAuthorization", out var accessToken) && attachment.AccessTokens.Contains(accessToken))
@@ -87,11 +87,36 @@ public class FilesController(
         return fileDto;
     }
 
-    [HttpPost, Auth, AntiDos(AntiDosAttribute.DurationType.Hour, 50)]
-    [RequestSizeLimit(10_000_000)] 
+    [HttpPost, Auth, AntiDos(AntiDosAttribute.DurationType.Hour, 20)]
     public async Task<QueryResult<string>> UploadAsync([FromForm] AttachmentUploadPrivateRequest request)
     {
         var file = Request.Form.Files[0];
+        if (file.Length > configFileOptions.Value.MaxSize)
+        {
+            var hasAccess = false;
+            if (configFileOptions.Value.MaxSizeAccessibility is not null)
+            {
+                foreach (var access in configFileOptions.Value.MaxSizeAccessibility)
+                {
+                    if (identityService.Identity.HasAccess(access.Key) && file.Length < access.Value)
+                    {
+                        hasAccess = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasAccess)
+                throw new OperationException(FrameworkErrors.MaxSizeOverflow)
+                {
+                    Data =
+                    {
+                        { "MaxSize", configFileOptions.Value.MaxSize }
+                    }
+                };
+        }
+
+
         var ext = Path.GetExtension(file.FileName);
         var filename = Guid.NewGuid() + ext;
         var filePath = GetFilePath(filename);
