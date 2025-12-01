@@ -5,7 +5,6 @@ using System.Security.Authentication;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
-using Dorbit.Framework.Contracts.Identities;
 using Dorbit.Framework.Controllers;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;

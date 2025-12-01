@@ -19,7 +19,6 @@ using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Json;
 using EFCore.BulkExtensions;
-using EFCore.BulkExtensions.SqlAdapters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;

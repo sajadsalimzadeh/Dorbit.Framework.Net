@@ -1,7 +1,4 @@
 using Dorbit.Framework.Contracts.Cryptograpy;
-using Dorbit.Framework.Extensions;
-using Dorbit.Framework.Utils.Http;
-using Serilog;
 
 namespace Dorbit.Framework.Configs;
 

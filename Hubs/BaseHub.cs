@@ -1,8 +1,5 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
-using Dorbit.Framework.Contracts.Identities;
-using Dorbit.Framework.Contracts.Jobs;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
