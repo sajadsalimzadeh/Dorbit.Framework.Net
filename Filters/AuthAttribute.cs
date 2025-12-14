@@ -73,7 +73,7 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
                 throw new AuthenticationException();
             
             
-            if (accesses is not null && accesses.Length > 0 && !identity.IsFullAccess && !accesses.Any(x => identity.DeepAccessibility.Contains(x)))
+            if (accesses is not null && accesses.Length > 0 && !identity.IsFullAccess && !accesses.Any(x => identity.HasAccess(x)))
                 throw new UnauthorizedAccessException();
 
             for (var i = 0; i < context.ActionDescriptor.Parameters.Count; i++)
