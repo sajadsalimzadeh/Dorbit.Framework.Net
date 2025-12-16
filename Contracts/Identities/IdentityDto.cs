@@ -14,6 +14,6 @@ public class IdentityDto
 
     public bool HasAccess(string access)
     {
-        return IsFullAccess || access.IsNullOrEmpty() || DeepAccessibility.Contains(access);
+        return IsFullAccess || access.IsNullOrEmpty() || DeepAccessibility.Contains(access.ToLower());
     }
 }
