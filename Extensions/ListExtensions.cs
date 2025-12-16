@@ -55,4 +55,9 @@ public static class ListExtensions
     {
         return items is not null && items.Any();
     }
+    
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T> items)
+    {
+        return items is null || !items.Any();
+    }
 }
