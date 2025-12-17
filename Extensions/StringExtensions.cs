@@ -247,6 +247,7 @@ public static class StringExtensions
 
     public static long ToVersionNumber(this string version, char splitter = '.')
     {
+        if (version.IsNullOrEmpty()) return 0;
         var segments = version.Split(splitter).Select(int.Parse).ToList();
         long result = 0;
         foreach (var segment in segments)
