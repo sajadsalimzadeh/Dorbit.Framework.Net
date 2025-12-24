@@ -51,9 +51,9 @@ public static class HttpExtensions
         ]);
     }
 
-    public static IdentityValidateRequest GetIdentityRequest(this HttpContext context)
+    public static IdentityRequest GetIdentityRequest(this HttpContext context)
     {
-        var request = new IdentityValidateRequest(); 
+        var request = new IdentityRequest(); 
         request.IpV4 = context.Connection.RemoteIpAddress?.MapToIPv4().ToString();
         request.IpV6 = context.Connection.RemoteIpAddress?.MapToIPv6().ToString();
         request.UserAgent = context.Request.Headers.FirstValueOrDefault("User-Agent");

@@ -136,6 +136,8 @@ public static class FrameworkInstaller
 
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
 
+        services.AddSignalR();
+        
         services.AddControllersWithViews()
             .AddJsonOptions(options =>
             {
