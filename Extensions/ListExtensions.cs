@@ -51,8 +51,20 @@ public static class ListExtensions
         return items.FirstOrDefault(x => x.Key == key).Value.ToString();
     }
 
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T> items)
+    {
+        return items is null || !items.Any();
+    }
+
     public static bool IsNotNullOrEmpty<T>(this IEnumerable<T> items)
     {
         return items is not null && items.Any();
+    }
+
+    public static bool AddIfNotNull<T>(this List<T> items, T obj)
+    {
+        if (obj == null) return false;
+        items.Add(obj);
+        return true;
     }
 }

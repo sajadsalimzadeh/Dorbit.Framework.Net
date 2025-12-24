@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
+using Dorbit.Framework.Entities.Abstractions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Dorbit.Framework.Extensions;
@@ -54,10 +55,13 @@ public static class MapperExtensions
         var jsonProperties = jsonElement.EnumerateObject();
         foreach (var jsonProperty in jsonProperties)
         {
-            var property = properties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.CurrentCultureIgnoreCase));
+            var property = properties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.OrdinalIgnoreCase));
             if (property is null) continue;
             var pathValue = property.GetValue(patchObject);
-            property.SetValue(model, pathValue);
+            if (!property.PropertyType.IsAssignableTo(typeof(IEntity)) && !(property.PropertyType.GenericTypeArguments.Length > 0 && property.PropertyType.GenericTypeArguments[0].IsAssignableTo(typeof(IEntity))))
+            {
+                property.SetValue(model, pathValue);
+            }
         }
 
         return model;
