@@ -1,6 +1,7 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Dorbit.Gold.Contracts;
+namespace Dorbit.Framework.Contracts.Entities;
 
 [NotMapped]
 public class StatusLog<T> where T : Enum
