@@ -219,7 +219,7 @@ public static class EntityExtensions
         });
     }
     
-    public static void SetStatusLog<T, TE>(this T entity, TE status, Guid? userId, string description = null) where T : IStatusLog<TE> where TE : Enum
+    public static void SetStatusLog<T, TE>(this T entity, TE status, Guid? userId = null, string description = null) where T : IStatusLog<TE> where TE : Enum
     {
         entity.Status = status;
         entity.StatusLogs ??= [];

@@ -22,6 +22,11 @@ public static class EnvironmentUtil
         if (InMemory()) return true;
         return string.Equals(GetEnvironment(), Environments.Development, StringComparison.CurrentCultureIgnoreCase);
     }
+    
+    public static bool IsProduction()
+    {
+        return !IsDevelopment();
+    }
 
     public static string GetArgValue(string name)
     {
