@@ -29,11 +29,22 @@ public class TranslationService(TranslationRepository translationRepository, Ope
         }
     }
 
-    public string TranslateLocale(string str, string locale)
+    public string TranslateLocale(string str, string locale, Dictionary<string, string> args = null)
     {
-        if (locale is not null && Translations.TryGetValue(locale, out var dict))
+        locale ??= "en";
+        if (Translations.TryGetValue(locale, out var dict))
         {
-            if (dict.TryGetValue(str, out var result)) return result;
+            if (dict.TryGetValue(str, out var result))
+            {
+                if (args is not null)
+                {
+                    foreach (var keyValuePair in args)
+                    {
+                        result = result.Replace($"{{{keyValuePair.Key}}}", keyValuePair.Value);   
+                    }
+                }
+                return result;
+            }
         }
 
         return str;
