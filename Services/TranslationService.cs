@@ -31,7 +31,7 @@ public class TranslationService(TranslationRepository translationRepository, Ope
 
     public string TranslateLocale(string str, string locale)
     {
-        if (_translations.TryGetValue(locale, out var dict))
+        if (locale is not null && _translations.TryGetValue(locale, out var dict))
         {
             if (dict.TryGetValue(str, out var result)) return result;
         }
