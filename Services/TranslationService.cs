@@ -10,10 +10,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dorbit.Framework.Services;
 
-[ServiceSingletone]
+[ServiceRegister]
 public class TranslationService(TranslationRepository translationRepository, OpenAiService openAiService)
 {
-    private readonly Dictionary<string, Dictionary<string, string>> _translations = new();
+    private static readonly Dictionary<string, Dictionary<string, string>> Translations = new();
 
     public async Task LoadAllLocaleAsync()
     {
@@ -24,14 +24,14 @@ public class TranslationService(TranslationRepository translationRepository, Ope
             {
                 var locale = Path.GetFileNameWithoutExtension(localeFile);
                 var content = await File.ReadAllTextAsync(localeFile);
-                _translations[locale] = JsonSerializer.Deserialize<Dictionary<string, string>>(content);
+                Translations[locale] = JsonSerializer.Deserialize<Dictionary<string, string>>(content);
             }
         }
     }
 
     public string TranslateLocale(string str, string locale)
     {
-        if (locale is not null && _translations.TryGetValue(locale, out var dict))
+        if (locale is not null && Translations.TryGetValue(locale, out var dict))
         {
             if (dict.TryGetValue(str, out var result)) return result;
         }
