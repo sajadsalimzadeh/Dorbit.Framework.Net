@@ -15,7 +15,7 @@ namespace Dorbit.Framework.Controllers;
 [Route("Framework/[controller]")]
 public class TranslationsController(TranslationRepository translationRepository) : BaseController
 {
-    [Auth, HttpPost]
+    [Auth, HttpPost, ResponseCache(Duration = 60)]
     public Task<QueryResult<List<Translation>>> TranslateAllAsync([FromQuery] string locale, [FromBody] List<string> keys)
     {
         if(keys == null || keys.Count == 0) throw  new ArgumentNullException(nameof(keys));
