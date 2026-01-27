@@ -15,9 +15,9 @@ public static class MapperExtensions
         return App.Mapper.Map<T>(obj);
     }
 
-    public static List<TR> MapTo<T, TR>(this List<T> obj)
+    public static List<TResult> MapTo<T, TResult>(this List<T> obj)
     {
-        return App.Mapper.Map<List<TR>>(obj);
+        return App.Mapper.Map<List<TResult>>(obj);
     }
 
     public static T MapTo<T>(this object obj, T model)
@@ -25,17 +25,17 @@ public static class MapperExtensions
         return App.Mapper.Map(obj, model);
     }
 
-    public static async Task<TR> MapToAsync<T, TR>(this Task<T> task)
+    public static async Task<TResult> MapToAsync<T, TResult>(this Task<T> task)
     {
-        return App.Mapper.Map<TR>(await task);
+        return App.Mapper.Map<TResult>(await task);
     }
 
-    public static async Task<List<TR>> MapToAsync<T, TR>(this Task<List<T>> task)
+    public static async Task<List<TResult>> MapToAsync<T, TResult>(this Task<List<T>> task)
     {
-        return App.Mapper.Map<List<TR>>(await task);
+        return App.Mapper.Map<List<TResult>>(await task);
     }
 
-    public static T PatchObject<T>(this T model, object patch)
+    public static T PatchObject<T, TPatch>(this T model, object patch)
     {
         if (patch is not JsonElement jsonElement)
         {
@@ -49,15 +49,16 @@ public static class MapperExtensions
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
             PropertyNameCaseInsensitive = true
         };
-        var patchObject = JsonSerializer.Deserialize<T>(jsonElement.GetRawText(), options);
-        var properties = typeof(T).GetProperties();
-        var jsonProperties = jsonElement.EnumerateObject();
-        foreach (var jsonProperty in jsonProperties)
+        var patchObject = JsonSerializer.Deserialize<TPatch>(jsonElement.GetRawText(), options);
+        var resultProperties = typeof(T).GetProperties();
+        var patchProperties = typeof(TPatch).GetProperties();
+        foreach (var jsonProperty in jsonElement.EnumerateObject())
         {
-            var property = properties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.CurrentCultureIgnoreCase));
-            if (property is null) continue;
-            var pathValue = property.GetValue(patchObject);
-            property.SetValue(model, pathValue);
+            var resultProperty = resultProperties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.CurrentCultureIgnoreCase));
+            var patchProperty = patchProperties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.CurrentCultureIgnoreCase));
+            if (resultProperty is null || patchProperty is null) continue;
+            var pathValue = patchProperty.GetValue(patchObject);
+            resultProperty.SetValue(model, pathValue);
         }
 
         return model;

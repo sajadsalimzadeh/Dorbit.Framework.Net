@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Attachments;
@@ -167,7 +168,7 @@ public class FilesController(
     }
 
     [HttpPatch("{filename}/Info"), Auth]
-    public async Task<QueryResult<Attachment>> PatchInfoAsync([FromRoute] string filename, [FromBody] AttachmentPatchRequest request)
+    public async Task<QueryResult<Attachment>> PatchInfoAsync([FromRoute] string filename, [FromBody] JsonElement request)
     {
         var attachment = await attachmentRepository.FirstOrDefaultAsync(x => x.Filename == filename)
                          ?? throw new OperationException(FrameworkErrors.EntityNotFound);
@@ -175,7 +176,7 @@ public class FilesController(
         if (identityService.Identity.User.GetId() != attachment.UserId)
             throw new UnauthorizedAccessException();
 
-        attachment = await attachmentRepository.PatchAsync(attachment, request);
+        attachment = await attachmentRepository.PatchAsync<AttachmentPatchRequest>(attachment, request);
         return attachment.ToQueryResult();
     }
 }

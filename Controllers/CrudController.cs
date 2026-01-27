@@ -67,7 +67,7 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController
     {
         MemoryCache.Remove(id.ToString() ?? string.Empty);
         MemoryCache.Remove(typeof(TEntity));
-        var entity = await Repository.PatchAsync(id, obj);
+        var entity = await Repository.PatchAsync<TEntity>(id, obj);
         return entity.MapTo<TGet>().ToQueryResult();
     }
 
