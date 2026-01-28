@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
-using Dorbit.Framework.Entities.Abstractions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Dorbit.Framework.Extensions;

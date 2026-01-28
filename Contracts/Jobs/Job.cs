@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Abstractions;
+using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Logging;
 
@@ -12,8 +13,6 @@ namespace Dorbit.Framework.Contracts.Jobs;
 
 public class Job
 {
-    private readonly IJobHub _jobHub;
-
     public enum AuditLogType
     {
         Create = 0,
@@ -52,19 +51,22 @@ public class Job
     private JobStatus _status = JobStatus.Draft;
     private Thread _thread;
     private double _progress;
+    private JobService _jobService;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly Semaphore _semaphore = new(0, 1);
 
     public Guid Id { get; set; } = Guid.NewGuid();
     public Exception Exception { get; private set; }
     public string Step { get; set; }
-    public string Name { get; set; }
+    public string Name { get; }
+    public Func<Job, Task> Action { get; }
     public List<JobLog> Logs { get; } = [];
     public List<AuditLog> AuditLogs { get; } = [];
     public JobLogger Logger { get; }
     public bool Pausable { get; set; }
     public string DownloadFilename { get; set; }
     public Func<Stream> Download { get; set; }
+    public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
     public DateTime? StartTime { get; private set; }
     public DateTime? CancelTime { get; private set; }
@@ -95,13 +97,15 @@ public class Job
         }
     }
 
-    public Job(IJobHub jobHub)
+    public Job(string name, Func<Job, Task> action, JobService jobService)
     {
-        _jobHub = jobHub;
+        Name = name;
+        Action = action;   
         Logger = new JobLogger(this);
+        _jobService = jobService;
     }
 
-    public void Start(Func<CancellationToken, Task> task)
+    public void Start()
     {
         if (_thread is not null) return;
 
@@ -112,23 +116,28 @@ public class Job
 
         async void ThreadStart()
         {
-            try
-            {
-                Status = JobStatus.Running;
-                await task(_cancellationTokenSource.Token);
-            }
-            catch (Exception ex)
-            {
-                Exception = ex;
-                Logger.LogError($"{ex.Message} {ex.InnerException?.Message}");
-            }
-            finally
-            {
-                EndTime = DateTime.UtcNow;
-                Status = (Logs.Any(x => x.Level == LogLevel.Error || x.Level == LogLevel.Critical) ? JobStatus.FinishError : JobStatus.Finish);
-                await UpdateStatusAsync();
-                _semaphore.Release();
-            }
+            await StartAndWaitAsync();
+        }
+    }
+
+    public async Task StartAndWaitAsync()
+    {
+        try
+        {
+            Status = JobStatus.Running;
+            await Action.Invoke(this);
+        }
+        catch (Exception ex)
+        {
+            Exception = ex;
+            Logger.LogError($"{ex.Message} {ex.InnerException?.Message}");
+        }
+        finally
+        {
+            EndTime = DateTime.UtcNow;
+            Status = (Logs.Any(x => x.Level == LogLevel.Error || x.Level == LogLevel.Critical) ? JobStatus.FinishError : JobStatus.Finish);
+            await UpdateStatusAsync();
+            _semaphore.Release();
         }
     }
 
@@ -159,25 +168,30 @@ public class Job
 
     public Task UpdateStatusAsync()
     {
-        return _jobHub?.UpdateJobAsync(this) ?? Task.CompletedTask;
+        return _jobService?.UpdateJobAsync(this) ?? Task.CompletedTask;
     }
     
     public Task UpdateStatusAsync(string step)
     {
         Step = step;
-        return _jobHub?.UpdateJobAsync(this) ?? Task.CompletedTask;
+        return _jobService?.UpdateJobAsync(this) ?? Task.CompletedTask;
     }
     
     public Task UpdateStatusAsync(double progress)
     {
         Progress = progress;
-        return _jobHub?.UpdateJobAsync(this) ?? Task.CompletedTask;
+        return _jobService?.UpdateJobAsync(this) ?? Task.CompletedTask;
     }
     
     public Task UpdateStatusAsync(string step, double progress)
     {
         Step = step;
         Progress = progress;
-        return _jobHub?.UpdateJobAsync(this) ?? Task.CompletedTask;
+        return _jobService?.UpdateJobAsync(this) ?? Task.CompletedTask;
+    }
+
+    public void Enqueue()
+    {
+        _jobService.Enqueue(this);
     }
 }
