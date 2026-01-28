@@ -35,15 +35,18 @@ public static class MapperExtensions
         return App.Mapper.Map<List<TResult>>(await task);
     }
 
-    public static T PatchObject<T, TPatch>(this T model, object patch)
+    public static T PatchObject<T, TPatch>(this T model, TPatch patch)
     {
-        if (patch is not JsonElement jsonElement)
-        {
-            var json = JsonSerializer.Serialize(patch);
-            var doc = JsonDocument.Parse(json);
-            jsonElement = doc.RootElement;
-        }
+        if (patch is JsonElement jsonElement) return model.PatchObjectWithJson<T, TPatch>(jsonElement);
         
+        var json = JsonSerializer.Serialize(patch);
+        var doc = JsonDocument.Parse(json);
+        jsonElement = doc.RootElement;
+        return model.PatchObjectWithJson<T, TPatch>(jsonElement);
+    }
+
+    public static T PatchObjectWithJson<T, TPatch>(this T model, JsonElement jsonElement)
+    {
         var options = new JsonSerializerOptions
         {
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
