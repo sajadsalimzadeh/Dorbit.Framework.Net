@@ -22,9 +22,9 @@ public static class QueryableExtensions
         return query.GetById<TEntity, Guid>(id);
     }
 
-    public static Task<TEntity> GetByIdAsync<TEntity>(this IQueryable<TEntity> query, Guid id) where TEntity : IEntity
+    public static Task<TEntity> GetByIdAsync<TEntity>(this IQueryable<TEntity> query, Guid id, CancellationToken cancellationToken = default) where TEntity : IEntity
     {
-        return query.FirstOrDefaultAsync(x => x.Id == id);
+        return query.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
     public static Task<List<TEntity>> ToListAsyncBy<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate,

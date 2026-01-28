@@ -106,15 +106,15 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
         return await UpdateAsync(dto.MapTo(entity), cancellationToken);
     }
 
-    public async Task<TEntity> PatchAsync(TKey key, object patch, CancellationToken cancellationToken = default)
+    public async Task<TEntity> PatchAsync<TPatch>(TKey key, object patch, CancellationToken cancellationToken = default)
     {
         var entity = await GetByIdAsync(key, cancellationToken);
-        return await PatchAsync(entity, patch, cancellationToken);
+        return await PatchAsync<TPatch>(entity, patch, cancellationToken);
     }
 
-    public async Task<TEntity> PatchAsync(TEntity entity, object patch, CancellationToken cancellationToken = default)
+    public async Task<TEntity> PatchAsync<TPatch>(TEntity entity, object patch, CancellationToken cancellationToken = default)
     {
-        entity = entity.PatchObject(patch);
+        entity = entity.PatchObject<TEntity, TPatch>(patch);
         return await UpdateAsync(entity, cancellationToken);
     }
 
@@ -123,7 +123,7 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
         var entity = await GetByIdAsync(id, cancellationToken);
         if (entity is not null)
         {
-            entity = entity.PatchObject(dto);
+            entity = entity.PatchObject<TEntity, TDto>(dto);
             entity.Id = id;
             return await UpdateAsync(entity, cancellationToken);
         }

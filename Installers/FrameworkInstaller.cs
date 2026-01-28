@@ -162,6 +162,7 @@ public static class FrameworkInstaller
         configs.ConfigCaptcha?.Configure(services);
         configs.ConfigGeo?.Configure(services);
         configs.ConfigOpenAi?.Configure(services);
+        configs.ConfigWebPush.Configure(services);
 
         if (configs.ConfigSecurity is not null)
         {
@@ -192,7 +193,8 @@ public static class FrameworkInstaller
         public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; } = configuration.GetConfig<ConfigCaptcha>("Captcha");
         public IConfig<ConfigGeo> ConfigGeo { get; init; } = configuration.GetConfig<ConfigGeo>("Geo");
         public IConfig<ConfigOpenAi> ConfigOpenAi { get; set; } = configuration.GetConfig<ConfigOpenAi>("OpenAi");
-
+        public IConfig<ConfigWebPush> ConfigWebPush { get; set; } = configuration.GetConfig<ConfigWebPush>("WebPush");
+        
         public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
 
         public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }

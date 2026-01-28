@@ -17,19 +17,14 @@ public static class LetsEncryptInstaller
         {
             var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../Certificates/");
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-            builder.Services.AddLettuceEncrypt(options =>
-                {
-                    options.RenewDaysInAdvance = TimeSpan.FromDays(5);
-                })
+            builder.Services.AddLettuceEncrypt(options => { options.RenewDaysInAdvance = TimeSpan.FromDays(5); })
                 .PersistDataToDirectory(new DirectoryInfo(path), "123456");
 
             builder.WebHost.UseKestrel(options =>
             {
                 var appServices = options.ApplicationServices;
-                options.Listen(IPAddress.Any, 80);
-                options.Listen(
-                    IPAddress.Any, 443,
-                    o => o.UseHttps(h => { h.UseLettuceEncrypt(appServices); }));
+                options.ListenAnyIP(80);
+                options.ListenAnyIP(443, o => o.UseHttps(h => { h.UseLettuceEncrypt(appServices); }));
             });
         }
     }

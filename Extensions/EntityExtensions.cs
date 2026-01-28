@@ -218,4 +218,17 @@ public static class EntityExtensions
             return items;
         });
     }
+    
+    public static void SetStatusLog<T, TE>(this T entity, TE status, Guid? userId = null, string description = null) where T : IStatusLog<TE> where TE : Enum
+    {
+        entity.Status = status;
+        entity.StatusLogs ??= [];
+        entity.StatusLogs.Add(new StatusLog<TE>() 
+        {
+            Status = status,
+            Time = DateTime.UtcNow,
+            UserId = userId,
+            Description = description,
+        });
+    }
 }

@@ -14,13 +14,18 @@ public static class EnvironmentUtil
 #else
         if(string.IsNullOrEmpty(environment)) environment = Environments.Production;
 #endif
-        return environment?.ToLower() ?? "development";
+        return environment ?? "Development";
     }
 
     public static bool IsDevelopment()
     {
         if (InMemory()) return true;
-        return string.Equals(GetEnvironment(), Environments.Development, StringComparison.CurrentCultureIgnoreCase);
+        return string.Equals(GetEnvironment(), Environments.Development, StringComparison.OrdinalIgnoreCase);
+    }
+    
+    public static bool IsProduction()
+    {
+        return !IsDevelopment();
     }
 
     public static string GetArgValue(string name)
