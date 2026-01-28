@@ -66,6 +66,7 @@ public static class StringExtensions
     {
         if (HexRegex.IsMatch(input) || hex)
         {
+            if (!input.StartsWith("0x")) input = "0x" + input;
             return (int)new System.ComponentModel.Int32Converter().ConvertFromString(input)!;
         }
 
