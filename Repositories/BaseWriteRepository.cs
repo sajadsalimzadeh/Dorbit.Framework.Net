@@ -24,7 +24,7 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
 
     public virtual async Task<TEntity> InsertIfExistsAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var existsEntity = await GetByIdAsync(entity.Id);
+        var existsEntity = await GetByIdAsync(entity.Id, cancellationToken);
         if (existsEntity is not null) return existsEntity;
         return await InsertAsync(entity, cancellationToken);
     }
@@ -99,37 +99,43 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
         var entity = await GetByIdAsync(id, cancellationToken);
         return await DeleteAsync(entity, cancellationToken);
     }
-
-    public async Task<TEntity> UpdateAsync<TDto>(TKey id, TDto dto, CancellationToken cancellationToken = default)
-    {
-        var entity = await GetByIdAsync(id, cancellationToken);
-        return await UpdateAsync(dto.MapTo(entity), cancellationToken);
-    }
-
-    public async Task<TEntity> PatchAsync<TPatch>(TKey key, object patch, CancellationToken cancellationToken = default)
+    
+    public async Task<TEntity> UpdateAsync<TPatch>(TKey key, TPatch patch, CancellationToken cancellationToken = default)
     {
         var entity = await GetByIdAsync(key, cancellationToken);
-        return await PatchAsync<TPatch>(entity, patch, cancellationToken);
+        return await UpdateAsync(entity, patch, cancellationToken);
     }
 
-    public async Task<TEntity> PatchAsync<TPatch>(TEntity entity, object patch, CancellationToken cancellationToken = default)
+    public async Task<TEntity> UpdateAsync<TPatch>(TEntity entity, TPatch patch, CancellationToken cancellationToken = default)
     {
-        entity = entity.PatchObject<TEntity, TPatch>(patch);
+        entity = entity.PatchObject(patch);
         return await UpdateAsync(entity, cancellationToken);
     }
 
-    public async Task<TEntity> SaveAsync<TDto>(TKey id, TDto dto, CancellationToken cancellationToken = default)
+    public async Task<TEntity> UpdateWithJsonAsync<TPatch>(TKey key, JsonElement patch, CancellationToken cancellationToken = default)
+    {
+        var entity = await GetByIdAsync(key, cancellationToken);
+        entity = entity.PatchObjectWithJson<TEntity, TPatch>(patch);
+        return await UpdateAsync(entity, cancellationToken);
+    }
+
+    public Task<TEntity> UpdateWithJsonAsync<TPatch>(TEntity entity, JsonElement patch, CancellationToken cancellationToken = default)
+    {
+        entity = entity.PatchObjectWithJson<TEntity, TPatch>(patch);
+        return UpdateAsync(entity, cancellationToken);
+    }
+
+    public async Task<TEntity> SaveAsync<TPatch>(TKey id, TPatch patch, CancellationToken cancellationToken = default) where TPatch : class
     {
         var entity = await GetByIdAsync(id, cancellationToken);
         if (entity is not null)
         {
-            entity = entity.PatchObject<TEntity, TDto>(dto);
             entity.Id = id;
-            return await UpdateAsync(entity, cancellationToken);
+            return await UpdateAsync(entity, patch, cancellationToken);
         }
         else
         {
-            entity = dto.MapTo(Activator.CreateInstance<TEntity>());
+            entity = patch.MapTo(Activator.CreateInstance<TEntity>());
             entity.Id = id;
             return await InsertAsync(entity, cancellationToken);
         }
