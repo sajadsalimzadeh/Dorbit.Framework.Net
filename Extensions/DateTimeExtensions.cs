@@ -7,7 +7,7 @@ public static class DateTimeExtensions
 {
     public static DateTime Add(this DateTime dateTime, string offset)
     {
-        var lifetimeValue = Convert.ToInt32(offset.Substring(0, offset.Length - 1));
+        var lifetimeValue = Convert.ToInt32(offset[..^1]);
 
         if (offset.EndsWith("s")) dateTime = dateTime.AddSeconds(lifetimeValue);
         else if (offset.EndsWith("m")) dateTime = dateTime.AddMinutes(lifetimeValue);
@@ -35,9 +35,9 @@ public static class DateTimeExtensions
         var pc = new PersianCalendar();
         return format
             .Replace("YYYY", pc.GetYear(dateTime).ToString())
-            .Replace("YYY", pc.GetYear(dateTime).ToString().Substring(1))
-            .Replace("YY", pc.GetYear(dateTime).ToString().Substring(2))
-            .Replace("Y", pc.GetYear(dateTime).ToString().Substring(3))
+            .Replace("YYY", pc.GetYear(dateTime).ToString()[1..])
+            .Replace("YY", pc.GetYear(dateTime).ToString()[2..])
+            .Replace("Y", pc.GetYear(dateTime).ToString()[3..])
             .Replace("MM", pc.GetMonth(dateTime).ToString().PadLeft(2, '0'))
             .Replace("M", pc.GetMonth(dateTime).ToString())
             .Replace("DD", pc.GetDayOfMonth(dateTime).ToString().PadLeft(2, '0'))
