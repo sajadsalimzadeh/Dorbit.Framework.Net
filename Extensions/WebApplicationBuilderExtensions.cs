@@ -19,6 +19,7 @@ public static class WebApplicationBuilderExtensions
         configurationBuilder.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
         configurationBuilder.AddJsonFile("appsettings.json", true);
         configurationBuilder.AddJsonFile($"appsettings.{environment}.json", true);
+        configurationBuilder.AddJsonFile($"appsettings.{environment.ToLower()}.json", true);
         configurationBuilder.AddJsonFile("appsettings.custom.json", true);
         return configurationBuilder.Build();
     }
