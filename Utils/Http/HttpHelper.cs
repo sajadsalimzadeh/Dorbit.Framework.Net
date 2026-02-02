@@ -157,7 +157,7 @@ public class HttpHelper : IDisposable
     {
         if (AuthorizationToken is not null)
         {
-            request.Headers.Add("Authorization", AuthorizationToken);
+            request.Headers.Add("Authorization", "Bearer " + AuthorizationToken);
         }
 
         foreach (var item in _headers)

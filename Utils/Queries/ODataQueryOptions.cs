@@ -63,10 +63,10 @@ public class ODataQueryOptions : QueryOptions
         {
             var tmpIndex = query.ToLower().IndexOf(' ' + item.ToString().ToLower() + ' ', StringComparison.Ordinal);
             if (tmpIndex <= index) continue;
-            var openPLeft = query.Substring(0, tmpIndex).Count(x => x == '(');
-            var closePLeft = query.Substring(0, tmpIndex).Count(x => x == ')');
-            var openPRight = query.Substring(tmpIndex).Count(x => x == '(');
-            var closePRight = query.Substring(tmpIndex).Count(x => x == ')');
+            var openPLeft = query[..tmpIndex].Count(x => x == '(');
+            var closePLeft = query[..tmpIndex].Count(x => x == ')');
+            var openPRight = query[tmpIndex..].Count(x => x == '(');
+            var closePRight = query[tmpIndex..].Count(x => x == ')');
 
             if (openPLeft != closePLeft || openPRight != closePRight) continue;
             index = tmpIndex;
@@ -74,8 +74,8 @@ public class ODataQueryOptions : QueryOptions
         }
 
         if (ex.Operator == FilterQueryOptionBinaryOperators.None) return null;
-        ex.Left = ParseFilters(query.Substring(0, index));
-        ex.Right = ParseFilters(query.Substring(index + ex.Operator.ToString().Length + 1));
+        ex.Left = ParseFilters(query[..index]);
+        ex.Right = ParseFilters(query[(index + ex.Operator.ToString().Length + 1)..]);
         return ex;
     }
 
@@ -147,10 +147,10 @@ public class ODataQueryOptions : QueryOptions
             var tmpIndex = query.ToLower()
                 .IndexOf(' ' + item.ToString().ToLower() + ' ', StringComparison.Ordinal);
             if (tmpIndex <= index) continue;
-            var openPLeft = query.Substring(0, tmpIndex).Count(x => x == '(');
-            var closePLeft = query.Substring(0, tmpIndex).Count(x => x == ')');
-            var openPRight = query.Substring(tmpIndex).Count(x => x == '(');
-            var closePRight = query.Substring(tmpIndex).Count(x => x == ')');
+            var openPLeft = query[..tmpIndex].Count(x => x == '(');
+            var closePLeft = query[..tmpIndex].Count(x => x == ')');
+            var openPRight = query[tmpIndex..].Count(x => x == '(');
+            var closePRight = query[tmpIndex..].Count(x => x == ')');
 
             if (openPLeft != closePLeft || openPRight != closePRight) continue;
             index = tmpIndex;
@@ -158,8 +158,8 @@ public class ODataQueryOptions : QueryOptions
         }
 
         if (ex.Operator == FilterQueryOptionLogicalOperators.None) return null;
-        ex.Left = ParseFilters(query.Substring(0, index));
-        ex.Right = ParseFilters(query.Substring(index + ex.Operator.ToString().Length + 1));
+        ex.Left = ParseFilters(query[..index]);
+        ex.Right = ParseFilters(query[(index + ex.Operator.ToString().Length + 1)..]);
         return ex;
     }
 
@@ -174,7 +174,7 @@ public class ODataQueryOptions : QueryOptions
         }
 
         if (ex.Operator == FilterQueryOptionUnaryOperators.None) return null;
-        query = query.Substring(ex.Operator.ToString().Length + 1).Trim();
+        query = query[(ex.Operator.ToString().Length + 1)..].Trim();
         ex.Expression = ParseFilters(query);
         return ex;
     }

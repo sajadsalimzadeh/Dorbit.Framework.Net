@@ -176,7 +176,7 @@ public class FilesController(
         if (identityService.Identity.User.GetId() != attachment.UserId)
             throw new UnauthorizedAccessException();
 
-        attachment = await attachmentRepository.PatchAsync<AttachmentPatchRequest>(attachment, request);
+        attachment = await attachmentRepository.UpdateWithJsonAsync<AttachmentPatchRequest>(attachment, request);
         return attachment.ToQueryResult();
     }
 }
