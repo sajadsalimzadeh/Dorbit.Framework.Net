@@ -3,7 +3,6 @@ using System.IO;
 using LettuceEncrypt;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -24,11 +23,7 @@ public static class LetsEncryptInstaller
             {
                 var appServices = options.ApplicationServices;
                 options.ListenAnyIP(80);
-                options.ListenAnyIP(443, o =>
-                {
-                    o.Protocols = HttpProtocols.Http1; 
-                    o.UseHttps(h => { h.UseLettuceEncrypt(appServices); });
-                });
+                options.ListenAnyIP(443, o => o.UseHttps(h => { h.UseLettuceEncrypt(appServices); }));
             });
         }
     }
