@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Net;
 using LettuceEncrypt;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

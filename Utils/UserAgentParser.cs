@@ -660,7 +660,7 @@ internal static class StringExtensions
         if (input == null) throw new ArgumentNullException(nameof(input));
         var index = input.IndexOf(search, StringComparison.Ordinal);
         return index >= 0
-            ? input.Substring(0, index) + replacement + input.Substring(index + search.Length)
+            ? input[..index] + replacement + input[(index + search.Length)..]
             : input;
     }
 }
@@ -729,7 +729,7 @@ internal class MinimalYamlParser
                 int indexOfMappingColon = line.IndexOf(':');
                 if (indexOfMappingColon == -1)
                     throw new ArgumentException("YamlParsing: Expecting mapping entry to contain a ':', at line " + lineCount);
-                string name = line.Substring(0, indexOfMappingColon).Trim();
+                string name = line[..indexOfMappingColon].Trim();
                 activeMapping = new Mapping();
                 _mappings.Add(name, activeMapping);
                 continue;
@@ -743,15 +743,15 @@ internal class MinimalYamlParser
             if (seqLine[0] == '-')
             {
                 activeMapping.BeginSequence();
-                seqLine = seqLine.Substring(1);
+                seqLine = seqLine[1..];
             }
 
             int indexOfColon = seqLine.IndexOf(':');
             if (indexOfColon == -1)
                 throw new ArgumentException("YamlParsing: Expecting scalar mapping entry to contain a ':', at line " + lineCount);
 
-            string key = seqLine.Substring(0, indexOfColon).Trim();
-            string value = ReadQuotedValue(seqLine.Substring(indexOfColon + 1).Trim());
+            string key = seqLine[..indexOfColon].Trim();
+            string value = ReadQuotedValue(seqLine[(indexOfColon + 1)..].Trim());
             activeMapping.AddToSequence(key, value);
         }
     }

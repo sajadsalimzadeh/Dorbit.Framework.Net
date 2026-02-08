@@ -40,7 +40,7 @@ public static class StringExtensions
         }
 
         var spaceIndex = input.IndexOf(' ');
-        if (spaceIndex > -1) input = input.Substring(0, spaceIndex);
+        if (spaceIndex > -1) input = input[..spaceIndex];
 
         if (input.StartsWith("0x"))
         {
@@ -200,7 +200,7 @@ public static class StringExtensions
     public static string Truncate(this string value, int maxLength)
     {
         if (string.IsNullOrEmpty(value)) return value;
-        return value.Length <= maxLength ? value : value.Substring(0, maxLength);
+        return value.Length <= maxLength ? value : value[..maxLength];
     }
 
     public static string CombinePath(this string str, params string[] paths)
@@ -230,7 +230,7 @@ public static class StringExtensions
 
     public static string SubstringLast(this string str, int length)
     {
-        return str.Substring(Math.Max(0, str.Length - length));
+        return str[Math.Max(0, str.Length - length)..];
     }
 
     public static string Random(this string template, int length)
