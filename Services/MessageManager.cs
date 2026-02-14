@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace Dorbit.Framework.Services;
 public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IOptions<ConfigMessageProviders> options)
 {
     private static readonly List<string> RemainCreditNotifies = new();
+    private static readonly ConcurrentQueue<MessageRequest> _queue = new();
 
     private readonly ConfigMessageProviders _configs = options.Value;
 
@@ -43,6 +45,21 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
         }
 
         return Task.FromResult(new CommandResult(false));
+    }
+
+    public Task<CommandResult> SendFromQueue()
+    {
+        if (_queue.TryDequeue(out var item))
+        {
+            return SendAsync(item);
+        }
+
+        return Task.FromResult(new CommandResult(false));
+    }
+
+    public void Enquee(MessageRequest request)
+    {
+        _queue.Enqueue(request);
     }
 
     private IMessageProvider<T, TC> GetProvider<T, TC>(List<IMessageProvider<T, TC>> providers, TC configuration)
