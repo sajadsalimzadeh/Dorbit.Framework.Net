@@ -218,17 +218,52 @@ public static class EntityExtensions
             return items;
         });
     }
-    
-    public static void SetStatusLog<T, TE>(this T entity, TE status, Guid? userId = null, string description = null) where T : IStatusLog<TE> where TE : Enum
+
+    public static void SetStatusLog<T, TStatus>(this T entity, TStatus status, Guid? userId = null, string description = null) where T : IStatusLog<TStatus> where TStatus : Enum
     {
         entity.Status = status;
         entity.StatusLogs ??= [];
-        entity.StatusLogs.Add(new StatusLog<TE>() 
+        entity.StatusLogs.Add(new StatusLog<TStatus>()
         {
             Status = status,
             Time = DateTime.UtcNow,
             UserId = userId,
             Description = description,
         });
+    }
+
+    public static void OwnerRequest<T>(this T entity, Guid userId) where T : IOwnerLog
+    {
+        entity.OwnerRequestId = userId;
+        entity.OwnerRequestTime = DateTime.UtcNow;
+    }
+
+    public static void OwnerRequestCancel<T>(this T entity) where T : IOwnerLog
+    {
+        entity.OwnerRequestTime = null;
+        entity.OwnerRequestId = null;
+    }
+
+    public static void OwnerRequestDecide<T>(this T entity, Guid userId, OwnerDecideRequest request) where T : IOwnerLog
+    {
+        entity.OwnerLogs ??= [];
+        if (entity.OwnerRequestTime.HasValue)
+        {
+            entity.OwnerLogs.Add(new OwnerLog()
+            {
+                UserId = userId,
+                RequestTime = entity.OwnerRequestTime.Value,
+                DecideTime = DateTime.UtcNow,
+                IsAccept = request.IsAccept,
+                Description = request.Description
+            });
+        }
+
+        if (request.IsAccept)
+        {
+            entity.OwnerId = userId;
+        }
+
+        entity.OwnerRequestCancel();
     }
 }
