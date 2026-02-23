@@ -39,7 +39,7 @@ public class MeliPayamakProvider : IMessageProviderSms
             username = _username,
             password = _password,
             bodyId = Convert.ToInt32(request.TemplateId),
-            to = request.To,
+            to = request.Receiver,
             text = string.Join(';', request.Args)
         };
         var response = (await _client.PostAsync<SendResponse>($"SendSMS/BaseServiceNumber", data)).Result;

@@ -2,6 +2,7 @@
 
 public abstract class MessageRequest
 {
+    public string Receiver { get; set; }
     public string ProviderName { get; set; }
     public string TemplateType { get; set; }
     public string TemplateId { get; set; }

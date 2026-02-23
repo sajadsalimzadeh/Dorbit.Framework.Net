@@ -71,8 +71,8 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
         return provider;
     }
 
-    private async Task<CommandResult> Process<T, TC>(List<IMessageProvider<T, TC>> providers, T request, List<TC> configurations)
-        where T : MessageRequest where TC : ConfigMessageProvider
+    private async Task<CommandResult> Process<T, TConfig>(List<IMessageProvider<T, TConfig>> providers, T request, List<TConfig> configurations)
+        where T : MessageRequest where TConfig : ConfigMessageProvider
     {
         if (!string.IsNullOrEmpty(request.ProviderName))
         {
@@ -83,6 +83,9 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
         {
             try
             {
+                if(configuration.FilterPrefixes.IsNotNullOrEmpty() && configuration.FilterPrefixes.All(x => !request.Receiver.StartsWith(x)))
+                    continue;
+                
                 if (!string.IsNullOrEmpty(request.TemplateType))
                 {
                     if (configuration.Templates is not null && configuration.Templates.TryGetValue(request.TemplateType, out var templateId))
@@ -100,6 +103,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
 
                 var provider = GetProvider(providers, configuration);
                 if (provider is null) continue;
+                
                 var op = await provider.SendAsync(request);
                 if (op.Success) return op;
             }
@@ -139,7 +143,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
                         {
                             TemplateId = configuration.Monitoring.TemplateId,
                             Args = [credit.ToString()],
-                            To = number
+                            Receiver = number
                         });
                     }
 

@@ -44,11 +44,11 @@ public class KavenegarProvider : IMessageProviderSms
         SendResult result;
         if (string.IsNullOrEmpty(request.TemplateId))
         {
-            result = _api.Send(_sender, request.To, request.Body);
+            result = _api.Send(_sender, request.Receiver, request.Body);
         }
         else
         {
-            result = _api.VerifyLookup(request.To, request.Args[0], request.TemplateId);
+            result = _api.VerifyLookup(request.Receiver, request.Args[0], request.TemplateId);
         }
 
         return Task.FromResult(result.Status switch
