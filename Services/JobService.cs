@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Jobs;
+using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Hubs;
 using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
@@ -51,8 +52,7 @@ public class JobService : IJobHub
     public List<Job> GetAll()
     {
         const string key = $"{nameof(JobService)}-Jobs";
-        if (!_memoryCache.TryGetValue<List<Job>>(key, out var jobs)) _memoryCache.Set(key, jobs = []);
-        return jobs;
+        return _memoryCache.GetValueWithLock(key, () => new List<Job>(), TimeSpan.FromDays(1));
     }
 
     public Job GetAsync(Guid id)

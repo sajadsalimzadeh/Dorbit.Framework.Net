@@ -153,7 +153,7 @@ public static class FrameworkInstaller
         // }
 
         var frameworkDbContextConfiguration = configs.DbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
-        services.AddDbContext<FrameworkDbContext>(frameworkDbContextConfiguration);
+        services.AddDbContextPool<FrameworkDbContext>(frameworkDbContextConfiguration);
 
         configs.ConfigProject?.Configure(services);
         configs.ConfigFile?.Configure(services);
@@ -163,6 +163,8 @@ public static class FrameworkInstaller
         configs.ConfigGeo?.Configure(services);
         configs.ConfigOpenAi?.Configure(services);
         configs.ConfigWebPush.Configure(services);
+        configs.ConfigJira.Configure(services);
+        configs.ConfigTranslation.Configure(services);
 
         if (configs.ConfigSecurity is not null)
         {
@@ -194,6 +196,8 @@ public static class FrameworkInstaller
         public IConfig<ConfigGeo> ConfigGeo { get; init; } = configuration.GetConfig<ConfigGeo>("Geo");
         public IConfig<ConfigOpenAi> ConfigOpenAi { get; set; } = configuration.GetConfig<ConfigOpenAi>("OpenAi");
         public IConfig<ConfigWebPush> ConfigWebPush { get; set; } = configuration.GetConfig<ConfigWebPush>("WebPush");
+        public IConfig<ConfigJira> ConfigJira { get; set; } = configuration.GetConfig<ConfigJira>("Jira");
+        public IConfig<ConfigTranslation> ConfigTranslation { get; init; } = configuration.GetConfig<ConfigTranslation>("Translation");
         
         public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
 

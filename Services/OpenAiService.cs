@@ -15,14 +15,14 @@ public class OpenAiService(IOptions<ConfigOpenAi> configOpenAiOptions)
 {
     private string _apiKey;
 
-    public void SetToken(string apiKey)
+    public void SetApiKey(string value)
     {
-        _apiKey = apiKey;
+        _apiKey = value;
     }
-    
-    protected ChatClient GetChatClient()
+
+    private ChatClient GetChatClient()
     {
-        var client = new OpenAIClient(_apiKey ?? configOpenAiOptions.Value.ApiKey);
+        var client = new OpenAIClient(_apiKey ?? configOpenAiOptions.Value.ApiKey.GetDecryptedValue());
         var chatClient = client.GetChatClient(configOpenAiOptions.Value.Model);
         return chatClient;
     }

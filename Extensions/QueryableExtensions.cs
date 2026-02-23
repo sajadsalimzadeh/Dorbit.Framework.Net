@@ -33,27 +33,18 @@ public static class QueryableExtensions
         return query.Where(predicate).ToListAsync(cancellationToken: cancellationToken);
     }
 
-    public static async Task<List<TEntity>> ToListAsyncWithCache<TEntity>(this IQueryable<TEntity> query, string key, TimeSpan duration,
+    public static Task<List<TEntity>> ToListAsyncWithCache<TEntity>(this IQueryable<TEntity> query, string key, TimeSpan duration,
         CancellationToken cancellationToken = default)
     {
-        if (App.MemoryCache.TryGetValue(key, out List<TEntity> result)) return result;
-        result = await query.ToListAsync(cancellationToken: cancellationToken);
-        App.MemoryCache.Set(key, result, duration);
-
-        return result;
+        return App.MemoryCache.GetValueWithLock(key, () => query.ToListAsync(cancellationToken: cancellationToken), duration);
     }
 
-    public static async Task<TEntity> FirstOrDefaultAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate,
+    public static Task<TEntity> FirstOrDefaultAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Expression<Func<TEntity, bool>> predicate,
         string key,
         TimeSpan duration, CancellationToken cancellationToken = default)
     {
-        if (App.MemoryCache.TryGetValue(key, out TEntity result)) return result;
-        result = await query.FirstOrDefaultAsync(predicate, cancellationToken: cancellationToken);
-        if (result is not null) App.MemoryCache.Set(key, result, duration);
-
-        return result;
+        return App.MemoryCache.GetValueWithLock(key, () => query.FirstOrDefaultAsync(predicate, cancellationToken: cancellationToken), duration);
     }
-
 
     public static Task<TEntity> FirstOrDefaultAsyncWithCache<TEntity>(this IQueryable<TEntity> query, string key, TimeSpan duration,
         CancellationToken cancellationToken = default)

@@ -48,8 +48,6 @@ public abstract class EfDbContext : DbContext, IDbContext
     private ILogger _logger;
     private ILogger Logger => _logger ??= ServiceProvider.GetService<ILogger>();
 
-    private EntityLoggerHost _entityLoggerHost;
-    private EntityLoggerHost EntityLoggerHost => _entityLoggerHost ??= ServiceProvider.GetService<EntityLoggerHost>();
 
     public IServiceProvider ServiceProvider { get; }
     public bool AutoExcludeDeleted { get; set; } = true;
@@ -79,8 +77,14 @@ public abstract class EfDbContext : DbContext, IDbContext
         _efTransactionContext = new EfTransactionContext(this);
         _loggerService = serviceProvider.GetService<LoggerService>();
 
-        ChangeTracker.AutoDetectChangesEnabled = false;
-        ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+        base.ChangeTracker.AutoDetectChangesEnabled = false;
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        
+        optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -300,7 +304,7 @@ public abstract class EfDbContext : DbContext, IDbContext
             Entry(entity).State = EntityState.Deleted;
         }
 
-        await SaveIfNotInTransactionAsync();
+        await SaveIfNotInTransactionAsync(cancellationToken);
         if (entity is ILogging logging) Log(logging, LogAction.Delete);
         return entity;
     }
@@ -345,7 +349,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
     }
 
-    public Task MigrateAsync(CancellationToken cancellationToken = default)
+    public Task MigrateAsync(CancellationToken cancellationToken)
     {
         if (ProviderType != DatabaseProviderType.InMemory)
         {

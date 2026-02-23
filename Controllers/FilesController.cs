@@ -81,7 +81,6 @@ public class FilesController(
             dto.Content = await System.IO.File.ReadAllBytesAsync(filePath);
             return dto;
         }, TimeSpan.FromMinutes(5));
-        memoryCache.Set(key, fileDto, TimeSpan.FromMinutes(5));
         if (fileDto.Attachment != null && !ValidateAccess(fileDto.Attachment))
             throw new UnauthorizedAccessException();
 

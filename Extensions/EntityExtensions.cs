@@ -219,7 +219,7 @@ public static class EntityExtensions
         });
     }
 
-    public static void SetStatusLog<T, TStatus>(this T entity, TStatus status, Guid? userId = null, string description = null) where T : IStatusLog<TStatus> where TStatus : Enum
+    public static T SetStatusLog<T, TStatus>(this T entity, TStatus status, Guid? userId = null, string description = null) where T : IStatusLog<TStatus> where TStatus : Enum
     {
         entity.Status = status;
         entity.StatusLogs ??= [];
@@ -230,6 +230,7 @@ public static class EntityExtensions
             UserId = userId,
             Description = description,
         });
+        return entity;
     }
 
     public static void OwnerRequest<T>(this T entity, Guid userId) where T : IOwnerLog
