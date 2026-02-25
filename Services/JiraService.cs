@@ -1,11 +1,9 @@
 using System;
-using System.Net.Http.Headers;
-using System.Text;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Jira;
-using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Utils.Http;
 
@@ -20,16 +18,14 @@ public class JiraService(IServiceProvider serviceProvider) : HttpClientApi<Confi
         http.AddHeader("Accept", "application/json");
         http.AddHeader("Accept-Encoding", "none");
 
-        var authenticationString = $"{Config.Username}:{Config.ApiKey.GetDecryptedValue()}";
-        var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
-        http.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", base64EncodedAuthenticationString);
+        http.AuthorizationToken = Config.ApiKey.GetDecryptedValue();
 
         return http;
     }
 
     public Task<HttpModel<JiraCreateNewIssueResponse>> CreateNewIssueAsync(JiraCreateNewIssueRequest request)
     {
-        return GetHttpHelper().PostAsync<JiraCreateNewIssueResponse>("rest/api/3/issue", new
+        return GetHttpHelper().PostAsync<JiraCreateNewIssueResponse>("rest/api/2/issue", new
         {
             Fields = new
             {
@@ -38,11 +34,33 @@ public class JiraService(IServiceProvider serviceProvider) : HttpClientApi<Confi
                     key = request.ProjectKey
                 },
                 Summary = request.Summary,
+                Description = request.Description,
                 Issuetype = new
                 {
                     Name = request.Type.ToString()
                 }
             }
+        });
+    }
+
+    public Task<HttpModel<JiraSearchIssueResponse>> SearchIssueAsync(JiraSearchIssueRequest request)
+    {
+        var queries = new List<string>();
+        if (request.IsAssigneeCurrentUser) queries.Add("assignee = currentUser()");
+        return GetHttpHelper().GetAsync<JiraSearchIssueResponse>("rest/api/2/search", new
+        {
+            jql = $"{string.Join("AND", queries)} ORDER BY updated DESC",
+            startAt = request.StartAt,
+            maxResults = request.MaxResults,
+            fields = request.Fields.IsNotNullOrEmpty() ? string.Join(',', request.Fields) : "*all"
+        });
+    }
+
+    public Task<HttpModel<JiraTransitionResponse>> TransitionAsync(JiraTransitionRequest request)
+    {
+        return GetHttpHelper().PostAsync<JiraTransitionResponse>($"rest/api/2/issue/{request.IssueKey}/transitions", new
+        {
+            Transition = new { id = request.TransitionId }
         });
     }
 }

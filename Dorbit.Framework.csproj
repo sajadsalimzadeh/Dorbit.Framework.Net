@@ -27,33 +27,33 @@
 <!--        <PackageReference Include="FluentValidation" Version="11.10.0" />-->
 <!--        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.10.0" />-->
 <!--        <PackageReference Include="Innofactor.EfCoreJsonValueConverter" Version="6.0.0" />-->
-        <PackageReference Include="EFCore.BulkExtensions.SqlServer" Version="9.0.1" />
-        <PackageReference Include="Google.Protobuf" Version="3.33.2" />
+        <PackageReference Include="EFCore.BulkExtensions.SqlServer" Version="9.0.2" />
+        <PackageReference Include="Google.Protobuf" Version="3.33.5" />
         <PackageReference Include="ConsoleMenu-simple" Version="2.7.0" />
         <PackageReference Include="kavenegar" Version="1.2.5" />
         <PackageReference Include="LettuceEncrypt" Version="1.3.3" />
         <PackageReference Include="Melipayamak.RestClient" Version="1.0.0" />
         <PackageReference Include="Fare" Version="2.2.1" />
         <PackageReference Include="GoogleReCaptcha.V3" Version="1.3.1" />
-        <PackageReference Include="MailKit" Version="4.14.1" />
-        <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.9" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
-        <PackageReference Include="MimeKit" Version="4.14.0" />
+        <PackageReference Include="MailKit" Version="4.15.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.13" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.13" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.13" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.13" />
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.13" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.13" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.13" />
+        <PackageReference Include="MimeKit" Version="4.15.0" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-        <PackageReference Include="NRedisStack" Version="1.1.0" />
-        <PackageReference Include="OpenAI" Version="2.5.0" />
+        <PackageReference Include="NRedisStack" Version="1.3.0" />
+        <PackageReference Include="OpenAI" Version="2.8.0" />
         <PackageReference Include="prometheus-net" Version="8.2.1" />
         <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
         <PackageReference Include="prometheus-net.AspNetCore.HealthChecks" Version="8.2.1" />
         <PackageReference Include="SendGrid" Version="9.29.3" />
         <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
-        <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.4.0" />
+        <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="2.9.0" />
         <PackageReference Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
         <PackageReference Include="Serilog.Settings.AppSettings" Version="3.0.0" />
@@ -62,21 +62,21 @@
         <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
-        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.4" />
-        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.4" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.4" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.4" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.6" />
+        <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.6" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
         <PackageReference Include="System.Linq.Dynamic.Core" Version="1.7.1" />
         <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-        <PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="9.0.1" />
+        <PackageReference Include="EFCore.BulkExtensions.PostgreSql" Version="9.0.2" />
         <PackageReference Include="System.ServiceModel.Duplex" Version="6.0.0" />
         <PackageReference Include="System.ServiceModel.Http" Version="8.1.2" />
         <PackageReference Include="System.ServiceModel.NetTcp" Version="8.1.2" />
         <PackageReference Include="System.ServiceModel.Security" Version="6.0.0" />
         <PackageReference Include="System.ServiceModel.Federation" Version="8.1.2" />
-        <PackageReference Include="Twilio" Version="7.13.0" />
+        <PackageReference Include="Twilio" Version="7.14.3" />
         <PackageReference Include="WebPush" Version="1.0.12" />
     </ItemGroup>
     

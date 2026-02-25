@@ -14,7 +14,6 @@ using Dorbit.Framework.Database.Abstractions;
 using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
-using Dorbit.Framework.Hosts;
 using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Json;

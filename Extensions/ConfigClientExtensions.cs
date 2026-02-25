@@ -10,21 +10,18 @@ public static class ConfigClientExtensions
     {
         return configClientApi.GetHttpHelper(null, apiKeyHeader);
     }
-    
+
     public static HttpHelper GetHttpHelper(this ConfigClientApi configClientApi, ILogger logger, string apiKeyHeader = null)
     {
         var http = new HttpHelper(configClientApi.ApiUrl);
         if (configClientApi.ApiKey is not null)
         {
-            http.AddHeader(apiKeyHeader ?? "AuthorizationService", configClientApi.ApiKey.GetDecryptedValue());
+            http.AuthorizationToken = configClientApi.ApiKey.GetDecryptedValue();
         }
 
         if (logger is not null)
         {
-            http.OnException += (ex, args) =>
-            {
-                logger.Error("Http Client {@Exception} {@Request} {@Response} {@Content}", ex, args.Request, args.Response, args.Content);
-            };
+            http.OnException += (ex, args) => { logger.Error("Http Client {@Exception} {@Request} {@Response} {@Content}", ex, args.Request, args.Response, args.Content); };
         }
 
         return http;
