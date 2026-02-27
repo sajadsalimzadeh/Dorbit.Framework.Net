@@ -27,7 +27,7 @@ public class OpenAiService(IOptions<ConfigOpenAi> configOpenAiOptions)
         return chatClient;
     }
 
-    public async Task<string> ChatAsync(string content, string system = null)
+    public async Task<string> ChatAsync(string content, string system = null, params ChatMessageContentPart[]  extraContentParts)
     {
         var client = GetChatClient();
         var messages = new List<ChatMessage>();
@@ -36,7 +36,13 @@ public class OpenAiService(IOptions<ConfigOpenAi> configOpenAiOptions)
         {
             messages.Add(ChatMessage.CreateSystemMessage(system));
         }
-        messages.Add(content);
+
+        var contentParts = new List<ChatMessageContentPart>();
+        
+        contentParts.Add(ChatMessageContentPart.CreateTextPart(content));
+        contentParts.AddRange(extraContentParts);
+        
+        messages.Add(ChatMessage.CreateUserMessage(contentParts));
         var chatCompletion = await client.CompleteChatAsync(messages.ToArray());
         var firstContent = chatCompletion.Value.Content.FirstOrDefault();
         if(firstContent is null) return null;
