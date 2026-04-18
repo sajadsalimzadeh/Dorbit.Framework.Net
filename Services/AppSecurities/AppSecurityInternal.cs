@@ -6,25 +6,25 @@ namespace Dorbit.Framework.Services.AppSecurities;
 
 public class AppSecurityInternal : IAppSecurity
 {
-    private readonly Aes _aes;
+    private readonly AesHelper _aesHelper;
 
     internal AppSecurityInternal(byte[] value)
     {
-        _aes = new Aes(value);
+        _aesHelper = new AesHelper(value);
     }
 
     public byte[] GetKey()
     {
-        return _aes.Key;
+        return _aesHelper.Key;
     }
 
     public byte[] Encrypt(string value)
     {
-        return _aes?.Encrypt(value);
+        return _aesHelper?.Encrypt(value);
     }
 
     public string Decrypt(byte[] value)
     {
-        return _aes?.Decrypt(value).ToStringUtf8().TrimEnd('\0');
+        return _aesHelper?.Decrypt(value).ToStringUtf8().TrimEnd('\0');
     }
 }

@@ -6,7 +6,7 @@ using Dorbit.Framework.Extensions;
 
 namespace Dorbit.Framework.Utils.Cryptography;
 
-public class Aes
+public class AesHelper
 {
     public enum Size : short
     {
@@ -23,12 +23,12 @@ public class Aes
     public byte[] Key { get; }
     public byte[] Iv { get; }
 
-    private Aes(Size size = Size.Aes128)
+    private AesHelper(Size size = Size.Aes128)
     {
         _size = (short)size;
     }
 
-    public Aes(byte[] password, Size size = Size.Aes128) : this(size)
+    public AesHelper(byte[] password, Size size = Size.Aes128) : this(size)
     {
         var key = new Rfc2898DeriveBytes(password, password, Iterations, HashAlgorithm);
         Key = key.GetBytes(_size / 8);
@@ -39,11 +39,11 @@ public class Aes
         _decryptor = aes.CreateDecryptor();
     }
 
-    public Aes(string password, Size size = Size.Aes128) : this(password.ToByteArray(), size)
+    public AesHelper(string password, Size size = Size.Aes128) : this(password.ToByteArray(), size)
     {
     }
 
-    public Aes(byte[] key, byte[] iv, Size size = Size.Aes128) : this(size)
+    public AesHelper(byte[] key, byte[] iv, Size size = Size.Aes128) : this(size)
     {
         Key = key;
         Iv = iv;
@@ -56,7 +56,7 @@ public class Aes
         _decryptor = aes.CreateDecryptor();
     }
 
-    public Aes(string key, string iv, Size size = Size.Aes128) : this(key.ToByteArray(), iv.ToByteArray(), size)
+    public AesHelper(string key, string iv, Size size = Size.Aes128) : this(key.ToByteArray(), iv.ToByteArray(), size)
     {
     }
 

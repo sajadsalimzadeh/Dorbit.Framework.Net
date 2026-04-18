@@ -1,0 +1,33 @@
+namespace Dorbit.Framework.Contracts.InquiryApi;
+
+public enum InquiryApiBankCode
+{
+    Markazi = 010,
+    SanatMadan = 011,
+    Melat = 012,
+    Refah = 013,
+    Maskan = 014,
+    Sepah = 015,
+    Keshavarzi = 016,
+    Meli = 017,
+    Tejarat = 018,
+    Saderat = 019,
+    ToseSaderat = 020,
+    Post = 021,
+    ToseTavon = 022,
+    MoaseseToseEtebari = 051,
+    Karafarin = 053,
+    Parsian = 054,
+    EghtesadNovin = 055,
+    Saman = 056,
+    Pasargad = 057,
+    Sarmayeh = 058,
+    Sina = 059,
+    GharzolHasaneMehreEghtesad = 060,
+    Shahr = 061,
+    Tat = 062,
+    Ansar = 063,
+    Gardeshgary = 064,
+    HekmatIranian = 065,
+    Day = 066,
+}
