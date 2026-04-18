@@ -11,14 +11,16 @@ public interface IWriterRepository<TEntity, TKey> : IReaderRepository<TEntity, T
 {
     Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken = default);
     Task BulkInsertAsync(List<TEntity> entities, CancellationToken cancellationToken = default);
+    
     Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
     Task BulkUpdateAsync(List<TEntity> entities, CancellationToken cancellationToken = default);
+    
     Task<TEntity> DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
     Task BulkDeleteAsync(List<TEntity> entities, CancellationToken cancellationToken = default);
 
-    Task<TEntity> InsertAsync<TR>(TR dto, CancellationToken cancellationToken = default);
-    Task<TEntity> UpdateAsync<TPatch>(TKey key, TPatch patch, CancellationToken cancellationToken = default);
-    Task<TEntity> UpdateAsync<TPatch>(TEntity entity, TPatch patch, CancellationToken cancellationToken = default);
+    Task<TEntity> InsertWithPatchObjectAsync<TR>(TR dto, CancellationToken cancellationToken = default);
+    Task<TEntity> UpdateWithPatchObjectAsync<TPatch>(TKey key, TPatch patch, CancellationToken cancellationToken = default);
+    Task<TEntity> UpdateWithPatchObjectAsync<TPatch>(TEntity entity, TPatch patch, CancellationToken cancellationToken = default);
     Task<TEntity> UpdateWithJsonAsync<TPatch>(TKey key, JsonElement patch, CancellationToken cancellationToken = default);
     Task<TEntity> UpdateWithJsonAsync<TPatch>(TEntity entity, JsonElement patch, CancellationToken cancellationToken = default);
     Task<TEntity> DeleteAsync(TKey id, CancellationToken cancellationToken = default);
