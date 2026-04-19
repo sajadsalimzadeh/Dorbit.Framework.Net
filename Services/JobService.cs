@@ -19,6 +19,7 @@ public class JobService : IJobHub
     private readonly ConcurrentQueue<Job> _queue = new();
     private readonly IMemoryCache _memoryCache;
     private readonly HubManager _hubManager;
+    private readonly SemaphoreSlim _semaphore = new(1);
 
     public JobService(IMemoryCache memoryCache, HubManager hubManager, ILogger logger)
     {
@@ -35,7 +36,9 @@ public class JobService : IJobHub
                 {
                     if (_queue.TryDequeue(out var job))
                     {
+                        await _semaphore.WaitAsync();
                         await job.StartAndWaitAsync();
+                        _semaphore.Release();
                     }
                 }
                 catch(Exception ex)
