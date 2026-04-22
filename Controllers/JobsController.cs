@@ -57,6 +57,16 @@ public class JobsController(JobService jobService) : BaseController
         return job.MapTo<JobDto>().ToQueryResult();
     }
 
+    [HttpPost("{id:guid}/ReRun")]
+    public QueryResult<JobDto> ReRunAsync(Guid id)
+    {
+        var job = jobService.GetAsync(id);
+        job.Logs.Clear();
+        job.AuditLogs.Clear();
+        jobService.Enqueue(job);
+        return job.MapTo<JobDto>().ToQueryResult();
+    }
+
     [HttpPost("{id:guid}/Download")]
     public FileStreamResult DownloadAsync(Guid id)
     {

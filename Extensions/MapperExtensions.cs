@@ -37,7 +37,7 @@ public static class MapperExtensions
 
     public static T PatchObject<T, TPatch>(this T model, TPatch patch)
     {
-        if (patch is JsonElement jsonElement) return model.PatchObjectWithJson<T, TPatch>(jsonElement);
+        if (patch is JsonElement jsonElement) return model.PatchObjectWithJson<T, T>(jsonElement);
         
         var json = JsonSerializer.Serialize(patch);
         var doc = JsonDocument.Parse(json);

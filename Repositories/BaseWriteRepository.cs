@@ -89,10 +89,10 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
     }
 
     //================== Extended Methods ==================\\
-    public Task<TEntity> InsertAsync<TDto>(TDto dto, CancellationToken cancellationToken = default)
+    public Task<TEntity> InsertWithPatchObjectAsync<TPatch>(TPatch dto, CancellationToken cancellationToken = default)
     {
         var mapper = _dbContext.ServiceProvider.GetService<IMapper>();
-        return InsertAsync(mapper.Map<TEntity>(dto), cancellationToken);
+        return InsertAsync(Activator.CreateInstance<TEntity>().PatchObject(dto), cancellationToken);
     }
 
     public async Task<TEntity> DeleteAsync(TKey id, CancellationToken cancellationToken = default)
@@ -101,13 +101,13 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
         return await DeleteAsync(entity, cancellationToken);
     }
     
-    public async Task<TEntity> UpdateAsync<TPatch>(TKey key, TPatch patch, CancellationToken cancellationToken = default)
+    public async Task<TEntity> UpdateWithPatchObjectAsync<TPatch>(TKey key, TPatch patch, CancellationToken cancellationToken = default)
     {
         var entity = await GetByIdAsync(key, cancellationToken);
-        return await UpdateAsync(entity, patch, cancellationToken);
+        return await UpdateWithPatchObjectAsync(entity, patch, cancellationToken);
     }
 
-    public async Task<TEntity> UpdateAsync<TPatch>(TEntity entity, TPatch patch, CancellationToken cancellationToken = default)
+    public async Task<TEntity> UpdateWithPatchObjectAsync<TPatch>(TEntity entity, TPatch patch, CancellationToken cancellationToken = default)
     {
         entity = entity.PatchObject(patch);
         return await UpdateAsync(entity, cancellationToken);
@@ -132,7 +132,7 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
         if (entity is not null)
         {
             entity.Id = id;
-            return await UpdateAsync(entity, patch, cancellationToken);
+            return await UpdateWithPatchObjectAsync(entity, patch, cancellationToken);
         }
         else
         {

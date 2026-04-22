@@ -50,9 +50,8 @@ public class Job
     private JobStatus _status = JobStatus.Draft;
     private Thread _thread;
     private double _progress;
-    private JobService _jobService;
+    private readonly JobService _jobService;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private readonly Semaphore _semaphore = new(0, 1);
 
     public Guid Id { get; set; } = Guid.NewGuid();
     public Exception Exception { get; private set; }
@@ -136,7 +135,6 @@ public class Job
             EndTime = DateTime.UtcNow;
             Status = (Logs.Any(x => x.Level == LogLevel.Error || x.Level == LogLevel.Critical) ? JobStatus.FinishError : JobStatus.Finish);
             await UpdateStatusAsync();
-            _semaphore.Release();
         }
     }
 
@@ -157,12 +155,6 @@ public class Job
     {
         if (!Pausable) return;
         Status = JobStatus.Running;
-    }
-
-    public Task Wait()
-    {
-        _semaphore.WaitOne();
-        return Task.CompletedTask;
     }
 
     public Task UpdateStatusAsync()
@@ -187,10 +179,5 @@ public class Job
         Step = step;
         Progress = progress;
         return _jobService?.UpdateJobAsync(this) ?? Task.CompletedTask;
-    }
-
-    public void Enqueue()
-    {
-        _jobService.Enqueue(this);
     }
 }
