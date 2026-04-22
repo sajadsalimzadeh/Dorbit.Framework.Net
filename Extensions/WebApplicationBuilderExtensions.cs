@@ -9,7 +9,7 @@ public static class WebApplicationBuilderExtensions
 
     public static IConfiguration BuildDorbit(this ConfigurationManager configuration)
     {
-        return BuildDorbit(configuration.AddJsonFile("appsettings.json", true));
+        return configuration.AddJsonFile("appsettings.json", true).BuildDorbit();
     }
 
     public static IConfiguration BuildDorbit(this IConfigurationBuilder configurationBuilder)
