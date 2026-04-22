@@ -27,7 +27,7 @@ public static class CryptographyExtensions
         }
 
         var encryptedText = Convert.FromBase64String(property.Value);
-        var aes = new Aes(key)
+        var aes = new AesHelper(key)
         {
             Iterations = property.Iterations,
             HashAlgorithm = algorithmName
@@ -47,16 +47,16 @@ public static class CryptographyExtensions
 
     public static ProtectedProperty GetEncryptedValue(this string value, byte[] key)
     {
-        return value.GetEncryptedValue(new Aes(key));
+        return value.GetEncryptedValue(new AesHelper(key));
     }
 
-    public static ProtectedProperty GetEncryptedValue(this string value, Aes aes)
+    public static ProtectedProperty GetEncryptedValue(this string value, AesHelper aesHelper)
     {
         return new ProtectedProperty()
         {
-            Iterations = aes.Iterations,
-            Algorithm = nameof(aes.HashAlgorithm),
-            Value = Convert.ToBase64String(aes.Encrypt(value))
+            Iterations = aesHelper.Iterations,
+            Algorithm = nameof(aesHelper.HashAlgorithm),
+            Value = Convert.ToBase64String(aesHelper.Encrypt(value))
         };
     }
 }

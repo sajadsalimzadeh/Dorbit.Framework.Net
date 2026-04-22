@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Dorbit.Framework.Utils.Cryptography;
 
-public static class Md5
+public static class Md5Util
 {
     public static Task<byte[]> HashAsync(Stream stream)
     {

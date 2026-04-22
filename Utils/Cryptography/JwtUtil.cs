@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Dorbit.Framework.Utils.Cryptography;
 
-public static class Jwt
+public static class JwtUtil
 {
     public static IEnumerable<Claim> GetClaims(string token, string secret)
     {
