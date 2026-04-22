@@ -34,9 +34,9 @@ public static class HttpExtensions
     public static string GetAccessToken(this HttpRequest request)
     {
         var token = request.GetByNames([
+            "Authorization",
             "access_token",
             "ApiKey",
-            "Authorization",
         ]);
         if (token is not null) token = token.Replace("Bearer", "").Trim();
         return token;

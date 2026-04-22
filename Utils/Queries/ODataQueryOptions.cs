@@ -235,17 +235,19 @@ public class ODataQueryOptions : QueryOptions
 
     private void ParseSkip(Dictionary<string, StringValues> query)
     {
-        if (!query.TryGetValue("$skip", out var value)) return;
-        if (int.TryParse(value, out var skip)) Skip.Value = skip;
+        if (query.TryGetValue("$skip", out var value))
+        {
+            if (int.TryParse(value, out var skip)) Skip.Value = skip;
+        }
     }
 
     private void ParseTake(Dictionary<string, StringValues> query)
     {
-        if (!query.TryGetValue("$top", out var topStr))
+        if (query.TryGetValue("$top", out var topStr))
         {
             if (int.TryParse(topStr, out var take)) Top.Value = take;
         }
-        if (!query.TryGetValue("take", out var takeStr))
+        else if (query.TryGetValue("$take", out var takeStr))
         {
             if (int.TryParse(takeStr, out var take)) Top.Value = take;
         }
