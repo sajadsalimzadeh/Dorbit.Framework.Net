@@ -1,17 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Configs;
 using Dorbit.Framework.Entities;
 using Dorbit.Framework.Repositories;
+using Dorbit.Framework.Utils.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Dorbit.Framework.Services;
 
 [ServiceRegister]
-public class TranslationService(TranslationRepository translationRepository, OpenAiService openAiService)
+public class TranslationService(TranslationRepository translationRepository, IOptions<ConfigTranslation> configTranslationOptions, OpenAiService openAiService)
 {
     private static readonly Dictionary<string, Dictionary<string, string>> Translations = new();
 
@@ -40,9 +44,10 @@ public class TranslationService(TranslationRepository translationRepository, Ope
                 {
                     foreach (var keyValuePair in args)
                     {
-                        result = result.Replace($"{{{keyValuePair.Key}}}", keyValuePair.Value);   
+                        result = result.Replace($"{{{keyValuePair.Key}}}", keyValuePair.Value);
                     }
                 }
+
                 return result;
             }
         }
@@ -68,5 +73,23 @@ public class TranslationService(TranslationRepository translationRepository, Ope
             Locale = locale,
             Value = value
         });
+    }
+
+    public async Task AddRangeAsync(List<string> values)
+    {
+        var keys = await translationRepository.Set().Select(x => new { x.Key, x.Locale }).ToDictionaryAsync(x => x.Key + "-" + x.Locale, x => x.Key);
+        foreach (var translationItem in values.Where(x => x != null).Distinct())
+        {
+            var key = HashUtil.Md5(translationItem);
+            foreach (var locale in configTranslationOptions.Value.Locales)
+            {
+                if (keys.ContainsKey(key + "-" + locale.Key)) continue;
+
+                var translationResult = await TranslateByOpenAiAsync(translationItem, locale.Key);
+                if (translationResult is null) continue;
+
+                await AddTranslationAsync(key, locale.Key, translationResult);
+            }
+        }
     }
 }

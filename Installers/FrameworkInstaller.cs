@@ -153,7 +153,7 @@ public static class FrameworkInstaller
         // }
 
         var frameworkDbContextConfiguration = configs.DbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
-        services.AddDbContext<FrameworkDbContext>(frameworkDbContextConfiguration);
+        services.AddDbContextPool<FrameworkDbContext>(frameworkDbContextConfiguration);
 
         configs.ConfigProject?.Configure(services);
         configs.ConfigFile?.Configure(services);
@@ -163,6 +163,10 @@ public static class FrameworkInstaller
         configs.ConfigGeo?.Configure(services);
         configs.ConfigOpenAi?.Configure(services);
         configs.ConfigWebPush.Configure(services);
+        configs.ConfigJira.Configure(services);
+        configs.ConfigIpFilter.Configure(services);
+        configs.ConfigIdentity.Configure(services);
+        configs.ConfigTranslation.Configure(services);
 
         if (configs.ConfigSecurity is not null)
         {
@@ -194,6 +198,10 @@ public static class FrameworkInstaller
         public IConfig<ConfigGeo> ConfigGeo { get; init; } = configuration.GetConfig<ConfigGeo>("Geo");
         public IConfig<ConfigOpenAi> ConfigOpenAi { get; set; } = configuration.GetConfig<ConfigOpenAi>("OpenAi");
         public IConfig<ConfigWebPush> ConfigWebPush { get; set; } = configuration.GetConfig<ConfigWebPush>("WebPush");
+        public IConfig<ConfigJira> ConfigJira { get; set; } = configuration.GetConfig<ConfigJira>("Jira");
+        public IConfig<ConfigIpFilter> ConfigIpFilter { get; set; } = configuration.GetConfig<ConfigIpFilter>("IpFilter");
+        public IConfig<ConfigIdentity> ConfigIdentity { get; init; } = configuration.GetConfig<ConfigIdentity>("Identity");
+        public IConfig<ConfigTranslation> ConfigTranslation { get; init; } = configuration.GetConfig<ConfigTranslation>("Translation");
         
         public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
 
@@ -208,7 +216,6 @@ public static class FrameworkInstaller
         app.UseStaticFiles();
         app.UseCors();
         app.UseRouting();
-
         app.UseSwagger(o =>
         {
             o.OpenApiVersion = OpenApiSpecVersion.OpenApi2_0;

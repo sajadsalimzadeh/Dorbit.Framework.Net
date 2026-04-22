@@ -59,8 +59,6 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
         }
 
         var identityRequest = context.HttpContext.GetIdentityRequest();
-        
-
         var serviceProvider = context.HttpContext.RequestServices;
 
         try
@@ -68,10 +66,8 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
             var identityService = serviceProvider.GetService<IIdentityService>();
             var identity = await identityService.ValidateAsync(identityRequest);
             
-            
             if (identity is null)
                 throw new AuthenticationException();
-            
             
             if (accesses is not null && accesses.Length > 0 && !identity.IsFullAccess && !accesses.Any(x => identity.HasAccess(x)))
                 throw new UnauthorizedAccessException();

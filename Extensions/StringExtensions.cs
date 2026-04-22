@@ -239,7 +239,7 @@ public static class StringExtensions
         var sb = new StringBuilder();
         for (var i = 0; i < length; i++)
         {
-            var index = (int)Math.Floor((double)rnd.NextInt64() % template.Length);
+            var index = rnd.Next(template.Length);
             sb.Append(template[index]);
         }
 

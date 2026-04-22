@@ -32,7 +32,7 @@ public class TwilioSmsProvider : IMessageProviderSms
         var message = await MessageResource.CreateAsync(
             body: body,
             from: new Twilio.Types.PhoneNumber(_sender),
-            to: new Twilio.Types.PhoneNumber(request.To));
+            to: new Twilio.Types.PhoneNumber(request.Receiver));
 
         return new QueryResult<string>() { Success = !message.ErrorCode.HasValue, Data = "" };
     }

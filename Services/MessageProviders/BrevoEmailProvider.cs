@@ -45,7 +45,7 @@ public class BrevoEmailProvider : IMessageProvider<MessageEmailRequest, ConfigMe
             {
                 new
                 {
-                    email = request.To
+                    email = request.Receiver
                 }
             },
             subject = request.Subject,

@@ -8,7 +8,6 @@ namespace Dorbit.Framework.Contracts.Messages;
 public class MessageEmailRequest : MessageRequest
 {
     public string Subject { get; set; }
-    public string To { get; set; }
     public string Cc { get; set; }
     public string Bcc { get; set; }
     public List<MessageEmailRequestAttachment> Attachments { get; set; }

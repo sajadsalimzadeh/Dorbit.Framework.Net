@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Abstractions;
 using Dorbit.Framework.Services;
-using Dorbit.Framework.Services.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Dorbit.Framework.Contracts.Jobs;

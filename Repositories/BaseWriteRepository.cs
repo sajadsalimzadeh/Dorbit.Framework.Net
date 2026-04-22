@@ -23,7 +23,7 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
         return _dbContext.InsertEntityAsync<TEntity, TKey>(entity, cancellationToken);
     }
 
-    public virtual async Task<TEntity> InsertIfExistsAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual async Task<TEntity> InsertIfNotExistsAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         var existsEntity = await GetByIdAsync(entity.Id, cancellationToken);
         if (existsEntity is not null) return existsEntity;

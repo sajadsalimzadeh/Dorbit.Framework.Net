@@ -9,7 +9,7 @@ public class IdentityDto
     public IUserDto User { get; set; }
     public bool IsFullAccess { get; set; }
     public List<string> Accessibility { get; set; }
-    public List<ClaimDto> Claims { get; set; }
+    public List<IdentityClaimDto> Claims { get; set; }
     public HashSet<string> DeepAccessibility { get; set; }
 
     public bool HasAccess(string access)

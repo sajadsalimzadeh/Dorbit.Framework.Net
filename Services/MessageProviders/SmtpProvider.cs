@@ -39,7 +39,7 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest, ConfigMessageE
     {
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(_senderName, _senderEmail));
-        message.To.Add(MailboxAddress.Parse(request.To));
+        message.To.Add(MailboxAddress.Parse(request.Receiver));
         message.Subject = request.Subject;
         var builder = new BodyBuilder();
         if (request.Attachments != null)

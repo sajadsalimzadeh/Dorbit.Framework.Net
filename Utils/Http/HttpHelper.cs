@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using System.Xml.Serialization;
 using Dorbit.Framework.Contracts.Results;
 using Microsoft.Extensions.Caching.Memory;
@@ -66,13 +65,14 @@ public class HttpHelper : IDisposable
         if (obj == null) return null;
         var properties = obj.GetType()
             .GetProperties()
-            .Where(p => p.GetValue(obj, null) != null)
             .Select(p =>
             {
                 var jsonPropertyAttribute = p.GetCustomAttribute<JsonPropertyNameAttribute>();
                 var name = (jsonPropertyAttribute != null ? jsonPropertyAttribute.Name : p.Name);
-                return name + "=" + HttpUtility.UrlEncode(p.GetValue(obj, null)?.ToString());
-            });
+                var value = p.GetValue(obj, null);
+                if (value == null) return null;
+                return name + "=" + Uri.EscapeDataString(value.ToString());
+            }).Where(x => x != null);
 
         return string.Join("&", properties.ToArray());
     }

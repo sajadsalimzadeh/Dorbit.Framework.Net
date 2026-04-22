@@ -19,7 +19,7 @@ public static class MemoryCacheExtensions
             if (!memoryCache.TryGetValue(key, out T value))
             {
                 value = action();
-                memoryCache.Set(key, value, timeToLive);
+                if(value != null) memoryCache.Set(key, value, timeToLive);
             }
 
             return value;

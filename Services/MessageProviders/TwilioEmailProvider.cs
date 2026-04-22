@@ -30,7 +30,7 @@ public class TwilioEmailProvider : IMessageProvider<MessageEmailRequest, ConfigM
         var client = new SendGridClient(_apiKey);
         var from = new EmailAddress(_sender, _senderName);
         var subject = request.Subject;
-        var to = new EmailAddress(request.To, "User");
+        var to = new EmailAddress(request.Receiver, "User");
         var msg = MailHelper.CreateSingleEmail(from, to, subject, "", request.Body);
         var response = await client.SendEmailAsync(msg);
         var content = await response.Body.ReadAsStringAsync();
