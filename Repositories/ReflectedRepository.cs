@@ -20,7 +20,7 @@ public class ReflectedRepository(object repository)
     public async Task UpdateAsync(object entity, CancellationToken cancellationToken = default)
     {
         var methodInfo = _type.GetMethods().FirstOrDefault(x =>
-            x.Name == nameof(BaseWriteRepository<Entity>.UpdateWithPatchObjectAsync) &&
+            x.Name == nameof(BaseWriteRepository<Entity>.UpdateAsync) &&
             x.GetParameters().FirstOrDefault()?.ParameterType.IsAssignableTo(typeof(IEntity)) == true
         );
         await ((Task)methodInfo?.Invoke(repository, [entity, cancellationToken]))!;
