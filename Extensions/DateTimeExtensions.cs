@@ -40,6 +40,8 @@ public static class DateTimeExtensions
             .Replace("Y", pc.GetYear(dateTime).ToString()[3..])
             .Replace("MM", pc.GetMonth(dateTime).ToString().PadLeft(2, '0'))
             .Replace("M", pc.GetMonth(dateTime).ToString())
+            .Replace("WW", pc.GetDayOfWeek(dateTime).ToString().PadLeft(2, '0'))
+            .Replace("W", pc.GetDayOfWeek(dateTime).ToString())
             .Replace("DD", pc.GetDayOfMonth(dateTime).ToString().PadLeft(2, '0'))
             .Replace("D", pc.GetDayOfMonth(dateTime).ToString())
             .Replace("hh", pc.GetHour(dateTime).ToString().PadLeft(2, '0'))

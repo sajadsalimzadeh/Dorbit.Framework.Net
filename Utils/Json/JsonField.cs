@@ -24,7 +24,7 @@ public static class ModelBuilderExtensions
 {
     private static bool HasJsonAttribute(PropertyInfo propertyInfo)
     {
-        return propertyInfo != null && propertyInfo.GetCustomAttributes<JsonFieldAttribute>(true) != null;
+        return propertyInfo != null && propertyInfo.CustomAttributes.Any(a => a.AttributeType == typeof(JsonFieldAttribute));
     }
 
     public static void AddJsonFields(this ModelBuilder modelBuilder, bool skipConventionalEntities = true)

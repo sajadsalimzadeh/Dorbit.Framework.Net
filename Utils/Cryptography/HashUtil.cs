@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Dorbit.Framework.Utils.Cryptography;
@@ -60,5 +61,30 @@ public static class HashUtil
             sBuilder.Append(t.ToString("x2"));
         }
         return sBuilder.ToString();
+    }
+    
+    public static byte[] Base32Decode(string base32)
+    {
+        const string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+        var output = new List<byte>();
+        int bitBuffer = 0, bitsLeft = 0;
+
+        foreach (var c in base32.Replace("=", ""))
+        {
+            var val = alphabet.IndexOf(char.ToUpperInvariant(c));
+            if (val < 0) continue;
+
+            bitBuffer = (bitBuffer << 5) | val;
+            bitsLeft += 5;
+
+            if (bitsLeft >= 8)
+            {
+                output.Add((byte)((bitBuffer >> (bitsLeft - 8)) & 0xFF));
+                bitsLeft -= 8;
+            }
+        }
+
+        return output.ToArray();
     }
 }
