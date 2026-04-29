@@ -8,15 +8,12 @@ namespace Dorbit.Framework.Hosts;
 public abstract class BaseHostInterval(IServiceProvider serviceProvider) : BaseHost(serviceProvider, true)
 {
     protected abstract TimeSpan Interval { get; }
-    
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         if (IsConcurrent)
         {
-            new Thread(() =>
-            {
-                Start().Wait(stoppingToken);
-            }).Start();
+            new Thread(() => { Start().Wait(stoppingToken); }).Start();
         }
         else
         {
@@ -27,13 +24,16 @@ public abstract class BaseHostInterval(IServiceProvider serviceProvider) : BaseH
 
         async Task Start()
         {
-            using var timer = new PeriodicTimer(Interval);
-            while (await timer.WaitForNextTickAsync(stoppingToken))
+            while (true)
             {
                 try
                 {
+                    await Task.Delay(Interval, stoppingToken);
                     using var scope = ServiceProvider.CreateScope();
                     await InvokeAsync(scope.ServiceProvider, stoppingToken);
+                }
+                catch (TaskCanceledException)
+                {
                 }
                 catch (Exception ex)
                 {
