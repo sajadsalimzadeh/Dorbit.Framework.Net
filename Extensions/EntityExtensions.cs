@@ -267,4 +267,10 @@ public static class EntityExtensions
 
         entity.OwnerRequestCancel();
     }
+
+    public static bool TryGetById<TEntity>(this List<TEntity> items, Guid id, out TEntity entity) where TEntity : IEntity
+    {
+        entity = items.FirstOrDefault(x => x.Id == id);
+        return entity != null;
+    }
 }
