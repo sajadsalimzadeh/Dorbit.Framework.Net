@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.Spatial;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -17,6 +18,16 @@ public static class ClaimExtensions
     {
         value = claims.FirstOrDefault(x => x.Type == type)?.Value;
         return !value.IsNullOrEmpty();
+    }
+
+    public static string GetString(this IEnumerable<Claim> claims, string type)
+    {
+        return claims.FirstOrDefault(x => x.Type == type)?.Value;
+    }
+    
+    public static string GetStringOrDefault(this IEnumerable<Claim> claims, string type, string defaultValue)
+    {
+        return claims.FirstOrDefault(x => x.Type == type)?.Value ?? defaultValue;
     }
 
     public static bool TryGetBoolean(this Claim claim, out bool value)
@@ -37,6 +48,16 @@ public static class ClaimExtensions
     public static bool TryGetBoolean(this IEnumerable<Claim> claims, string type, out bool value)
     {
         return claims.FirstOrDefault(x => x.Type == type).TryGetBoolean(out value);
+    }
+
+    public static bool GetBoolean(this IEnumerable<Claim> claims, string type)
+    {
+        return claims.FirstOrDefault(x => x.Type == type).TryGetBoolean(out var value) ? value : throw new ParseErrorException();
+    }
+
+    public static bool GetBooleanOrDefault(this IEnumerable<Claim> claims, string type, bool defaultValue)
+    {
+        return claims.FirstOrDefault(x => x.Type == type).TryGetBoolean(out var value) ? value : defaultValue;
     }
 
     public static bool TryGetInt32(this Claim claim, out int value)
@@ -60,6 +81,16 @@ public static class ClaimExtensions
         return claims.FirstOrDefault(x => x.Type == type).TryGetInt32(out value);
     }
 
+    public static int GetInt32(this IEnumerable<Claim> claims, string type)
+    {
+        return claims.FirstOrDefault(x => x.Type == type).TryGetInt32(out var value) ? value : throw new ParseErrorException();
+    }
+
+    public static int GetInt32OrDefault(this IEnumerable<Claim> claims, string type, int defaultValue)
+    {
+        return claims.FirstOrDefault(x => x.Type == type).TryGetInt32(out var value) ? value : defaultValue;
+    }
+    
     public static bool TryGetGuid(this Claim claim, out Guid value)
     {
         value = Guid.Empty;
@@ -72,5 +103,15 @@ public static class ClaimExtensions
     public static bool TryGetGuid(this IEnumerable<Claim> claims, string type, out Guid value)
     {
         return claims.FirstOrDefault(x => x.Type == type).TryGetGuid(out value);
+    }
+
+    public static Guid GetGuid(this IEnumerable<Claim> claims, string type)
+    {
+        return claims.FirstOrDefault(x => x.Type == type).TryGetGuid(out var value) ? value : throw new ParseErrorException();
+    }
+
+    public static Guid GetGuidOrDefault(this IEnumerable<Claim> claims, string type, Guid defaultValue)
+    {
+        return claims.FirstOrDefault(x => x.Type == type).TryGetGuid(out var value) ? value : defaultValue;
     }
 }

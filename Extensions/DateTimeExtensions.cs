@@ -40,8 +40,8 @@ public static class DateTimeExtensions
             .Replace("Y", pc.GetYear(dateTime).ToString()[3..])
             .Replace("MM", pc.GetMonth(dateTime).ToString().PadLeft(2, '0'))
             .Replace("M", pc.GetMonth(dateTime).ToString())
-            .Replace("WW", pc.GetDayOfWeek(dateTime).ToString().PadLeft(2, '0'))
-            .Replace("W", pc.GetDayOfWeek(dateTime).ToString())
+            .Replace("WW", pc.GetWeekOfMonth(dateTime).ToString().PadLeft(2, '0'))
+            .Replace("W", pc.GetWeekOfMonth(dateTime).ToString())
             .Replace("DD", pc.GetDayOfMonth(dateTime).ToString().PadLeft(2, '0'))
             .Replace("D", pc.GetDayOfMonth(dateTime).ToString())
             .Replace("hh", pc.GetHour(dateTime).ToString().PadLeft(2, '0'))
@@ -53,5 +53,24 @@ public static class DateTimeExtensions
     {
         var diff = (7 + (date.DayOfWeek - startOfWeek)) % 7;
         return date.AddDays(-1 * diff).Date;
+    }
+    
+    
+    public static int GetWeekOfMonth(this PersianCalendar pc, DateTime date)
+    {
+        var year = pc.GetYear(date);
+        var month = pc.GetMonth(date);
+        var day = pc.GetDayOfMonth(date);
+
+        // روز اول ماه
+        var firstDayOfMonth = pc.ToDateTime(year, month, 1, 0, 0, 0, 0);
+
+        // شماره روز هفته (شنبه = 0)
+        var firstDayWeek = (int)firstDayOfMonth.DayOfWeek;
+
+        // اگر خواستی هفته از شنبه شروع بشه:
+        firstDayWeek = (firstDayWeek + 1) % 7;
+
+        return ((day + firstDayWeek - 1) / 7) + 1;
     }
 }

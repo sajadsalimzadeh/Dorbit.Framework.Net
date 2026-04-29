@@ -50,15 +50,13 @@ public class ExceptionMiddleware : IMiddleware
             {
                 case UnauthorizedAccessException unauthorizedAccessException:
                     op.Code = StatusCodes.Status403Forbidden;
-                    op.Message = unauthorizedAccessException.Message.IsNullOrEmpty()
-                        ? nameof(FrameworkErrors.UnAuthorize)
-                        : unauthorizedAccessException.Message;
+                    op.Data = unauthorizedAccessException.Data;
+                    op.Message = nameof(FrameworkErrors.UnAuthorize);
                     break;
                 case AuthenticationException authenticationException:
                     op.Code = StatusCodes.Status401Unauthorized;
-                    op.Message = authenticationException.Message.IsNullOrEmpty()
-                        ? nameof(FrameworkErrors.AuthenticationFailed)
-                        : authenticationException.Message;
+                    op.Data = authenticationException.Data;
+                    op.Message = nameof(FrameworkErrors.AuthenticationFailed);
                     break;
                 case OperationException operationException:
                     op.Code = 400;

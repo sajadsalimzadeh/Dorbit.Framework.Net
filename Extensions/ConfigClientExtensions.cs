@@ -1,4 +1,6 @@
-﻿using Dorbit.Framework.Configs;
+﻿using System.Net;
+using System.Net.Http;
+using Dorbit.Framework.Configs;
 using Dorbit.Framework.Utils.Http;
 using Serilog;
 
@@ -6,17 +8,23 @@ namespace Dorbit.Framework.Extensions;
 
 public static class ConfigClientExtensions
 {
-    public static HttpHelper GetHttpHelper(this ConfigClientApi configClientApi, string apiKeyHeader = null)
+    public static HttpHelper GetHttpHelper(this ConfigClientApi config, string apiKeyHeader = null)
     {
-        return configClientApi.GetHttpHelper(null, apiKeyHeader);
+        return config.GetHttpHelper(null, apiKeyHeader);
     }
 
-    public static HttpHelper GetHttpHelper(this ConfigClientApi configClientApi, ILogger logger, string apiKeyHeader = null)
+    public static HttpHelper GetHttpHelper(this ConfigClientApi config, ILogger logger, string apiKeyHeader = null)
     {
-        var http = new HttpHelper(configClientApi.ApiUrl);
-        if (configClientApi.ApiKey is not null)
+        var http = new HttpHelper(config.ApiUrl);
+        if (config.ApiKey is not null)
         {
-            http.AuthorizationToken = configClientApi.ApiKey.GetDecryptedValue();
+            http.AuthorizationToken = config.ApiKey.GetDecryptedValue();
+        }
+
+        if (config.Proxy.IsNotNullOrEmpty())
+        {
+            http.HttpClientHandler.Proxy = new WebProxy(config.Proxy);
+            http.HttpClientHandler.UseProxy = true;
         }
 
         if (logger is not null)

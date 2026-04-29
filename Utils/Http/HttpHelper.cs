@@ -36,6 +36,7 @@ public class HttpHelper : IDisposable
     public ContentType RequestContentType { get; set; } = ContentType.Json;
     public ContentType ResponseContentType { get; set; } = ContentType.Json;
     public HttpClient HttpClient { get; private set; }
+    public HttpClientHandler HttpClientHandler { get; private set; }
     public CookieContainer CookieContainer { get; } = new();
     public CancellationToken CancellationToken { get; set; }
 
@@ -58,6 +59,8 @@ public class HttpHelper : IDisposable
         HttpClient.DefaultRequestHeaders.Add("Accept", "*/*");
         HttpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
         HttpClient.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
+
+        if (handler is HttpClientHandler httpClientHandler) HttpClientHandler = httpClientHandler;
     }
 
     private string GetQueryString(object obj)

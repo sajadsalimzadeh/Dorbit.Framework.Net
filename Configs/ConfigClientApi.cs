@@ -6,4 +6,5 @@ public abstract class ConfigClientApi
 {
     public string ApiUrl { get; set; }
     public ProtectedProperty ApiKey { get; set; }
+    public string Proxy { get; set; }
 }
