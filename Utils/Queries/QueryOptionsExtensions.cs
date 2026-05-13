@@ -47,7 +47,7 @@ public static class QueryOptionsExtensions
         }
     }
 
-    public static IQueryable<T> ApplyToList<T>(this IQueryable<T> query, QueryOptions queryOptions)
+    public static IQueryable<T> ApplyQuery<T>(this IQueryable<T> query, QueryOptions queryOptions)
     {
         return queryOptions.ApplyTo(query);
     }
@@ -91,6 +91,6 @@ public static class QueryOptionsExtensions
 
     public static IEnumerable<T> ApplyToList<T>(this IEnumerable<T> enumerable, QueryOptions queryOptions)
     {
-        return enumerable.AsQueryable().ApplyToList(queryOptions);
+        return enumerable.AsQueryable().ApplyQuery(queryOptions);
     }
 }
