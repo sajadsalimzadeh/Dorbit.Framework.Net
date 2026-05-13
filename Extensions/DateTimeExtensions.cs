@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using Dorbit.Framework.Contracts;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -32,30 +33,16 @@ public static class DateTimeExtensions
 
     public static string ToPersianDate(this DateTime dateTime, string format)
     {
-        var pc = new PersianCalendar();
-        return format
-            .Replace("YYYY", pc.GetYear(dateTime).ToString())
-            .Replace("YYY", pc.GetYear(dateTime).ToString()[1..])
-            .Replace("YY", pc.GetYear(dateTime).ToString()[2..])
-            .Replace("Y", pc.GetYear(dateTime).ToString()[3..])
-            .Replace("MM", pc.GetMonth(dateTime).ToString().PadLeft(2, '0'))
-            .Replace("M", pc.GetMonth(dateTime).ToString())
-            .Replace("WW", pc.GetWeekOfMonth(dateTime).ToString().PadLeft(2, '0'))
-            .Replace("W", pc.GetWeekOfMonth(dateTime).ToString())
-            .Replace("DD", pc.GetDayOfMonth(dateTime).ToString().PadLeft(2, '0'))
-            .Replace("D", pc.GetDayOfMonth(dateTime).ToString())
-            .Replace("hh", pc.GetHour(dateTime).ToString().PadLeft(2, '0'))
-            .Replace("mm", pc.GetMinute(dateTime).ToString().PadLeft(2, '0'))
-            .Replace("ss", pc.GetSecond(dateTime).ToString().PadLeft(2, '0'));
+        return new PersianDateTime(dateTime).Format(format);
     }
-    
+
     public static DateTime GetFirstDayOfWeek(this DateTime date, DayOfWeek startOfWeek = DayOfWeek.Monday)
     {
         var diff = (7 + (date.DayOfWeek - startOfWeek)) % 7;
         return date.AddDays(-1 * diff).Date;
     }
-    
-    
+
+
     public static int GetWeekOfMonth(this PersianCalendar pc, DateTime date)
     {
         var year = pc.GetYear(date);
@@ -72,5 +59,10 @@ public static class DateTimeExtensions
         firstDayWeek = (firstDayWeek + 1) % 7;
 
         return ((day + firstDayWeek - 1) / 7) + 1;
+    }
+
+    public static int GetWeekOfMonth(this DateTime date)
+    {
+        return ((date.Day - 1) / 7) + 1;
     }
 }
