@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net;
 using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Services.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,13 +19,13 @@ public class AntiDosAttribute(AntiDosAttribute.DurationType type, int count) : A
         Minute = 3,
     }
 
-    private TimeSpan _time = type switch
+    private readonly TimeSpan _time = type switch
     {
         DurationType.Day => TimeSpan.FromDays(1),
         DurationType.Hour => TimeSpan.FromHours(1),
-        DurationType.Minute => TimeSpan.FromMinutes(1),
         _ => TimeSpan.FromMinutes(1),
     };
+
     public int Count { get; set; } = count;
 
     private class RequestModel
@@ -40,8 +41,9 @@ public class AntiDosAttribute(AntiDosAttribute.DurationType type, int count) : A
         var userResolver = context.HttpContext.RequestServices.GetService<IUserResolver>();
         var user = userResolver?.User;
 
-        var key = user is null ? remoteAddress.ToString() : user.GetId().ToString() ?? string.Empty;
-        key += context.HttpContext.Request.Path;
+        if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor) return;
+        
+        var key = $"{(user is null ? remoteAddress : user.GetId())}-{actionDescriptor.ControllerTypeInfo.FullName}-{actionDescriptor.ActionName}";
         var now = DateTime.UtcNow;
         var requests = AllUserRequests.GetOrAdd(key, []);
         requests.Add(new RequestModel { Time = now });
