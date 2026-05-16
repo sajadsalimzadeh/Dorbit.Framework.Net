@@ -72,4 +72,17 @@ public static class QueryableExtensions
     {
         return query.WithCacheAsync((q) => q.CountAsync(), key, timeSpan);
     }
+
+    public static IQueryable<TEntity> ExcludeSoftDelete<TEntity>(this IQueryable<TEntity> query, bool excludeDeleted = true)
+    {
+        if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
+        {
+            if (excludeDeleted)
+            {
+                return query.Cast<ISoftDelete>().Where(x => !x.IsDeleted).Cast<TEntity>().AsQueryable();
+            }
+        }
+
+        return query;
+    }
 }
