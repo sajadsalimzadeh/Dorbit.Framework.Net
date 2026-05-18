@@ -89,10 +89,9 @@ public class BaseWriteRepository<TEntity, TKey>(IDbContext dbContext) : BaseRead
     }
 
     //================== Extended Methods ==================\\
-    public Task<TEntity> InsertWithPatchObjectAsync<TPatch>(TPatch dto, CancellationToken cancellationToken = default)
+    public Task<TEntity> InsertWithPatchObjectAsync<TPatch>(TPatch patch, CancellationToken cancellationToken = default)
     {
-        var mapper = _dbContext.ServiceProvider.GetService<IMapper>();
-        return InsertAsync(Activator.CreateInstance<TEntity>().PatchObject(dto), cancellationToken);
+        return InsertAsync(Activator.CreateInstance<TEntity>().PatchObject(patch), cancellationToken);
     }
 
     public async Task<TEntity> DeleteAsync(TKey id, CancellationToken cancellationToken = default)
