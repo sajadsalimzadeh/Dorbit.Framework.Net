@@ -49,7 +49,6 @@ public abstract class EfDbContext : DbContext, IDbContext
 
 
     public IServiceProvider ServiceProvider { get; }
-    public bool AutoExcludeDeleted { get; set; } = true;
 
     private DatabaseProviderType? _providerType;
 
@@ -154,21 +153,12 @@ public abstract class EfDbContext : DbContext, IDbContext
         return _efTransactionContext.BeginTransaction();
     }
 
-    public IQueryable<TEntity> DbSet<TEntity, TKey>(bool? excludeDeleted = null) where TEntity : class, IEntity<TKey>
+    public virtual IQueryable<TEntity> DbSet<TEntity, TKey>(bool excludeDeleted = true) where TEntity : class, IEntity<TKey>
     {
-        excludeDeleted ??= AutoExcludeDeleted;
-        var set = Set<TEntity>().AsNoTracking();
-        if (!excludeDeleted.Value) return set;
-
-        if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
-        {
-            set = set.Cast<ISoftDelete>().Where(x => !x.IsDeleted).Cast<TEntity>().AsQueryable();
-        }
-
-        return set;
+        return Set<TEntity>().AsNoTracking().ExcludeSoftDelete(excludeDeleted);
     }
 
-    public IQueryable<TEntity> DbSet<TEntity>(bool? excludeDeleted = null) where TEntity : class, IEntity<Guid>
+    public virtual IQueryable<TEntity> DbSet<TEntity>(bool excludeDeleted = true) where TEntity : class, IEntity<Guid>
     {
         return DbSet<TEntity, Guid>(excludeDeleted);
     }

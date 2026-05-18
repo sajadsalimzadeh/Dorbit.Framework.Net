@@ -11,11 +11,10 @@ namespace Dorbit.Framework.Database.Abstractions;
 public interface IDbContext : IDbContextMigrator
 {
     IServiceProvider ServiceProvider { get; }
-    bool AutoExcludeDeleted { get; set; }
     DatabaseProviderType ProviderType { get; }
 
-    IQueryable<TEntity> DbSet<TEntity, TKey>(bool? excludeDeleted = null) where TEntity : class, IEntity<TKey>;
-    IQueryable<TEntity> DbSet<TEntity>(bool? excludeDeleted = null) where TEntity : class, IEntity<Guid>;
+    IQueryable<TEntity> DbSet<TEntity, TKey>(bool excludeDeleted = true) where TEntity : class, IEntity<TKey>;
+    IQueryable<TEntity> DbSet<TEntity>(bool excludeDeleted = true) where TEntity : class, IEntity<Guid>;
 
     Task<TEntity> InsertEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>;
     Task<TEntity> InsertEntityAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>;
