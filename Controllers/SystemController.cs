@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -10,18 +11,18 @@ namespace Dorbit.Framework.Controllers;
 [Route("Framework/[controller]")]
 public class SystemController(IMemoryCache memoryCache) : BaseController
 {
-    [HttpGet("MemoryCache")]
-    public QueryResult<List<object>> GetAllMemoryCacheKeys()
+    [HttpGet("MemoryCache/Keys"), Auth("System-MemoryCache")]
+    public QueryResult<List<string>> GetAllMemoryCacheKeys()
     {
         if (memoryCache is MemoryCache mc)
         {
-            return mc.Keys.ToList().ToQueryResult();
+            return mc.Keys.Select(x => x.ToString()).ToList().ToQueryResult();
         }
 
-        return new List<object>().ToQueryResult();
+        return new List<string>().ToQueryResult();
     }
     
-    [HttpDelete("MemoryCache")]
+    [HttpPost("MemoryCache/Clear"), Auth("System-MemoryCache")]
     public CommandResult DeleteMemoryCache()
     {
         if (memoryCache is MemoryCache mc)
@@ -33,7 +34,7 @@ public class SystemController(IMemoryCache memoryCache) : BaseController
         return CommandResult.Failed("Memory cache instance not supported");
     }
     
-    [HttpDelete("MemoryCache/{key}")]
+    [HttpPost("MemoryCache/Delete/{key}"), Auth("System-MemoryCache")]
     public CommandResult DeleteMemoryCache([FromRoute] string key)
     {
         if (memoryCache is MemoryCache mc)
