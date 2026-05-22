@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Identities;
+using Microsoft.AspNetCore.Http;
 
 namespace Dorbit.Framework.Services.Abstractions;
 

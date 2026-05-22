@@ -37,7 +37,8 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
                     var index = 0;
                     foreach (var genericType in preType.GenericTypeArguments)
                     {
-                        accesses = accesses.Select(x => x.Replace("{type" + index + "}", genericType.Name)).ToArray();
+                        var name = genericType.GetCustomAttribute<AuthTypeNameAttribute>()?.Name ?? genericType.Name;
+                        accesses = accesses.Select(x => x.Replace("{type" + index + "}", name)).ToArray();
                         index++;
                     }
 
@@ -58,13 +59,13 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
             accesses = [];
         }
 
-        var identityRequest = context.HttpContext.GetIdentityRequest();
-        var serviceProvider = context.HttpContext.RequestServices;
-
         try
         {
+            var identityRequest = context.HttpContext.GetIdentityRequest();
+            var serviceProvider = context.HttpContext.RequestServices;
+            
             var identityService = serviceProvider.GetService<IIdentityService>();
-            var identity = await identityService.ValidateAsync(identityRequest);
+            var identity = identityService.Identity ?? await identityService.ValidateAsync(identityRequest);
             
             if (identity is null)
                 throw new AuthenticationException();
