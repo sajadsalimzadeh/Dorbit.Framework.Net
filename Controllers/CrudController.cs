@@ -24,7 +24,7 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController
     
     protected virtual IQueryable<TEntity> Set() => Repository.Set();
 
-    [HttpGet(""), Auth("{type0}-View")]
+    [HttpGet, Auth("{type0}-View")]
     public virtual async Task<QueryResult<IEnumerable<TGet>>> GetAllAsync()
     {
         var query = Set();
