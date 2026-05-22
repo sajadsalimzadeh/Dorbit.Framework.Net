@@ -4,6 +4,9 @@
     "Children": [
       {
         "Name": "Setting"
+      },
+      {
+        "Name": "System-MemoryCache"
       }
     ]
   }
