@@ -55,14 +55,14 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController
         return Repository.GetByIdAsync(id).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
-    [HttpPost, Auth("{type0}-Save")]
+    [HttpPost, Auth("{type0}-Save", "{type0}-Add")]
     public virtual Task<QueryResult<TGet>> AddAsync([FromBody] TAdd request)
     {
         MemoryCache.Remove(typeof(TEntity));
         return Repository.InsertAsync(request.MapTo<TEntity>()).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
 
-    [HttpPatch("{id}"), HttpPut("{id}"), Auth("{type0}-Save")]
+    [HttpPatch("{id}"), HttpPut("{id}"), Auth("{type0}-Save", "{type0}-Edit")]
     public virtual async Task<QueryResult<TGet>> PatchAsync(TKey id, [FromBody] JsonElement obj)
     {
         MemoryCache.Remove(id.ToString() ?? string.Empty);
