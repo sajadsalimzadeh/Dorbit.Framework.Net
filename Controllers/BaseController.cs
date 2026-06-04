@@ -1,5 +1,6 @@
 ﻿using System;
 using AutoMapper;
+using Dorbit.Framework.Contracts.Identities;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils.Queries;
@@ -18,6 +19,11 @@ public abstract class BaseController : ControllerBase
 
     private IUserResolver _userResolver;
     protected IUserResolver UserResolver => _userResolver ??= ServiceProvider.GetRequiredService<IUserResolver>();
+
+    private IIdentityService _identityService;
+    protected IIdentityService IdentityService => _identityService ??= ServiceProvider.GetRequiredService<IIdentityService>();
+    
+    protected IdentityDto Identity => IdentityService.Identity;
     
     private ILogger _logger;
     protected ILogger Logger => _logger ??= ServiceProvider.GetRequiredService<ILogger>();

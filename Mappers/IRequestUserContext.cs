@@ -6,5 +6,5 @@ namespace Dorbit.Framework.Mappers;
 public interface IRequestUserContext
 {
     [JsonIgnore]
-    public Guid RequestUserId { get; set; }
+    public Guid RequesterId { get; set; }
 }

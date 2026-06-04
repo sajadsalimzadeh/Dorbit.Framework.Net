@@ -16,7 +16,7 @@ public class RequestContextFilter: IActionFilter
                 var httpContext = context.HttpContext;
                 var identityService = httpContext.RequestServices.GetRequiredService<IIdentityService>();
 
-                userContext.RequestUserId = identityService.Identity.User.GetId();
+                userContext.RequesterId = identityService.Identity.User.GetId();
             }
         }
     }
