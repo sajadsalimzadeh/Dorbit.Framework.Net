@@ -42,7 +42,7 @@ public class MeliPayamakProvider : IMessageProviderSms
             to = request.Receiver,
             text = string.Join(';', request.Args)
         };
-        var response = (await _client.PostAsync<SendResponse>($"SendSMS/BaseServiceNumber", data)).Result;
+        var response = (await _client.PostAsync<SendResponse>("SendSMS/BaseServiceNumber", data)).Result;
         var result = response.Value switch
         {
             "-10" => throw new Exception("داده نامعتبر"),
