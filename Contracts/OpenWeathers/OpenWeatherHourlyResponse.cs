@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Dorbit.Framework.Contracts.OpenWeathers;
 
-public class OpenWeatherDailyResponse
+public class OpenWeatherHourlyResponse
 {
     public double Lat { get; set; }
     public double Lon { get; set; }
@@ -12,12 +12,18 @@ public class OpenWeatherDailyResponse
     [JsonPropertyName("timezone_offset")]
     public int TimezoneOffset { get; set; }
 
-    public List<OpenWeatherDailyResponseData> Data { get; set; }
+    public List<OpenWeatherHourlyResponseData> Data { get; set; }
 }
 
-public class OpenWeatherDailyResponseData
+public class OpenWeatherHourlyResponseData
 {
     public long Dt { get; set; }
+
+    public double Temp { get; set; }
+
+    [JsonPropertyName("feels_like")]
+    public double FeelsLike { get; set; }
+
     public long Sunrise { get; set; }
     public long Sunset { get; set; }
     public long Moonrise { get; set; }
@@ -37,32 +43,10 @@ public class OpenWeatherDailyResponseData
     public double Clouds { get; set; }
     public double Pop { get; set; }
     public double Uvi { get; set; }
-
-    public OpenWeatherDailyResponseDataTemp Temp { get; set; }
-    [JsonPropertyName("feels_like")]
-    public OpenWeatherDailyResponseDataFeelsLike FeelsLike { get; set; }
-    public List<OpenWeatherDailyResponseDataWeather> Weather { get; set; }
+    public List<OpenWeatherHourlyResponseDataWeather> Weather { get; set; }
 }
 
-public class OpenWeatherDailyResponseDataTemp
-{
-    public double Day { get; set; }
-    public double Min { get; set; }
-    public double Max { get; set; }
-    public double Night { get; set; }
-    public double Eve { get; set; }
-    public double Morn { get; set; }
-}
-
-public class OpenWeatherDailyResponseDataFeelsLike
-{
-    public double Day { get; set; }
-    public double Eve { get; set; }
-    public double Morn { get; set; }
-    public double Night { get; set; }
-}
-
-public class OpenWeatherDailyResponseDataWeather
+public class OpenWeatherHourlyResponseDataWeather
 {
     [JsonPropertyName("id")]
     public OpenWeatherState State { get; set; }

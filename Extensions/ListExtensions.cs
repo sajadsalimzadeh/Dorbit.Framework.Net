@@ -67,4 +67,10 @@ public static class ListExtensions
         items.Add(obj);
         return true;
     }
+
+    public static double AverageOrDefault<T>(this IEnumerable<T> items, Func<T, double> func)
+    {
+        var enumerable = items as T[] ?? items.ToArray();
+        return enumerable.Length != 0 ? enumerable.Average(func) : 0;
+    }
 }

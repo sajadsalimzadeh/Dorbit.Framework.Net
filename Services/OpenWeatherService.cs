@@ -18,10 +18,21 @@ public class OpenWeatherService(IOptions<ConfigOpenWeather> configOpenWeatherOpt
     {
         return configOpenWeatherOptions.Value.GetHttpHelper();
     }
-
-    public Task<HttpModel<OpenWeatherDailyResponse>> GetHourlyTimelineAsync(double lat, double lon, DateTime dateTime, int count = 24)
+    
+    public Task<HttpModel<OpenWeatherHourlyResponse>> GetHourlyTimelineAsync(double lat, double lon, DateTime dateTime, int count = 24)
     {
-        return GetHttpHelper().GetAsync<OpenWeatherDailyResponse>($"data/4.0/onecall/timeline/1h", new
+        return GetHttpHelper().GetAsync<OpenWeatherHourlyResponse>($"data/4.0/onecall/timeline/1h", new
+        {
+            cnt = count,
+            lat = lat,
+            lon = lon,
+            start = dateTime.Date.GetUnixTimeSeconds(),
+            appid = _apiKey
+        });
+    }
+    public Task<HttpModel<OpenWeatherDailyResponse>> GetDailyTimelineAsync(double lat, double lon, DateTime dateTime, int count = 24)
+    {
+        return GetHttpHelper().GetAsync<OpenWeatherDailyResponse>($"data/4.0/onecall/timeline/1day", new
         {
             cnt = count,
             lat = lat,
