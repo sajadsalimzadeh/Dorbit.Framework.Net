@@ -167,6 +167,7 @@ public static class FrameworkInstaller
         configs.ConfigIpFilter.Configure(services);
         configs.ConfigIdentity.Configure(services);
         configs.ConfigTranslation.Configure(services);
+        configs.ConfigOpenWeather.Configure(services);
 
         if (configs.ConfigSecurity is not null)
         {
@@ -202,6 +203,7 @@ public static class FrameworkInstaller
         public IConfig<ConfigIpFilter> ConfigIpFilter { get; set; } = configuration.GetConfig<ConfigIpFilter>("IpFilter");
         public IConfig<ConfigIdentity> ConfigIdentity { get; init; } = configuration.GetConfig<ConfigIdentity>("Identity");
         public IConfig<ConfigTranslation> ConfigTranslation { get; init; } = configuration.GetConfig<ConfigTranslation>("Translation");
+        public IConfig<ConfigOpenWeather> ConfigOpenWeather { get; init; } = configuration.GetConfig<ConfigOpenWeather>("OpenWeather");
         
         public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
 
