@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
@@ -18,10 +19,17 @@ internal class IdentityService(JwtService jwtService, IOptions<ConfigIdentity> c
     private readonly ConfigIdentity _configIdentity = configIdentityOptions.Value;
     public IdentityDto Identity { get; private set; }
 
-    public Task<IdentityDto> ValidateAsync(IdentityRequest request)
+    public virtual ClaimsPrincipal GetClaimsPrincipal(string accessToken)
     {
-        if (!jwtService.TryValidateToken(request.AccessToken, _configIdentity.Secret.GetDecryptedValue(), out var token, out var claimsPrincipal))
+        if (!jwtService.TryValidateToken(accessToken, _configIdentity.Secret.GetDecryptedValue(), out _, out var claimsPrincipal))
             throw new AuthenticationException();
+
+        return claimsPrincipal;
+    }
+
+    public virtual Task<IdentityDto> ValidateAsync(IdentityRequest request)
+    {
+        var claimsPrincipal = GetClaimsPrincipal(request.AccessToken);
 
         Identity = new IdentityDto()
         {

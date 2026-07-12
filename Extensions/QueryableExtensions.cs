@@ -51,10 +51,10 @@ public static class QueryableExtensions
         return query.FirstOrDefaultAsyncWithCache(x => true, key, duration, cancellationToken);
     }
 
-    public static Task<TEntity> GetByIdAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Guid id, string key, TimeSpan duration,
+    public static Task<TEntity> GetByIdAsyncWithCache<TEntity>(this IQueryable<TEntity> query, Guid id, string keyPrefix, TimeSpan duration,
         CancellationToken cancellationToken = default) where TEntity : IEntity
     {
-        return query.FirstOrDefaultAsyncWithCache(x => x.Id == id, $"{key}-{id}", duration, cancellationToken: cancellationToken);
+        return query.FirstOrDefaultAsyncWithCache(x => x.Id == id, $"{keyPrefix}-{id}", duration, cancellationToken: cancellationToken);
     }
 
     public static IQueryable<TEntity> WhereIf<TEntity>(this IQueryable<TEntity> query, Func<bool> condition,

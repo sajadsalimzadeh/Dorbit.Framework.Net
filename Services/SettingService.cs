@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace Dorbit.Framework.Services;
 public class SettingService(SettingRepository settingRepository)
 {
     private static bool _isChangeDetected = true;
-    private static readonly Dictionary<string, Setting> Settings = new();
+    private static readonly ConcurrentDictionary<string, Setting> Settings = new();
 
     private void Load()
     {

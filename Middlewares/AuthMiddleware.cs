@@ -13,16 +13,19 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Middlewares;
 
+[ServiceSingletone]
 public class AuthMiddleware : IMiddleware
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         var identityRequest = context.GetIdentityRequest();
-        var serviceProvider = context.RequestServices;
-        
-        var identityService = serviceProvider.GetService<IIdentityService>();
-        await identityService.ValidateAsync(identityRequest);
-        
+
+        if (identityRequest.AccessToken.IsNotNullOrEmpty())
+        {
+            var serviceProvider = context.RequestServices;
+            var identityService = serviceProvider.GetService<IIdentityService>();
+            await identityService.ValidateAsync(identityRequest);
+        }
         
         await next(context);
     }
