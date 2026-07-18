@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dorbit.Framework.Entities;
 
-[Index(nameof(Key), nameof(Locale))]
+[Index(nameof(Key), nameof(Locale), IsUnique = true)]
 public class Translation : Entity
 {
     [MaxLength(128)]

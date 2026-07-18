@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Entities;
+using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Repositories;
 using Dorbit.Framework.Utils.Cryptography;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +66,12 @@ public class TranslationService(TranslationRepository translationRepository, IOp
         return openAiService.ChatAsync($"translate text below to '{language}':\n\n{value}");
     }
 
+    public async Task<Dictionary<string, string>> TranslateByOpenAiAsync(Dictionary<string, string> dict, string language)
+    {
+        var result = await openAiService.ChatAsync($"translate json below to '{language} and return json in correct format.just translate value and not change keys':\n\n{JsonSerializer.Serialize(dict, JsonSerializerOptions.Web)}");
+        return JsonSerializer.Deserialize<Dictionary<string, string>>(result, JsonSerializerOptions.Web);
+    }
+
     public Task<Translation> AddTranslationAsync(string key, string locale, string value)
     {
         return translationRepository.InsertAsync(new Translation()
@@ -78,17 +85,23 @@ public class TranslationService(TranslationRepository translationRepository, IOp
     public async Task AddRangeAsync(List<string> values)
     {
         var keys = await translationRepository.Set().Select(x => new { x.Key, x.Locale }).ToDictionaryAsync(x => x.Key + "-" + x.Locale, x => x.Key);
-        foreach (var translationItem in values.Where(x => x != null).Distinct())
+        values = values.Where(x => x.IsNotNullOrEmpty()).Distinct().ToList();
+        foreach (var locale in configTranslationOptions.Value.Locales)
         {
-            var key = HashUtil.Md5(translationItem);
-            foreach (var locale in configTranslationOptions.Value.Locales)
+            var chunks = values.Where(x => !keys.ContainsKey(HashUtil.Md5(x) + "-" + locale.Key)).Distinct().Chunk(50);
+            foreach (var translationItems in chunks)
             {
-                if (keys.ContainsKey(key + "-" + locale.Key)) continue;
+                var dict = translationItems.ToDictionary(x => HashUtil.Md5(x), x => x);
 
-                var translationResult = await TranslateByOpenAiAsync(translationItem, locale.Key);
+                var translationResult = await TranslateByOpenAiAsync(dict, $"{locale.Value} ({locale.Key})");
                 if (translationResult is null) continue;
 
-                await AddTranslationAsync(key, locale.Key, translationResult);
+                await translationRepository.BulkInsertAsync(translationResult.Select(x => new Translation()
+                {
+                    Key = x.Key,
+                    Locale = locale.Key,
+                    Value = x.Value
+                }).ToList());
             }
         }
     }
