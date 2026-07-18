@@ -30,7 +30,7 @@ public static class StringExtensions
         return array;
     }
 
-    public static int ToInt32(this string input, bool hex = false)
+    public static int ToInt32OrDefault(this string input, bool hex = false)
     {
         input = input?.Trim();
 
