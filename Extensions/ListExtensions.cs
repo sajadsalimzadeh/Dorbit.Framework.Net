@@ -29,6 +29,18 @@ public static class ListExtensions
         return items.Select((value, index) => new { Index = index, Value = value }).ToDictionary(x => x.Index, x => x.Value);
     }
 
+    public static List<List<T>> Chunk<T>(this List<T> items, int size)
+    {
+        var result = new List<List<T>>();
+
+        for (var i = 0; i < items.Count; i += size)
+        {
+            result.Add(items.Skip(i).Take(size).ToList());
+        }
+
+        return result;
+    }
+
     public static T GetOrAdd<T>(this List<T> list, Predicate<T> predicate, Func<T> addFunction)
     {
         var item = list.Find(predicate);
