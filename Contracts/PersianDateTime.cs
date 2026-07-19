@@ -4,26 +4,33 @@ using Dorbit.Framework.Extensions;
 
 namespace Dorbit.Framework.Contracts;
 
-public class PersianDateTime(DateTime dateTime)
+public class PersianDateTime
 {
     private static PersianCalendar pc = new();
-    public DateTime DateTime { get; private set; } = dateTime;
+    public DateTime DateTime { get; private set; }
+
+    public PersianDateTime(DateTime dateTime)
+    {
+        var utcDate = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+        var tehranTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tehran");
+        DateTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, tehranTimeZone);
+    }
 
     public PersianDateTime AddDays(int value)
     {
         return new PersianDateTime(DateTime.AddDays(value));
     }
-    
+
     public PersianDateTime AddHours(int value)
     {
         return new PersianDateTime(DateTime.AddHours(value));
     }
-    
+
     public PersianDateTime AddMinutes(int value)
     {
         return new PersianDateTime(DateTime.AddMinutes(value));
     }
-    
+
     public PersianDateTime AddSeconds(int value)
     {
         return new PersianDateTime(DateTime.AddSeconds(value));
@@ -68,14 +75,14 @@ public class PersianDateTime(DateTime dateTime)
     {
         return pc.GetSecond(DateTime);
     }
-    
+
     public string Format(string format)
     {
         var year = GetYear().ToString();
         var month = GetMonth().ToString();
         var weekOfMonth = GetWeekOfMonth().ToString();
         var dayOfMonth = GetDayOfMonth().ToString();
-        
+
         return format
             .Replace("YYYY", year)
             .Replace("YYY", year[1..])
