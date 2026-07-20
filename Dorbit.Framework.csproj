@@ -17,6 +17,15 @@
         <None Update="Assets\user-agent-regexes.yaml">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="Assets\Fonts\Vazir-Regular.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Assets\Fonts\Vazir-Bold.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Assets\Fonts\Vazir-Medium.ttf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
     
     <ItemGroup>
@@ -78,6 +87,8 @@
         <PackageReference Include="System.ServiceModel.Federation" Version="8.1.2" />
         <PackageReference Include="Twilio" Version="7.14.3" />
         <PackageReference Include="WebPush" Version="1.0.12" />
+        <PackageReference Include="PDFsharp" Version="6.2.4" />
+        <PackageReference Include="BidiReshapeSharp" Version="1.2.0" />
     </ItemGroup>
     
     <ItemGroup>
