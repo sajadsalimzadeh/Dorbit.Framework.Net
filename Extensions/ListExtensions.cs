@@ -16,9 +16,7 @@ public static class ListExtensions
         {
             n--;
             var k = _rng.Next(n + 1);
-            T value = list[k];
-            list[k] = list[n];
-            list[n] = value;
+            (list[k], list[n]) = (list[n], list[k]);
         }
 
         return list;
@@ -84,5 +82,20 @@ public static class ListExtensions
     {
         var enumerable = items as T[] ?? items.ToArray();
         return enumerable.Length != 0 ? enumerable.Average(func) : 0;
+    }
+
+    public static bool IsEqualBy<T>(this IEnumerable<T> list1, IEnumerable<T> list2, Func<T, T, bool> predict)
+    {
+        if (list2 is null && list1 is null) return true;
+        if (list1 is null) return false;
+        if (list2 is null) return false;
+
+        var items = (list2 as List<T> ?? list2.ToList());
+        foreach (var item in list1)
+        {
+            if (items.Any(x => predict(x, item))) return false;
+        }
+
+        return true;
     }
 }
