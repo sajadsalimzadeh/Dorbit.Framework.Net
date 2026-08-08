@@ -60,6 +60,14 @@ public class AesHelper
     {
     }
 
+    public AesHelper(string key, byte[] iv, Size size = Size.Aes128) : this(key.ToByteArray(), iv, size)
+    {
+    }
+
+    public AesHelper(byte[] key, string iv, Size size = Size.Aes128) : this(key, iv.ToByteArray(), size)
+    {
+    }
+
     private System.Security.Cryptography.Aes Create()
     {
         var aes = System.Security.Cryptography.Aes.Create();

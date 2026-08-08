@@ -8,8 +8,12 @@ public static class HashUtil
 {
     public static string Sha1(string text)
     {
-        var data = Encoding.ASCII.GetBytes(text);
-        var hashData = SHA1.Create().ComputeHash(data);
+        return Sha1(Encoding.ASCII.GetBytes(text));
+    }
+    
+    public static string Sha1(byte[] bytes)
+    {
+        var hashData = SHA1.Create().ComputeHash(bytes);
         var hash = string.Empty;
         foreach (var b in hashData)
         {
@@ -19,10 +23,15 @@ public static class HashUtil
         return hash;
     }
 
-    public static string Sha256(string text)
+    public static string Sha256(string data)
+    {
+        return Sha256(Encoding.UTF8.GetBytes(data));
+    }
+
+    public static string Sha256(byte[] data)
     {
         using var sha256Hash = SHA256.Create();
-        var bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(text));
+        var bytes = sha256Hash.ComputeHash(data);
         var builder = new StringBuilder();
         foreach (var t in bytes)
         {
