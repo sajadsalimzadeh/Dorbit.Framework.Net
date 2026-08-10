@@ -17,6 +17,6 @@ public static class WebSocketExtensions
     
     public static Task SendAsJsonAsync(this ClientWebSocket ws, object obj, CancellationToken cancellationToken = default)
     {
-        return ws.SendAsync(JsonSerializer.Serialize(obj), cancellationToken);
+        return ws.SendAsync(JsonSerializer.Serialize(obj, JsonSerializerOptions.Web), cancellationToken);
     }
 }
