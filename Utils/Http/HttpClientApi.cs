@@ -32,7 +32,7 @@ public abstract class HttpClientApi<T> where T : ConfigClientApi
 
     public void SetCustomBaseAddress(string baseAddress)
     {
-        _customBaseAddress = baseAddress;
+        _customBaseAddress = baseAddress + (baseAddress.EndsWith("/") ? "" : "/");
     }
 
     public void ClearCustomBaseAddress()
