@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Messages;
@@ -39,7 +40,7 @@ public class KavenegarProvider : IMessageProviderSms
         _api = new KavenegarApi(_apKey);
     }
 
-    public Task<QueryResult<string>> SendAsync(MessageSmsRequest request)
+    public Task<QueryResult<string>> SendAsync(MessageSmsRequest request, CancellationToken cancellationToken)
     {
         SendResult result;
         if (string.IsNullOrEmpty(request.TemplateId))
@@ -63,7 +64,7 @@ public class KavenegarProvider : IMessageProviderSms
         });
     }
 
-    public Task<long> GetCreditMessageCountAsync()
+    public Task<long> GetCreditMessageCountAsync(CancellationToken cancellationToken)
     {
         var accountInfo = _api.AccountInfo();
         return Task.FromResult(accountInfo.RemainCredit);

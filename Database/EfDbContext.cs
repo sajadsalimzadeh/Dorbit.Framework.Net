@@ -47,7 +47,8 @@ public abstract class EfDbContext : DbContext, IDbContext
     private ILogger _logger;
     private ILogger Logger => _logger ??= ServiceProvider.GetService<ILogger>();
 
-
+    private readonly CancellationToken _cancellationToken;
+    
     public IServiceProvider ServiceProvider { get; }
 
     private DatabaseProviderType? _providerType;
@@ -74,6 +75,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         ServiceProvider = serviceProvider;
         _efTransactionContext = new EfTransactionContext(this);
         _loggerService = serviceProvider.GetService<LoggerService>();
+        _cancellationToken = serviceProvider.GetService<ICancellationTokenService>()?.Token ?? CancellationToken.None;
 
         base.ChangeTracker.AutoDetectChangesEnabled = false;
     }
@@ -163,7 +165,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         return DbSet<TEntity, Guid>(excludeDeleted);
     }
 
-    public async Task<TEntity> InsertEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
+    public async Task<TEntity> InsertEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<TKey>
     {
         if (ProviderType == DatabaseProviderType.InMemory)
         {
@@ -192,18 +194,18 @@ public abstract class EfDbContext : DbContext, IDbContext
         if (entity is ISoftwareAudit softwareAudit) softwareAudit.IncludeSoftwareAudit(SoftwareResolver?.Software);
         if (entity is IChangeLog changeLog) changeLog.IncludeChangeLogs();
 
-        await AddAsync(entity, cancellationToken);
+        await AddAsync(entity, cancellationToken ?? _cancellationToken);
         await SaveIfNotInTransactionAsync(cancellationToken);
         if (entity is ICreationLogging logging) Log(logging, LogAction.Insert);
         return entity;
     }
 
-    public Task<TEntity> InsertEntityAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
+    public Task<TEntity> InsertEntityAsync<TEntity>(TEntity entity, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<Guid>
     {
         return InsertEntityAsync<TEntity, Guid>(entity, cancellationToken);
     }
 
-    public async Task<TEntity> UpdateEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
+    public async Task<TEntity> UpdateEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<TKey>
     {
         if (entity is IReadonly) throw new OperationException(FrameworkErrors.EntityIsReadonly);
 
@@ -262,12 +264,12 @@ public abstract class EfDbContext : DbContext, IDbContext
         return entity;
     }
 
-    public Task<TEntity> UpdateEntityAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
+    public Task<TEntity> UpdateEntityAsync<TEntity>(TEntity entity, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<Guid>
     {
         return UpdateEntityAsync<TEntity, Guid>(entity, cancellationToken);
     }
 
-    public async Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
+    public async Task<TEntity> DeleteEntityAsync<TEntity, TKey>(TEntity entity, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<TKey>
     {
         if (entity is IUnDeletable) throw new OperationException(FrameworkErrors.EntityIsUnDeletable);
 
@@ -298,16 +300,16 @@ public abstract class EfDbContext : DbContext, IDbContext
         return entity;
     }
 
-    public Task<TEntity> DeleteEntityAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
+    public Task<TEntity> DeleteEntityAsync<TEntity>(TEntity entity, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<Guid>
     {
         return DeleteEntityAsync<TEntity, Guid>(entity, cancellationToken);
     }
 
-    private async Task SaveIfNotInTransactionAsync(CancellationToken cancellationToken = default)
+    private async Task SaveIfNotInTransactionAsync(CancellationToken? cancellationToken = null)
     {
         if (_efTransactionContext.Transactions.Count == 0)
         {
-            await SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken ?? _cancellationToken);
         }
     }
 
@@ -338,11 +340,11 @@ public abstract class EfDbContext : DbContext, IDbContext
         }
     }
 
-    public Task MigrateAsync(CancellationToken cancellationToken)
+    public Task MigrateAsync(CancellationToken? cancellationToken = null)
     {
         if (ProviderType != DatabaseProviderType.InMemory)
         {
-            return Database.MigrateAsync(cancellationToken);
+            return Database.MigrateAsync(cancellationToken ?? _cancellationToken);
         }
 
         return Task.CompletedTask;
@@ -368,21 +370,21 @@ public abstract class EfDbContext : DbContext, IDbContext
         return command;
     }
 
-    public async Task<int> ExecuteCommandAsync(string query, Dictionary<string, object> parameters, CancellationToken cancellationToken = default)
+    public async Task<int> ExecuteCommandAsync(string query, Dictionary<string, object> parameters, CancellationToken? cancellationToken = null)
     {
         await using var command = CreateCommand(query, parameters);
-        await Database.OpenConnectionAsync(cancellationToken);
-        return await command.ExecuteNonQueryAsync(cancellationToken);
+        await Database.OpenConnectionAsync(cancellationToken ?? _cancellationToken);
+        return await command.ExecuteNonQueryAsync(cancellationToken ?? _cancellationToken);
     }
 
-    public async Task<List<TEntity>> ExecuteQueryAsync<TEntity>(string query, Dictionary<string, object> parameters, CancellationToken cancellationToken = default)
+    public async Task<List<TEntity>> ExecuteQueryAsync<TEntity>(string query, Dictionary<string, object> parameters, CancellationToken? cancellationToken = null)
     {
         var result = new List<TEntity>();
         await using var command = CreateCommand(query, parameters);
-        await Database.OpenConnectionAsync(cancellationToken);
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        await Database.OpenConnectionAsync(cancellationToken ?? _cancellationToken);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken ?? _cancellationToken);
         var properties = typeof(TEntity).GetProperties();
-        while (await reader.ReadAsync(cancellationToken))
+        while (await reader.ReadAsync(cancellationToken ?? _cancellationToken))
         {
             var columns = new List<string>();
             for (var i = 0; i < reader.FieldCount; i++) columns.Add(reader.GetName(i));
@@ -401,7 +403,7 @@ public abstract class EfDbContext : DbContext, IDbContext
         return result;
     }
 
-    public async Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
+    public async Task BulkInsertEntityAsync<TEntity, TKey>(List<TEntity> entities, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<TKey>
     {
         var user = UserResolver?.User;
         var tenant = TenantResolver?.Tenant;
@@ -420,20 +422,20 @@ public abstract class EfDbContext : DbContext, IDbContext
 
         if (ProviderType == DatabaseProviderType.InMemory)
         {
-            await AddRangeAsync(entities, cancellationToken);
-            await SaveChangesAsync(cancellationToken);
+            await AddRangeAsync(entities, cancellationToken ?? _cancellationToken);
+            await SaveChangesAsync(cancellationToken ?? _cancellationToken);
             return;
         }
 
-        await this.BulkInsertAsync(entities, cancellationToken: cancellationToken);
+        await this.BulkInsertAsync(entities, cancellationToken: cancellationToken ?? _cancellationToken);
     }
 
-    public Task BulkInsertEntityAsync<TEntity>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
+    public Task BulkInsertEntityAsync<TEntity>(List<TEntity> entities, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<Guid>
     {
         return BulkInsertEntityAsync<TEntity, Guid>(entities, cancellationToken);
     }
 
-    public Task BulkUpdateEntityAsync<TEntity, TKey>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
+    public Task BulkUpdateEntityAsync<TEntity, TKey>(List<TEntity> entities, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<TKey>
     {
         var user = UserResolver?.User;
         entities.ForEach(item => item.IncludeModificationAudit<TEntity, TKey>(user));
@@ -441,23 +443,23 @@ public abstract class EfDbContext : DbContext, IDbContext
         if (ProviderType == DatabaseProviderType.InMemory)
         {
             UpdateRange(entities);
-            return SaveChangesAsync(cancellationToken);
+            return SaveChangesAsync(cancellationToken ?? _cancellationToken);
         }
 
-        return this.BulkUpdateAsync(entities, cancellationToken: cancellationToken);
+        return this.BulkUpdateAsync(entities, cancellationToken: cancellationToken ?? _cancellationToken);
     }
 
-    public Task BulkUpdateEntityAsync<TEntity>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
+    public Task BulkUpdateEntityAsync<TEntity>(List<TEntity> entities, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<Guid>
     {
         return BulkUpdateEntityAsync<TEntity, Guid>(entities, cancellationToken);
     }
 
-    public Task BulkDeleteEntityAsync<TEntity, TKey>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<TKey>
+    public Task BulkDeleteEntityAsync<TEntity, TKey>(List<TEntity> entities, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<TKey>
     {
-        return this.BulkDeleteAsync(entities, cancellationToken: cancellationToken);
+        return this.BulkDeleteAsync(entities, cancellationToken: cancellationToken ?? _cancellationToken);
     }
 
-    public Task BulkDeleteEntityAsync<TEntity>(List<TEntity> entities, CancellationToken cancellationToken = default) where TEntity : class, IEntity<Guid>
+    public Task BulkDeleteEntityAsync<TEntity>(List<TEntity> entities, CancellationToken? cancellationToken = null) where TEntity : class, IEntity<Guid>
     {
         return BulkDeleteEntityAsync<TEntity, Guid>(entities, cancellationToken);
     }

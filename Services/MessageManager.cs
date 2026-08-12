@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
@@ -20,38 +21,38 @@ namespace Dorbit.Framework.Services;
 public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IOptions<ConfigMessageProviders> options)
 {
     private static readonly List<string> RemainCreditNotifies = new();
-    private static readonly ConcurrentQueue<MessageRequest> _queue = new();
+    private static readonly ConcurrentQueue<MessageRequest> Queue = new();
 
     private readonly ConfigMessageProviders _configs = options.Value;
 
-    public Task<CommandResult> SendAsync(MessageRequest request)
+    public Task<CommandResult> SendAsync(MessageRequest request, CancellationToken cancellationToken = default)
     {
         if (request is MessageSmsRequest smsRequest)
         {
             var providers = serviceProvider.GetServices<IMessageProvider<MessageSmsRequest, ConfigMessageSmsProvider>>();
-            return Process(providers.ToList(), smsRequest, _configs.Sms);
+            return ProcessAsync(providers.ToList(), smsRequest, _configs.Sms, cancellationToken);
         }
 
         if (request is MessageEmailRequest emailRequest)
         {
             var providers = serviceProvider.GetServices<IMessageProvider<MessageEmailRequest, ConfigMessageEmailProvider>>();
-            return Process(providers.ToList(), emailRequest, _configs.Email);
+            return ProcessAsync(providers.ToList(), emailRequest, _configs.Email, cancellationToken);
         }
 
         if (request is MessageNotificationRequest notificationRequest)
         {
             var providers = serviceProvider.GetServices<IMessageProvider<MessageNotificationRequest, ConfigMessageNotificationProvider>>();
-            return Process(providers.ToList(), notificationRequest, _configs.Notification);
+            return ProcessAsync(providers.ToList(), notificationRequest, _configs.Notification, cancellationToken);
         }
 
         return Task.FromResult(new CommandResult(false));
     }
 
-    public Task<CommandResult> SendFromQueue()
+    public Task<CommandResult> SendFromQueue(CancellationToken cancellationToken = default)
     {
-        if (_queue.TryDequeue(out var item))
+        if (Queue.TryDequeue(out var item))
         {
-            return SendAsync(item);
+            return SendAsync(item, cancellationToken);
         }
 
         return Task.FromResult(new CommandResult(false));
@@ -59,7 +60,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
 
     public void Enquee(MessageRequest request)
     {
-        _queue.Enqueue(request);
+        Queue.Enqueue(request);
     }
 
     private IMessageProvider<T, TC> GetProvider<T, TC>(List<IMessageProvider<T, TC>> providers, TC configuration)
@@ -71,7 +72,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
         return provider;
     }
 
-    private async Task<CommandResult> Process<T, TConfig>(List<IMessageProvider<T, TConfig>> providers, T request, List<TConfig> configurations)
+    private async Task<CommandResult> ProcessAsync<T, TConfig>(List<IMessageProvider<T, TConfig>> providers, T request, List<TConfig> configurations, CancellationToken cancellationToken = default)
         where T : MessageRequest where TConfig : ConfigMessageProvider
     {
         if (!string.IsNullOrEmpty(request.ProviderName))
@@ -104,7 +105,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
                 var provider = GetProvider(providers, configuration);
                 if (provider is null) continue;
                 
-                var op = await provider.SendAsync(request);
+                var op = await provider.SendAsync(request, cancellationToken);
                 if (op.Success) return op;
             }
             catch (Exception ex)
@@ -116,7 +117,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
         throw new OperationException(FrameworkErrors.SendMessageFailed);
     }
 
-    public async Task CheckSmsProviderCredit()
+    public async Task CheckSmsProviderCredit(CancellationToken cancellationToken)
     {
         if (_configs?.Sms is null) return;
 
@@ -130,7 +131,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
                 if (provider is null) continue;
                 provider.Configure(configuration);
 
-                var credit = await provider.GetCreditMessageCountAsync();
+                var credit = await provider.GetCreditMessageCountAsync(cancellationToken);
                 foreach (var limit in configuration.Monitoring.Limits)
                 {
                     if (credit < 0 || credit > limit) continue;

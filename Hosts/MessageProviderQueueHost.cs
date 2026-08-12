@@ -18,7 +18,7 @@ public class MessageProviderQueueHost(IServiceProvider serviceProvider) : BaseHo
         {
             try
             {
-                var result = await messageManager.SendFromQueue();
+                var result = await messageManager.SendFromQueue(cancellationToken);
                 if(!result.Success) break;
             }
             catch(Exception ex)

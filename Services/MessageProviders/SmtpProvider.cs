@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Messages;
@@ -35,7 +36,7 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest, ConfigMessageE
         _apiKey = configuration.ApiKey?.GetDecryptedValue();
     }
 
-    public async Task<QueryResult<string>> SendAsync(MessageEmailRequest request)
+    public async Task<QueryResult<string>> SendAsync(MessageEmailRequest request, CancellationToken cancellationToken = default)
     {
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress(_senderName, _senderEmail));
@@ -49,7 +50,7 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest, ConfigMessageE
                 if (file.Stream.Length > 0)
                 {
                     var bytes = new byte[file.Stream.Length];
-                    await file.Stream.WriteAsync(bytes, 0, bytes.Length);
+                    await file.Stream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
                     builder.Attachments.Add(file.Name, bytes, ContentType.Parse(file.ContentType));
                 }
             }
@@ -58,11 +59,11 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest, ConfigMessageE
         message.Body = new TextPart("plain") { Text = string.Format(request.Body, request.Args ?? []) };
         using var logger = new ProtocolLogger(Console.OpenStandardError());
         using var smtp = new SmtpClient(logger);
-        await smtp.ConnectAsync(_server, _port);
-        if (_apiKey.IsNotNullOrEmpty()) await smtp.AuthenticateAsync("apikey", _apiKey);
-        else if(_password.IsNotNullOrEmpty()) await smtp.AuthenticateAsync(_username, _password);
-        await smtp.SendAsync(message);
-        await smtp.DisconnectAsync(true);
+        await smtp.ConnectAsync(_server, _port, cancellationToken: cancellationToken);
+        if (_apiKey.IsNotNullOrEmpty()) await smtp.AuthenticateAsync("apikey", _apiKey, cancellationToken);
+        else if(_password.IsNotNullOrEmpty()) await smtp.AuthenticateAsync(_username, _password, cancellationToken);
+        await smtp.SendAsync(message, cancellationToken);
+        await smtp.DisconnectAsync(true, cancellationToken);
 
         return new QueryResult<string>() { Success = true, Data = "" };
     }

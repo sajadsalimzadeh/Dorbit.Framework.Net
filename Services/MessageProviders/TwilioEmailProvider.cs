@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Messages;
@@ -25,15 +26,15 @@ public class TwilioEmailProvider : IMessageProvider<MessageEmailRequest, ConfigM
         _apiKey = configuration.ApiKey.GetDecryptedValue();
     }
 
-    public async Task<QueryResult<string>> SendAsync(MessageEmailRequest request)
+    public async Task<QueryResult<string>> SendAsync(MessageEmailRequest request, CancellationToken cancellationToken = default)
     {
         var client = new SendGridClient(_apiKey);
         var from = new EmailAddress(_sender, _senderName);
         var subject = request.Subject;
         var to = new EmailAddress(request.Receiver, "User");
         var msg = MailHelper.CreateSingleEmail(from, to, subject, "", request.Body);
-        var response = await client.SendEmailAsync(msg);
-        var content = await response.Body.ReadAsStringAsync();
+        var response = await client.SendEmailAsync(msg, cancellationToken);
+        var content = await response.Body.ReadAsStringAsync(cancellationToken);
         return new QueryResult<string>() { Success = response.IsSuccessStatusCode, Message = content };
     }
 }

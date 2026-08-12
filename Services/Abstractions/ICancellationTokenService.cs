@@ -4,5 +4,5 @@ namespace Dorbit.Framework.Services.Abstractions;
 
 public interface ICancellationTokenService
 {
-    CancellationToken? RequestCancellationToken { get; set; }
+    CancellationToken? Token { get; set; }
 }

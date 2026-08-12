@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Messages;
@@ -30,7 +31,7 @@ public class BrevoEmailProvider : IMessageProvider<MessageEmailRequest, ConfigMe
         _apiKey = configuration.ApiKey?.GetDecryptedValue();
     }
 
-    public async Task<QueryResult<string>> SendAsync(MessageEmailRequest request)
+    public async Task<QueryResult<string>> SendAsync(MessageEmailRequest request, CancellationToken cancellationToken)
     {
         var helper = new HttpHelper("https://api.brevo.com/v3");
         helper.AddHeader("api-key", _apiKey);
@@ -50,7 +51,7 @@ public class BrevoEmailProvider : IMessageProvider<MessageEmailRequest, ConfigMe
             },
             subject = request.Subject,
             htmlContent = string.Format(request.Body, request.Args ?? [])
-        });
+        }, cancellationToken);
 
         if (httpModel.Result is null)
             throw new Exception($"Brevo result is null content: {httpModel.Content}");

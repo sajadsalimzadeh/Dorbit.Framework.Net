@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Messages;
@@ -21,7 +22,7 @@ public class TwilioSmsProvider : IMessageProviderSms
         TwilioClient.Init(configuration.Username, configuration.ApiKey?.GetDecryptedValue());
     }
 
-    public async Task<QueryResult<string>> SendAsync(MessageSmsRequest request)
+    public async Task<QueryResult<string>> SendAsync(MessageSmsRequest request, CancellationToken cancellationToken = default)
     {
         var body = request.Body;
         for (var i = 0; i < request.Args.Length; i++)
@@ -37,7 +38,7 @@ public class TwilioSmsProvider : IMessageProviderSms
         return new QueryResult<string>() { Success = !message.ErrorCode.HasValue, Data = "" };
     }
 
-    public Task<long> GetCreditMessageCountAsync()
+    public Task<long> GetCreditMessageCountAsync(CancellationToken cancellationToken = default)
     {
         throw new System.NotImplementedException();
     }

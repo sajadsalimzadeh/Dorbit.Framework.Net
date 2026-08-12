@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Messages;
@@ -32,7 +33,7 @@ public class MeliPayamakProvider : IMessageProviderSms
             throw new OperationException(FrameworkErrors.MeliPayamakNeedPasswordAsProtectedPropertyInSetting);
     }
 
-    public async Task<QueryResult<string>> SendAsync(MessageSmsRequest request)
+    public async Task<QueryResult<string>> SendAsync(MessageSmsRequest request, CancellationToken cancellationToken)
     {
         var data = new
         {
@@ -42,7 +43,7 @@ public class MeliPayamakProvider : IMessageProviderSms
             to = request.Receiver,
             text = string.Join(';', request.Args)
         };
-        var response = (await _client.PostAsync<SendResponse>("SendSMS/BaseServiceNumber", data)).Result;
+        var response = (await _client.PostAsync<SendResponse>("SendSMS/BaseServiceNumber", data, cancellationToken)).Result;
         var result = response.Value switch
         {
             "-10" => throw new Exception("داده نامعتبر"),
@@ -69,13 +70,13 @@ public class MeliPayamakProvider : IMessageProviderSms
         return result;
     }
 
-    public async Task<long> GetCreditMessageCountAsync()
+    public async Task<long> GetCreditMessageCountAsync(CancellationToken cancellationToken)
     {
         var response = await _client.PostAsync<SendResponse>($"SendSMS/GetCredit", new
         {
             username = _username,
             password = _password,
-        }).ToResultAsync();
+        }, cancellationToken).ToResultAsync();
         if (double.TryParse(response.Value, out var messageCount)) return (long)messageCount;
         return -1;
     }

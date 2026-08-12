@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Messages;
 using Dorbit.Framework.Contracts.Results;
 
@@ -8,5 +9,5 @@ public interface IMessageProvider<T, TC> where T : MessageRequest
 {
     public string Name { get; }
     void Configure(TC configuration);
-    Task<QueryResult<string>> SendAsync(T request);
+    Task<QueryResult<string>> SendAsync(T request, CancellationToken cancellationToken = default);
 }
