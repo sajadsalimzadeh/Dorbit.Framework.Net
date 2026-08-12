@@ -93,7 +93,7 @@ public static class ListExtensions
         var items = (list2 as List<T> ?? list2.ToList());
         foreach (var item in list1)
         {
-            if (items.Any(x => predict(x, item))) return false;
+            if (!items.Any(x => predict(x, item))) return false;
         }
 
         return true;

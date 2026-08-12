@@ -11,6 +11,8 @@ namespace Dorbit.Framework.Utils.Http;
 
 public abstract class HttpClientApi<T> where T : ConfigClientApi
 {
+    private string _customBaseAddress;
+    
     protected T Config { get; set; }
     protected ILogger Logger { get; }
     protected IHttpContextAccessor HttpContextAccessor { get; }
@@ -26,6 +28,16 @@ public abstract class HttpClientApi<T> where T : ConfigClientApi
 
         if (Config.ApiKey is not null && Config.ApiKey.Value.IsNullOrEmpty())
             throw new Exception($"{GetType().Name}: ApiKey.Value is null or empty");
+    }
+
+    public void SetCustomBaseAddress(string baseAddress)
+    {
+        _customBaseAddress = baseAddress + (baseAddress.EndsWith("/") ? "" : "/");
+    }
+
+    public void ClearCustomBaseAddress()
+    {
+        _customBaseAddress = null;
     }
 
     protected virtual HttpHelper GetHttpHelper()
@@ -59,6 +71,11 @@ public abstract class HttpClientApi<T> where T : ConfigClientApi
 
     protected virtual HttpHelper GetHttpHelperWithoutClientInfo()
     {
-        return Config.GetHttpHelper(Logger);
+        var http = Config.GetHttpHelper(Logger);
+        if (_customBaseAddress.IsNotNullOrEmpty())
+        {
+            http.HttpClient.BaseAddress = new Uri(_customBaseAddress);
+        }
+        return http;
     }
 }
