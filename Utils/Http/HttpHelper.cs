@@ -30,6 +30,7 @@ public class HttpHelper : IDisposable
     public string AuthorizationToken { get; set; }
     public string Username { get; set; }
     public string Password { get; set; }
+    public bool IsAcceptGzipResponse { get; set; } = true;
     public bool IgnoreUnTrustedCertificate { get; set; } = true;
     public int RemainRetryCount { get; set; } = 10;
     public bool IsRetryAfterUnAuthorized { get; set; } = true;
@@ -56,9 +57,6 @@ public class HttpHelper : IDisposable
 
         HttpClient = new HttpClient(handler);
         HttpClient.BaseAddress = new Uri(baseUrl + (baseUrl.EndsWith("/") ? "" : "/"));
-        HttpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-        HttpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
-        HttpClient.DefaultRequestHeaders.Add("Cache-Control", "no-cache");
 
         if (handler is HttpClientHandler httpClientHandler) HttpClientHandler = httpClientHandler;
     }
@@ -89,6 +87,10 @@ public class HttpHelper : IDisposable
     private HttpRequestMessage CreateRequest(HttpHelperRequest httpRequest)
     {
         var request = new HttpRequestMessage(httpRequest.Method, httpRequest.Url);
+        
+        request.Headers.Add("Accept", "*/*");
+        request.Headers.Add("Cache-Control", "no-cache");
+        if(IsAcceptGzipResponse) request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
 
         if (Username is not null && Password is not null)
         {

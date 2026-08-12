@@ -19,4 +19,16 @@ public static class WebSocketExtensions
     {
         return ws.SendAsync(JsonSerializer.Serialize(obj, JsonSerializerOptions.Web), cancellationToken);
     }
+    
+    public static async Task<T> ReceiveAsync<T>(this ClientWebSocket ws, byte[] buffer, CancellationToken cancellationToken = default)
+    {
+        var message = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+        var text = Encoding.UTF8.GetString(buffer, 0, message.Count);
+        return JsonSerializer.Deserialize<T>(text, JsonSerializerOptions.Web);
+    }
+    
+    public static Task<JsonElement> ReceiveAsJsonAsync(this ClientWebSocket ws, byte[] buffer, CancellationToken cancellationToken = default)
+    {
+        return ws.ReceiveAsync<JsonElement>(buffer, cancellationToken);
+    }
 }
