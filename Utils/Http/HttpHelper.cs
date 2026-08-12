@@ -156,7 +156,7 @@ public class HttpHelper : IDisposable
         return request;
     }
 
-    public async Task<HttpModel> SendAsync(HttpRequestMessage request)
+    public async Task<HttpModel> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
         if (AuthorizationToken is not null)
         {
@@ -168,7 +168,7 @@ public class HttpHelper : IDisposable
             request.Headers.Add(item.Key, item.Value);
         }
 
-        var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
+        var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         return new HttpModel()
         {
             Request = request,
@@ -176,7 +176,7 @@ public class HttpHelper : IDisposable
         };
     }
 
-    public async Task<HttpModel<T>> SendAsync<T>(HttpRequestMessage request)
+    public async Task<HttpModel<T>> SendAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
         var httpModel = await SendAsync(request);
         if (httpModel.Response.StatusCode == HttpStatusCode.Unauthorized)
@@ -225,24 +225,24 @@ public class HttpHelper : IDisposable
         return httpModelType;
     }
 
-    public Task<HttpModel> SendAsync(HttpHelperRequest helperRequest)
+    public Task<HttpModel> SendAsync(HttpHelperRequest helperRequest, CancellationToken cancellationToken = default)
     {
         var request = CreateRequest(helperRequest);
         return SendAsync(request);
     }
 
-    public Task<HttpModel<T>> SendAsync<T>(HttpHelperRequest helperRequest)
+    public Task<HttpModel<T>> SendAsync<T>(HttpHelperRequest helperRequest, CancellationToken cancellationToken = default)
     {
         var request = CreateRequest(helperRequest);
-        return SendAsync<T>(request);
+        return SendAsync<T>(request, cancellationToken);
     }
 
-    public async Task<HttpModel<T>> SendAsyncWithCache<T>(HttpHelperRequest helperRequest, string key, TimeSpan timeout)
+    public async Task<HttpModel<T>> SendAsyncWithCache<T>(HttpHelperRequest helperRequest, string key, TimeSpan timeout, CancellationToken cancellationToken = default)
     {
         if (!App.MemoryCache.TryGetValue(key, out HttpModel<T> value))
         {
             var request = CreateRequest(helperRequest);
-            value = await SendAsync<T>(request);
+            value = await SendAsync<T>(request, cancellationToken);
             if (value.Response.IsSuccessStatusCode)
             {
                 App.MemoryCache.Set(key, value, timeout);
@@ -252,23 +252,23 @@ public class HttpHelper : IDisposable
         return value;
     }
 
-    public Task<HttpModel<T>> GetAsync<T>(string url, object parameter = null) =>
-        SendAsync<T>(new HttpHelperRequest(HttpMethod.Get, url) { Parameter = parameter });
+    public Task<HttpModel<T>> GetAsync<T>(string url, object parameter = null, CancellationToken cancellationToken = default) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Get, url) { Parameter = parameter }, cancellationToken);
 
-    public Task<HttpModel<T>> PostAsync<T>(string url, object parameter) =>
-        SendAsync<T>(new HttpHelperRequest(HttpMethod.Post, url) { Parameter = parameter });
+    public Task<HttpModel<T>> PostAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Post, url) { Parameter = parameter }, cancellationToken);
 
-    public Task<HttpModel<T>> PutAsync<T>(string url, object parameter) =>
-        SendAsync<T>(new HttpHelperRequest(HttpMethod.Put, url) { Parameter = parameter });
+    public Task<HttpModel<T>> PutAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Put, url) { Parameter = parameter }, cancellationToken);
 
-    public Task<HttpModel<T>> PatchAsync<T>(string url, object parameter) =>
-        SendAsync<T>(new HttpHelperRequest(HttpMethod.Patch, url) { Parameter = parameter });
+    public Task<HttpModel<T>> PatchAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Patch, url) { Parameter = parameter }, cancellationToken);
 
-    public Task<HttpModel<T>> DeleteAsync<T>(string url, object parameter) =>
-        SendAsync<T>(new HttpHelperRequest(HttpMethod.Delete, url) { Parameter = parameter });
+    public Task<HttpModel<T>> DeleteAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Delete, url) { Parameter = parameter }, cancellationToken);
 
-    public Task<HttpModel<T>> OptionsAsync<T>(string url) =>
-        SendAsync<T>(new HttpHelperRequest(HttpMethod.Options, url));
+    public Task<HttpModel<T>> OptionsAsync<T>(string url, CancellationToken cancellationToken = default) =>
+        SendAsync<T>(new HttpHelperRequest(HttpMethod.Options, url), cancellationToken);
 
     public void Dispose()
     {
