@@ -14,7 +14,7 @@ public class NotificationHostInterval(IServiceProvider serviceProvider) : BaseHo
     protected override async Task InvokeAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken)
     {
         var notificationService = serviceProvider.GetRequiredService<NotificationService>();
-        while (await notificationService.SendAsync(cancellationToken)) await Task.Delay(1000, cancellationToken);
+        await notificationService.SendAsync(cancellationToken);
     }
 
 }

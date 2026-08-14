@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Notifications;
+using Dorbit.Framework.Extensions;
 using Microsoft.Extensions.Options;
 using Serilog;
 using WebPush;
@@ -25,16 +26,17 @@ public class NotificationService(IOptions<ConfigWebPush> configWebPushOptions, I
         _storeItems.Enqueue(item);
     }
 
-    public async Task<bool> SendAsync(CancellationToken cancellationToken = default)
+    public async Task SendAsync(CancellationToken cancellationToken = default)
     {
-        if (_storeItems.TryDequeue(out var item))
+        while (_storeItems.TryDequeue(out var item))
         {
             try
             {
                 if (item.Subscription.Type == NotificationSubscriptionType.WebPush)
                 {
-                    var webPushClient = new WebPushClient();
+                    if (configWebPushOptions.Value.PublicKey.IsNullOrEmpty()) continue;
 
+                    var webPushClient = new WebPushClient();
                     webPushClient.SetVapidDetails(
                         subject: configWebPushOptions.Value.MailTo,
                         publicKey: configWebPushOptions.Value.PublicKey,
@@ -55,9 +57,10 @@ public class NotificationService(IOptions<ConfigWebPush> configWebPushOptions, I
                         }
                     }, JsonSerializerOptions.Web);
 
-                    await webPushClient.SendNotificationAsync(new PushSubscription(item.Subscription.Token, item.Subscription.P256DH, item.Subscription.Auth), payload, cancellationToken: cancellationToken);
+                    await webPushClient.SendNotificationAsync(new PushSubscription(item.Subscription.Token, item.Subscription.P256DH, item.Subscription.Auth), payload,
+                        cancellationToken: cancellationToken);
                 }
-                else if(item.Subscription.Type == NotificationSubscriptionType.Expo)
+                else if (item.Subscription.Type == NotificationSubscriptionType.Expo)
                 {
                     var httpClient = new HttpClient() { BaseAddress = new Uri("https://exp.host/--/api/v2/push/send") };
                     var responseMessage = await httpClient.PostAsJsonAsync("", new NotificationExpoDto()
@@ -76,10 +79,10 @@ public class NotificationService(IOptions<ConfigWebPush> configWebPushOptions, I
             {
                 logger.Error(ex, ex.Message);
             }
-            
-            return true;
+            finally
+            {
+                await Task.Delay(100, cancellationToken);
+            }
         }
-
-        return false;
     }
 }
