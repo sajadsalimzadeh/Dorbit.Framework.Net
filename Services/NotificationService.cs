@@ -10,6 +10,7 @@ using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Notifications;
 using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Utils;
 using Microsoft.Extensions.Options;
 using Serilog;
 using WebPush;
@@ -81,7 +82,7 @@ public class NotificationService(IOptions<ConfigWebPush> configWebPushOptions, I
             }
             finally
             {
-                await Task.Delay(100, cancellationToken);
+                await TaskUtil.Delay(100, cancellationToken);
             }
         }
     }

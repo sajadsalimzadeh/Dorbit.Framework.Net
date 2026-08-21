@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Services.Abstractions;
+using Dorbit.Framework.Utils;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Hosts;
@@ -29,7 +30,7 @@ public abstract class BaseHostInterval(IServiceProvider serviceProvider) : BaseH
             {
                 try
                 {
-                    await Task.Delay(Interval, stoppingToken);
+                    await TaskUtil.Delay(Interval, stoppingToken);
                     using var scope = ServiceProvider.CreateScope();
                     var cancellationTokenService = scope.ServiceProvider.GetRequiredService<ICancellationTokenService>();
                     cancellationTokenService.Token = stoppingToken;

@@ -12,31 +12,48 @@ namespace Dorbit.Framework.Utils.Json;
 
 public static class SeedUtil
 {
-    public static async Task SeedAsync<TEntity, TKey>(this IWriterRepository<TEntity, TKey> repository, string filename,
-        Func<TEntity, Task> beforeInsertAction = default,
-        Func<TEntity, TEntity, bool> ignorePredicate = default)
+    public static async Task SeedAsync<TEntity, TKey, TUniqueKey>(this IWriterRepository<TEntity, TKey> repository, string filename,
+        Func<TEntity, TUniqueKey> keyFunc,
+        Func<TEntity, Task> beforeInsertAction = null,
+        Action<TEntity, TEntity> update = null
+    )
         where TEntity : class, IEntity<TKey>
     {
         var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
         var content = await File.ReadAllTextAsync(path);
         var items = JsonSerializer.Deserialize<List<TEntity>>(content, JsonSerializerOptions.Web);
-        await repository.SeedAsync(items, beforeInsertAction, ignorePredicate);
+        await repository.SeedAsync(items, keyFunc, beforeInsertAction, update);
     }
 
-    public static async Task SeedAsync<TEntity, TKey>(this IWriterRepository<TEntity, TKey> repository, List<TEntity> items,
-        Func<TEntity, Task> beforeInsertAction = default,
-        Func<TEntity, TEntity, bool> ignorePredicate = default)
+    public static async Task SeedAsync<TEntity, TKey, TUniqueKey>(this IWriterRepository<TEntity, TKey> repository, List<TEntity> items,
+        Func<TEntity, TUniqueKey> keyFunc,
+        Func<TEntity, Task> beforeInsertAction = null,
+        Action<TEntity, TEntity> update = null)
         where TEntity : class, IEntity<TKey>
     {
         var existsItems = await repository.Set(false).ToListAsync();
-        if (ignorePredicate is not null) items = items.Where(x => !existsItems.Any(y => ignorePredicate(x, y))).ToList();
+
         var insertItems = new List<TEntity>();
-        foreach (var entity in items.Where(x => !existsItems.Contains(x)))
+        var updateItems = new List<TEntity>();
+        foreach (var item in items.Where(x => !existsItems.Contains(x)))
         {
-            if (beforeInsertAction is not null) await beforeInsertAction(entity);
-            insertItems.Add(entity);
+            if (beforeInsertAction is not null) await beforeInsertAction(item);
+            var existsItem = existsItems.FirstOrDefault(x => keyFunc(item).Equals(keyFunc(x)));
+            if (existsItem != null)
+            {
+                if (update is not null)
+                {
+                    update(existsItem, item);
+                    updateItems.Add(item);
+                }
+            }
+            else
+            {
+                insertItems.Add(item);
+            }
         }
 
-        await repository.BulkInsertAsync(insertItems);
+        if (insertItems.Any()) await repository.BulkInsertAsync(insertItems);
+        if (updateItems.Any()) await repository.BulkUpdateAsync(updateItems);
     }
 }
