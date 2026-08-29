@@ -9,4 +9,10 @@ public static class DictionaryExtensions
         if (dict != null && dict.TryGetValue(key, out var value)) return value;
         return default;
     }
+    
+    public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key)
+    {
+        if (dict != null && dict.TryGetValue(key, out var value)) return value;
+        return default;
+    }
 }
