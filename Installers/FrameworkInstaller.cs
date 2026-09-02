@@ -20,6 +20,7 @@ using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Services.AppSecurities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -117,6 +118,13 @@ public static class FrameworkInstaller
         {
             configs.Namespaces.Add("Dorbit");
         }
+        
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders =
+                ForwardedHeaders.XForwardedFor |
+                ForwardedHeaders.XForwardedProto;
+        });
 
         services.AddCors(options =>
         {
@@ -235,6 +243,7 @@ public static class FrameworkInstaller
         });
 
         app.UseExceptionHandler("/Error");
+        app.UseForwardedHeaders();
         app.UseHsts();
 
         app.UseMiddleware<ExceptionMiddleware>();
