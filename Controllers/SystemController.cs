@@ -11,6 +11,12 @@ namespace Dorbit.Framework.Controllers;
 [Route("Framework/[controller]")]
 public class SystemController(IMemoryCache memoryCache) : BaseController
 {
+    [HttpGet("HealthCheck")]
+    public CommandResult HealthCheck()
+    {
+        return Succeed();
+    }
+
     [HttpGet("MemoryCache/Keys"), Auth("System-MemoryCache")]
     public QueryResult<List<string>> GetAllMemoryCacheKeys()
     {

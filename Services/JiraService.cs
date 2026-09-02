@@ -16,8 +16,8 @@ public class JiraService(IServiceProvider serviceProvider) : HttpClientApi<Confi
     {
         var http = GetHttpHelperWithoutClientInfo();
         http.AddHeader("Accept", "application/json");
-        http.AddHeader("Accept-Encoding", "none");
 
+        http.IsAcceptGzipResponse = false;
         http.AuthorizationToken = Config.ApiKey.GetDecryptedValue();
 
         return http;

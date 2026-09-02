@@ -9,6 +9,12 @@ public static class CommandResultExtensions
     {
         return new CommandResult(success);
     }
+    
+    public static async Task<CommandResult> ToCommandResultAsync(this Task task)
+    {
+        await task;
+        return new CommandResult() { Success = true };
+    }
 
     public static QueryResult<T> ToQueryResult<T>(this T data)
     {

@@ -52,6 +52,7 @@ public class HttpHelper : IDisposable
             Proxy = null,
             UseProxy = false,
             CookieContainer = CookieContainer,
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
             ServerCertificateCustomValidationCallback = delegate { return true; },
         };
 

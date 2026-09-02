@@ -30,7 +30,7 @@ public class AntiDosAttribute(AntiDosAttribute.DurationType type, int count) : A
 
     private class RequestModel
     {
-        public DateTime Time { get; set; }
+        public DateTime ExpireTime { get; set; }
     }
 
     private static readonly ConcurrentDictionary<string, List<RequestModel>> AllUserRequests = new();
@@ -40,14 +40,12 @@ public class AntiDosAttribute(AntiDosAttribute.DurationType type, int count) : A
         var remoteAddress = context.HttpContext.Connection.RemoteIpAddress ?? new IPAddress(0);
         var userResolver = context.HttpContext.RequestServices.GetService<IUserResolver>();
         var user = userResolver?.User;
-
         if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor) return;
-        
         var key = $"{(user is null ? remoteAddress : user.GetId())}-{actionDescriptor.ControllerTypeInfo.FullName}-{actionDescriptor.ActionName}";
         var now = DateTime.UtcNow;
         var requests = AllUserRequests.GetOrAdd(key, []);
-        requests.Add(new RequestModel { Time = now });
-        requests.RemoveAll(x => x.Time.Add(_time) < now);
+        requests.RemoveAll(x => x.ExpireTime < now);
         if (requests.Count > Count) throw new OperationException(FrameworkErrors.TooMuchRequest);
+        requests.Add(new RequestModel { ExpireTime = now.Add(_time) });
     }
 }
