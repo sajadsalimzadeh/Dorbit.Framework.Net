@@ -59,6 +59,12 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
             accesses = [];
         }
 
+        var authPrefixAttribute = actionDescriptor.ControllerTypeInfo.GetCustomAttribute<AuthPrefixAttribute>();
+        if (authPrefixAttribute is not null)
+        {
+            accesses = accesses.Select(x => authPrefixAttribute.Prefix + "-" + x).ToArray();
+        }
+
         try
         {
             var identityRequest = context.HttpContext.GetIdentityRequest();

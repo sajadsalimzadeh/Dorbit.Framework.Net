@@ -12,12 +12,6 @@ public static class DictionaryExtensions
         return default;
     }
     
-    public static TValue GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key)
-    {
-        if (dict != null && dict.TryGetValue(key, out var value)) return value;
-        return default;
-    }
-    
     public static int GetInt32OrDefault<TKey>(this Dictionary<TKey, JsonElement> dict, TKey key)
     {
         if (dict != null && dict.TryGetValue(key, out var value)) return value.GetInt32();
