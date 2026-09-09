@@ -1,7 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Text.Json;
+using System.Xml.Serialization;
+using AutoMapper.Internal;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -69,5 +74,63 @@ public static class ObjectExtension
         }
 
         return destination;
+    }
+
+    public static string ToJsonWeb(this object obj)
+    {
+        return JsonSerializer.Serialize(obj, JsonSerializerOptions.Web);
+    }
+
+    public static string ToXml(this object obj)
+    {
+        var type = obj.GetType();
+        var sb = new StringBuilder();
+        var xmlRootAttribute = type.GetCustomAttribute<XmlRootAttribute>();
+        if (xmlRootAttribute is not null) sb.Append($"<{xmlRootAttribute.ElementName}>");
+        foreach (var property in type.GetProperties())
+        {
+            var value = property.GetValue(obj);
+            if (value == null) continue;
+            var xmlElementAttribute = property.GetCustomAttribute<XmlElementAttribute>();
+            var tagName = xmlElementAttribute?.ElementName ?? property.Name;
+
+            if (property.PropertyType.IsNumeric() || property.PropertyType.IsString())
+            {
+                sb.Append($"<{tagName}>{value}</{tagName}>");
+            }
+            else if (value is bool)
+            {
+                sb.Append($"<{tagName}/>");
+            }
+            else if (value is IList enumerable)
+            {
+                var xmlArrayAttribute = property.GetCustomAttribute<XmlArrayAttribute>();
+                var xmlArrayItemAttribute = property.GetCustomAttribute<XmlArrayItemAttribute>();
+
+                var arrayTagName = xmlArrayAttribute?.ElementName ?? property.Name;
+                var arrayItemTagName = xmlArrayItemAttribute?.ElementName ?? "item";
+                if (enumerable.Count > 0)
+                {
+                    sb.Append($"<{arrayTagName}>");
+                    foreach (var item in enumerable)
+                    {
+                        sb.Append($"<{arrayItemTagName}>");
+                        sb.Append(item.ToXml());
+                        sb.Append($"</{arrayItemTagName}>");
+                    }
+
+                    sb.Append($"</{arrayTagName}>");
+                }
+            }
+            else
+            {
+                sb.Append($"<{tagName}>");
+                sb.Append(value.ToXml());
+                sb.Append($"</{tagName}>");
+            }
+        }
+
+        if (xmlRootAttribute is not null) sb.Append($"</{xmlRootAttribute.ElementName}>");
+        return sb.ToString();
     }
 }

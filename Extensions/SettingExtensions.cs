@@ -1,11 +1,12 @@
 using System;
+using Dorbit.Framework.Contracts.Abstractions;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Dorbit.Framework.Extensions;
 
 public static class SettingExtensions
 {
-    public static TResult GetValueOrDefault<T, TResult>(this T setting, Func<T, TResult> func)
+    public static TResult GetValueOrDefault<T, TResult>(this T setting, Func<T, TResult> func) where T : ISettingDto
     {
         var result = func.Invoke(setting);
         if (result == null || typeof(TResult).GetDefaultValue().Equals(result))

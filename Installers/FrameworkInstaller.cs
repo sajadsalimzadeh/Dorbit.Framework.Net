@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
@@ -22,6 +23,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
@@ -113,6 +115,16 @@ public static class FrameworkInstaller
                 return false;
             });
         });
+        
+        services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+        });
+        
+        services.Configure<BrotliCompressionProviderOptions>(options => { options.Level = CompressionLevel.Fastest; });
+        services.Configure<GzipCompressionProviderOptions>(options => { options.Level = CompressionLevel.Fastest; });
 
         if (!configs.Namespaces.Contains("Dorbit"))
         {
@@ -121,9 +133,7 @@ public static class FrameworkInstaller
         
         services.Configure<ForwardedHeadersOptions>(options =>
         {
-            options.ForwardedHeaders =
-                ForwardedHeaders.XForwardedFor |
-                ForwardedHeaders.XForwardedProto;
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
         });
 
         services.AddCors(options =>
@@ -249,6 +259,7 @@ public static class FrameworkInstaller
         app.UseMiddleware<ExceptionMiddleware>();
         app.UseMiddleware<CancellationTokenMiddleware>();
         app.UseResponseCaching();
+        app.UseResponseCompression();
 
         var appLifetime = app.Services.GetService<IHostApplicationLifetime>();
         App.StoppingToken = appLifetime.ApplicationStopping;
