@@ -262,4 +262,17 @@ public static class StringExtensions
 
         return result;
     }
+
+    public static string Replace(this string str, Dictionary<string, string> parameters)
+    {
+        if (parameters is not null)
+        {
+            foreach (var parameter in parameters)
+            {
+                str = str.Replace($"{{{parameter.Key}}}", parameter.Value);
+            }
+        }
+
+        return str;
+    }
 }
