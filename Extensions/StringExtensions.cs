@@ -33,41 +33,50 @@ public static class StringExtensions
     public static int ToInt32OrDefault(this string input, bool hex = false)
     {
         input = input?.Trim();
+        if (string.IsNullOrEmpty(input)) return 0;
 
-        if (string.IsNullOrEmpty(input))
-        {
-            return 0;
-        }
+        // var spaceIndex = input.IndexOf(' ');
+        // if (spaceIndex > -1) input = input[..spaceIndex];
 
         var spaceIndex = input.IndexOf(' ');
         if (spaceIndex > -1) input = input[..spaceIndex];
-
-        if (input.StartsWith("0x"))
+        var hasHexSign = input.StartsWith("0x");
+        if (hasHexSign) input = input[2..];
+        if (hasHexSign || hex)
         {
-            return (int)new System.ComponentModel.Int32Converter().ConvertFromString(input)!;
-        }
-
-        try
-        {
-            if (hex || HexChars.Any(input.Contains))
+            try
             {
                 return Convert.ToInt32(input, 16);
             }
+            catch
+            {
+                return 0;
+            }
+        }
 
-            return Convert.ToInt32(input);
-        }
-        catch
-        {
-            return 0;
-        }
+        if (int.TryParse(input, out var value)) return value;
+        return 0;
     }
 
-    public static float ToFloat(this string input, bool hex = false)
+    public static float ToFloatOrDefault(this string input, bool hex = false)
     {
-        if (HexRegex.IsMatch(input) || hex)
+        input = input?.Trim();
+        if (string.IsNullOrEmpty(input)) return 0;
+
+        var spaceIndex = input.IndexOf(' ');
+        if (spaceIndex > -1) input = input[..spaceIndex];
+        var hasHexSign = input.StartsWith("0x");
+        if (hasHexSign) input = input[2..];
+        if (hasHexSign || hex)
         {
-            if (!input.StartsWith("0x")) input = "0x" + input;
-            return (int)new System.ComponentModel.Int32Converter().ConvertFromString(input)!;
+            try
+            {
+                return Convert.ToInt32(input, 16);
+            }
+            catch
+            {
+                return 0;
+            }
         }
 
         if (float.TryParse(input, out var value)) return value;
