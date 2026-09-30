@@ -34,6 +34,7 @@ public class AntiDosAttribute(AntiDosAttribute.DurationType type, int count) : A
     }
 
     private static readonly ConcurrentDictionary<string, List<RequestModel>> AllUserRequests = new();
+    private static readonly ConcurrentDictionary<string, object> Gates = new();
 
     public override void OnActionExecuting(ActionExecutingContext context)
     {
@@ -43,9 +44,13 @@ public class AntiDosAttribute(AntiDosAttribute.DurationType type, int count) : A
         if (context.ActionDescriptor is not ControllerActionDescriptor actionDescriptor) return;
         var key = $"{(user is null ? remoteAddress : user.GetId())}-{actionDescriptor.ControllerTypeInfo.FullName}-{actionDescriptor.ActionName}";
         var now = DateTime.UtcNow;
-        var requests = AllUserRequests.GetOrAdd(key, []);
-        requests.RemoveAll(x => x.ExpireTime < now);
-        if (requests.Count > Count) throw new OperationException(FrameworkErrors.TooMuchRequest);
-        requests.Add(new RequestModel { ExpireTime = now.Add(_time) });
+        var gate = Gates.GetOrAdd(key, _ => new object());
+        lock (gate)
+        {
+            var requests = AllUserRequests.GetOrAdd(key, []);
+            requests.RemoveAll(x => x.ExpireTime < now);
+            if (requests.Count >= Count) throw new OperationException(FrameworkErrors.TooMuchRequest);
+            requests.Add(new RequestModel { ExpireTime = now.Add(_time) });
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -244,13 +245,13 @@ public static class StringExtensions
 
     public static string Random(this string template, int length)
     {
-        var rnd = new Random();
-        var sb = new StringBuilder();
+        if (string.IsNullOrEmpty(template)) throw new ArgumentException("Template is empty.", nameof(template));
+        if (length < 0) throw new ArgumentOutOfRangeException(nameof(length));
+
+        var bytes = RandomNumberGenerator.GetBytes(length);
+        var sb = new StringBuilder(length);
         for (var i = 0; i < length; i++)
-        {
-            var index = rnd.Next(template.Length);
-            sb.Append(template[index]);
-        }
+            sb.Append(template[bytes[i] % template.Length]);
 
         return sb.ToString();
     }

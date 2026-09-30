@@ -6,6 +6,9 @@
         "Name": "Setting"
       },
       {
+        "Name": "Job"
+      },
+      {
         "Name": "System-MemoryCache"
       }
     ]

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts;
@@ -17,7 +20,9 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 public class CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
 {
-    private static Dictionary<string, string> _captchas = new();
+    private sealed record CaptchaEntry(string Value, DateTime ExpiresAtUtc);
+
+    private static readonly ConcurrentDictionary<string, CaptchaEntry> Captchas = new();
     private readonly ConfigCaptcha _configCaptcha = configCaptchaOptions.Value;
 
     public KeyValuePair<string, string> Generate(CaptchaGenerateModel dto)
@@ -35,12 +40,13 @@ public class CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
             Difficulty = dto.Dificulty,
         };
 
-        var key = Guid.NewGuid().ToString();
+        var key = Guid.NewGuid().ToString("N");
         var value = dto.Pattern.Random(dto.Length);
-        lock (_captchas)
+        Captchas[key] = new CaptchaEntry(value, DateTime.UtcNow.AddMinutes(2));
+        if (Captchas.Count > 1000)
         {
-            if (_captchas.Count > 1000) _captchas = _captchas.Skip(500).ToDictionary(x => x.Key, x => x.Value);
-            _captchas.Add(key, value);
+            foreach (var expired in Captchas.Where(x => x.Value.ExpiresAtUtc < DateTime.UtcNow).Take(500))
+                Captchas.TryRemove(expired.Key, out _);
         }
 
         return new KeyValuePair<string, string>(key, generator.GenerateBase64(value));
@@ -48,13 +54,13 @@ public class CaptchaService(IOptions<ConfigCaptcha> configCaptchaOptions)
 
     public bool Validate(string key, string value)
     {
-        lock (_captchas)
-        {
-            if (!_captchas.TryGetValue(key, out var captcha)) return false;
-            var result = value.ToLower() == captcha.ToLower();
-            lock (_captchas) _captchas.Remove(key);
-            return result;
-        }
+        if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(value)) return false;
+        if (!Captchas.TryRemove(key, out var captcha)) return false;
+        if (captcha.ExpiresAtUtc < DateTime.UtcNow) return false;
+
+        var actual = Encoding.UTF8.GetBytes(value.Trim().ToLowerInvariant());
+        var expected = Encoding.UTF8.GetBytes(captcha.Value.ToLowerInvariant());
+        return actual.Length == expected.Length && CryptographicOperations.FixedTimeEquals(actual, expected);
     }
 
     public bool Validate(KeyValuePair<string, string> obj)

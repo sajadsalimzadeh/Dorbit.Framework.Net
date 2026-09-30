@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -54,6 +55,37 @@ public static class HashUtil
     public static string PasswordV3(string password, string secretKey)
     {
         return Sha1(secretKey + secretKey + password);
+    }
+
+    public static string HashPassword(string password)
+    {
+        var salt = RandomNumberGenerator.GetBytes(16);
+        var hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, 100_000, HashAlgorithmName.SHA256, 32);
+        return $"pbkdf2-sha256$100000${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
+    }
+
+    public static bool VerifyPassword(string password, string stored)
+    {
+        if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(stored)) return false;
+
+        var parts = stored.Split('$');
+        if (parts.Length != 4 || parts[0] != "pbkdf2-sha256") return false;
+        if (!int.TryParse(parts[1], out var iterations) || iterations < 100_000) return false;
+
+        byte[] salt;
+        byte[] expected;
+        try
+        {
+            salt = Convert.FromBase64String(parts[2]);
+            expected = Convert.FromBase64String(parts[3]);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+
+        var actual = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA256, expected.Length);
+        return CryptographicOperations.FixedTimeEquals(actual, expected);
     }
     
     public static string Md5(string input, string salt = "")

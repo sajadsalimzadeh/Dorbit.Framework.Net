@@ -140,9 +140,15 @@ public static class FrameworkInstaller
         {
             options.AddDefaultPolicy(policyBuilder =>
             {
-                var patterns = (configs.AllowedOrigins ?? ["//localhost"]).Select(x => new Regex(x));
+                var patterns = (configs.AllowedOrigins ??
+                [
+                    "^https?://localhost(?::\\d+)?$",
+                    "^https?://127\\.0\\.0\\.1(?::\\d+)?$"
+                ]).Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => new Regex(x, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250)))
+                    .ToList();
                 policyBuilder
-                    .SetIsOriginAllowed(origin => patterns.Any(x => x.IsMatch(origin)))
+                    .SetIsOriginAllowed(origin => IsAllowedOrigin(origin, patterns))
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
@@ -152,7 +158,12 @@ public static class FrameworkInstaller
 
         services.AddScoped<IPrincipal>(sp => sp.GetService<IHttpContextAccessor>()?.HttpContext?.User);
 
-        services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
+        services.AddAutoMapper(cfg =>
+        {
+            cfg.AddMaps(typeof(FrameworkInstaller).Assembly);
+            if (!string.IsNullOrWhiteSpace(configs.AutoMapperLicenseKey))
+                cfg.LicenseKey = configs.AutoMapperLicenseKey;
+        });
 
         services.AddSignalR();
         
@@ -195,7 +206,15 @@ public static class FrameworkInstaller
             var securityAssembly = configs.ConfigSecurity.Configuration["Assembly"];
             if (!string.IsNullOrEmpty(securityAssembly))
             {
-                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, securityAssembly);
+                var fileName = Path.GetFileName(securityAssembly);
+                if (!fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("Security assembly must be a .dll in the application directory.");
+
+                var baseDir = Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory);
+                var path = Path.GetFullPath(Path.Combine(baseDir, fileName));
+                if (!path.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("Security assembly path is outside the application directory.");
+
                 var assembly = Assembly.LoadFile(path);
                 App.Security = new AppSecurityExternal(assembly);
             }
@@ -204,8 +223,41 @@ public static class FrameworkInstaller
         return services;
     }
 
+    private static bool IsAllowedOrigin(string origin, List<Regex> patterns)
+    {
+        if (string.IsNullOrEmpty(origin) || !Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+            return false;
+        if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+            return false;
+
+        var authority = uri.GetLeftPart(UriPartial.Authority);
+        foreach (var pattern in patterns)
+        {
+            Match match;
+            try
+            {
+                match = pattern.Match(authority);
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                continue;
+            }
+
+            if (!match.Success) continue;
+            if (match.Index == 0 && match.Length == authority.Length) return true;
+
+            var matchedHost = match.Value.TrimStart('/');
+            if (matchedHost.Equals(uri.Host, StringComparison.OrdinalIgnoreCase)) return true;
+            if (match.Value.Equals("//" + uri.Host, StringComparison.OrdinalIgnoreCase)) return true;
+            if (matchedHost.Equals(uri.Authority, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+
+        return false;
+    }
+
     public class Configs(IConfiguration configuration)
     {
+        public string AutoMapperLicenseKey { get; init; } = configuration["AutoMapper:LicenseKey"];
         public List<string> Namespaces { get; init; } = configuration.GetSection("Namespaces").Get<List<string>>();
         public List<string> AllowedOrigins { get; set; } = configuration.GetSection("AllowedOrigins").Get<List<string>>();
 

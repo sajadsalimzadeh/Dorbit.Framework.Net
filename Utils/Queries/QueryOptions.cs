@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 
@@ -5,6 +6,8 @@ namespace Dorbit.Framework.Utils.Queries;
 
 public class QueryOptions
 {
+    public const int MaxTake = 1000;
+
     public FilterQueryOption Filters { get; protected set; } = new();
     public OrderByQueryOption OrderBy { get; protected set; } = new();
     public TopQueryOption Top { get; protected set; } = new();
@@ -12,25 +15,34 @@ public class QueryOptions
 
     public IQueryable<T> ApplyTo<T>(IQueryable<T> query)
     {
-        var filterQuery = Filters.ToSql();
-        var orderQuery = OrderBy.ToSql();
+        query = ApplyFilter(query);
 
-        if (filterQuery?.Length > 0) query = query.Where(filterQuery);
+        var orderQuery = OrderBy.ToSql();
         if (orderQuery?.Length > 0) query = query.OrderBy(orderQuery);
 
         if (Skip.Value > 0)
             query = query.Skip(Skip.Value);
 
         if (Top.Value > 0)
-            query = query.Take(Top.Value);
+        {
+            var take = Top.Value == int.MaxValue ? Top.Value : Math.Min(Top.Value, MaxTake);
+            query = query.Take(take);
+        }
 
         return query;
     }
 
     public IQueryable<T> ApplyCountTo<T>(IQueryable<T> query)
     {
-        var filterQuery = Filters.ToSql();
-        if (filterQuery?.Length > 0) query = query.Where(filterQuery);
+        return ApplyFilter(query);
+    }
+
+    private IQueryable<T> ApplyFilter<T>(IQueryable<T> query)
+    {
+        var filterQuery = Filters.ToSql(out var parameters);
+        if (filterQuery?.Length > 0)
+            query = query.Where(filterQuery, parameters.Values.ToArray());
+
         return query;
     }
 

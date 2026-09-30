@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts.Loggers;
@@ -37,7 +38,7 @@ public class LogRequestAttribute : ActionFilterAttribute
         {
             logger.Information(
                 "Action Executing {@Method} {Controller} {Action} {@Arguments}",
-                method, actionDescriptor.ControllerName, actionDescriptor.ActionName, context.ActionArguments
+                method, actionDescriptor.ControllerName, actionDescriptor.ActionName, Redact(context.ActionArguments)
             );
         }
 
@@ -82,5 +83,23 @@ public class LogRequestAttribute : ActionFilterAttribute
         }
 
         base.OnActionExecuted(context);
+    }
+
+    private static bool IsSensitive(string name)
+    {
+        return name.Contains("password", StringComparison.OrdinalIgnoreCase)
+               || name.Contains("secret", StringComparison.OrdinalIgnoreCase)
+               || name.Contains("token", StringComparison.OrdinalIgnoreCase)
+               || name.Contains("apikey", StringComparison.OrdinalIgnoreCase)
+               || name.Contains("credential", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static Dictionary<string, object> Redact(IDictionary<string, object> arguments)
+    {
+        var redacted = new Dictionary<string, object>(arguments.Count);
+        foreach (var argument in arguments)
+            redacted[argument.Key] = IsSensitive(argument.Key) ? "***" : argument.Value;
+
+        return redacted;
     }
 }

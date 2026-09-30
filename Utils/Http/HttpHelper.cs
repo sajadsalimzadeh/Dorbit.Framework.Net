@@ -53,7 +53,8 @@ public class HttpHelper : IDisposable
             UseProxy = false,
             CookieContainer = CookieContainer,
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
-            ServerCertificateCustomValidationCallback = delegate { return true; },
+            ServerCertificateCustomValidationCallback = (_, _, _, errors) =>
+                IgnoreUnTrustedCertificate || errors == System.Net.Security.SslPolicyErrors.None,
         };
 
         HttpClient = new HttpClient(handler);

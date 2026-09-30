@@ -31,7 +31,8 @@ public class BaseHub(HubManager hubService) : Hub
             var userId = (Guid)identity.User.GetId();
             HubManager.Add(userId, Context.ConnectionId);
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, GroupJobStatus);
+            if (identity.IsFullAccess || identity.HasAccess("Job"))
+                await Groups.AddToGroupAsync(Context.ConnectionId, GroupJobStatus);
         }
 
         await UpdateOnlineUsers();

@@ -4,6 +4,7 @@ using System.Linq;
 using Dorbit.Framework.Contracts.Jobs;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Filters;
 using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ namespace Dorbit.Framework.Controllers;
 
 [ApiExplorerSettings(GroupName = "framework")]
 [Route("Framework/[controller]")]
+[Auth("Job")]
 public class JobsController(JobService jobService) : BaseController
 {
     [HttpGet]

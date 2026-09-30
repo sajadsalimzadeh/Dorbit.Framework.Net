@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
+using Dorbit.Framework.Entities;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Filters;
 using Dorbit.Framework.Services;
@@ -13,10 +15,10 @@ namespace Dorbit.Framework.Controllers;
 [Route("Framework/[controller]")]
 public class SettingsController(SettingService settingService) : BaseController
 {
-    [HttpGet]
+    [HttpGet, Auth("Setting")]
     public QueryResult<Dictionary<string, object>> GetAll([FromQuery] List<string> keys)
     {
-        var settings = settingService.GetAll();
+        var settings = settingService.GetAll().Where(CanRead).ToList();
         if (keys is { Count: > 0 }) settings = settings.Where(x => keys.Contains(x.Key)).ToList();
         var result = new Dictionary<string, object>();
         foreach (var setting in settings)
@@ -27,11 +29,26 @@ public class SettingsController(SettingService settingService) : BaseController
         return result.ToQueryResult();
     }
 
-    [HttpGet("{key}")]
+    [HttpGet("{key}"), Auth("Setting")]
     public QueryResult<object> Get(string key)
     {
-        var value = settingService.Get<object>(key);
-        return value.ToQueryResult();
+        var setting = settingService.GetAll()
+            .FirstOrDefault(x => string.Equals(x.Key, key, StringComparison.OrdinalIgnoreCase));
+        if (setting is null)
+            return default(object).ToQueryResult();
+        if (!CanRead(setting))
+            throw new UnauthorizedAccessException();
+
+        return setting.GetValue<object>().ToQueryResult();
+    }
+
+    private bool CanRead(Setting setting)
+    {
+        if (setting.Access.IsNullOrEmpty())
+            return true;
+
+        var identity = Identity;
+        return identity is not null && (identity.IsFullAccess || identity.HasAccess(setting.Access));
     }
 
     [HttpPost, Auth("Setting")]

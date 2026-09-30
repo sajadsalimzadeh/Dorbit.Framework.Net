@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
@@ -20,6 +22,17 @@ public abstract class CrudController : BaseController;
 public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController
     where TEntity : class, IEntity<TKey>
 {
+    private static readonly HashSet<string> ProtectedProperties = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Id", "IsDeleted",
+        "CreatorId", "CreatorName", "CreationTime",
+        "ModifierId", "ModifierName", "ModificationTime",
+        "DeleterId", "DeleterName", "DeletionTime",
+        "TenantId", "TenantName",
+        "ServerId", "ServerName",
+        "SoftwareId", "SoftwareName"
+    };
+
     protected IBaseRepository<TEntity, TKey> Repository => ServiceProvider.GetRequiredService<IBaseRepository<TEntity, TKey>>();
     
     protected virtual IQueryable<TEntity> Set() => Repository.Set();
@@ -58,6 +71,7 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController
     [HttpPost, Auth("{type0}-Save", "{type0}-Add")]
     public virtual Task<QueryResult<TGet>> AddAsync([FromBody] TAdd request)
     {
+        ClearProtectedCreateValues(request);
         MemoryCache.Remove(typeof(TEntity));
         return Repository.InsertAsync(request.MapTo<TEntity>()).MapToAsync<TEntity, TGet>().ToQueryResultAsync();
     }
@@ -67,8 +81,41 @@ public abstract class CrudController<TEntity, TKey, TGet, TAdd> : CrudController
     {
         MemoryCache.Remove(id.ToString() ?? string.Empty);
         MemoryCache.Remove(typeof(TEntity));
-        var entity = await Repository.UpdateWithJsonAsync<TEntity>(id, obj);
+        var entity = await Repository.UpdateWithJsonAsync<TEntity>(id, WithoutProtectedProperties(obj));
         return entity.MapTo<TGet>().ToQueryResult();
+    }
+
+    private static void ClearProtectedCreateValues(object request)
+    {
+        if (request is null) return;
+        foreach (var name in new[] { "IsDeleted", "TenantId", "TenantName", "DeleterId", "DeleterName", "DeletionTime" })
+        {
+            var property = request.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            if (property is null || !property.CanWrite) continue;
+            var defaultValue = property.PropertyType.IsValueType ? Activator.CreateInstance(property.PropertyType) : null;
+            property.SetValue(request, defaultValue);
+        }
+    }
+
+    private static JsonElement WithoutProtectedProperties(JsonElement element)
+    {
+        if (element.ValueKind != JsonValueKind.Object) return element;
+
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            foreach (var property in element.EnumerateObject())
+            {
+                if (ProtectedProperties.Contains(property.Name)) continue;
+                property.WriteTo(writer);
+            }
+
+            writer.WriteEndObject();
+        }
+
+        using var document = JsonDocument.Parse(stream.ToArray());
+        return document.RootElement.Clone();
     }
 
     [HttpDelete("{id}"), Auth("{type0}-Delete")]
