@@ -275,4 +275,18 @@ public static class StringExtensions
 
         return str;
     }
+
+    public static byte[] TrimLeft(this byte[] bytes)
+    {
+        var result = new List<byte>();
+        var isStart = false;
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            if (bytes[i] > 0) isStart = true;
+            if (!isStart) continue;
+            result.Add(bytes[i]);
+        }
+
+        return result.ToArray();
+    }
 }

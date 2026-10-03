@@ -54,7 +54,7 @@ public static class FrameworkInstaller
         if (!Directory.Exists(wwwrootPath)) Directory.CreateDirectory(wwwrootPath);
 
         App.MainThread = Thread.CurrentThread;
-        
+
         Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -66,7 +66,7 @@ public static class FrameworkInstaller
         {
             File.WriteAllText(appSettingPath, "{}");
         }
-        
+
         services.TryAddSingleton(services);
         services.AddResponseCaching();
         services.AddMemoryCache();
@@ -94,14 +94,14 @@ public static class FrameworkInstaller
                 if (docName == "all") return true;
                 if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
                 if (methodInfo.ReflectedType?.Namespace is null) return false;
-                
+
                 var swaggerConfigs = _configs.SwaggerConfigs.Where(x => x.Name == docName).ToList();
-                
+
                 if (swaggerConfigs.Any(x => x.PrefixNamespace != null && methodInfo.ReflectedType.Namespace.StartsWith(x.PrefixNamespace)))
                 {
                     return true;
                 }
-                
+
                 var apiExplorerVersions = methodInfo.ReflectedType
                     .GetCustomAttributes(true)
                     .OfType<ApiExplorerSettingsAttribute>()
@@ -115,14 +115,14 @@ public static class FrameworkInstaller
                 return false;
             });
         });
-        
+
         services.AddResponseCompression(options =>
         {
             options.EnableForHttps = true;
             options.Providers.Add<BrotliCompressionProvider>();
             options.Providers.Add<GzipCompressionProvider>();
         });
-        
+
         services.Configure<BrotliCompressionProviderOptions>(options => { options.Level = CompressionLevel.Fastest; });
         services.Configure<GzipCompressionProviderOptions>(options => { options.Level = CompressionLevel.Fastest; });
 
@@ -130,11 +130,8 @@ public static class FrameworkInstaller
         {
             configs.Namespaces.Add("Dorbit");
         }
-        
-        services.Configure<ForwardedHeadersOptions>(options =>
-        {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-        });
+
+        services.Configure<ForwardedHeadersOptions>(options => { options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto; });
 
         services.AddCors(options =>
         {
@@ -155,7 +152,7 @@ public static class FrameworkInstaller
         services.AddAutoMapper(typeof(FrameworkInstaller).Assembly);
 
         services.AddSignalR();
-        
+
         services.AddControllersWithViews()
             .AddJsonOptions(options =>
             {
@@ -223,12 +220,12 @@ public static class FrameworkInstaller
         public IConfig<ConfigIdentity> ConfigIdentity { get; init; } = configuration.GetConfig<ConfigIdentity>("Identity");
         public IConfig<ConfigTranslation> ConfigTranslation { get; init; } = configuration.GetConfig<ConfigTranslation>("Translation");
         public IConfig<ConfigOpenWeather> ConfigOpenWeather { get; init; } = configuration.GetConfig<ConfigOpenWeather>("OpenWeather");
-        
+
         public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
 
         public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }
     }
-    
+
     public static WebApplication UseDorbit(this WebApplication app)
     {
         var defaultFilesOptions = new DefaultFilesOptions();
@@ -237,10 +234,7 @@ public static class FrameworkInstaller
         app.UseStaticFiles();
         app.UseCors();
         app.UseRouting();
-        app.UseSwagger(o =>
-        {
-            o.OpenApiVersion = OpenApiSpecVersion.OpenApi2_0;
-        });
+        app.UseSwagger(o => { o.OpenApiVersion = OpenApiSpecVersion.OpenApi2_0; });
         app.UseSwaggerUI(o =>
         {
             o.EnableFilter();
@@ -263,7 +257,7 @@ public static class FrameworkInstaller
 
         var appLifetime = app.Services.GetService<IHostApplicationLifetime>();
         App.StoppingToken = appLifetime.ApplicationStopping;
-        
+
         return app;
     }
 
@@ -313,7 +307,7 @@ public static class FrameworkInstaller
     public static async Task RunDorbitAsync(this WebApplication app, string[] args)
     {
         App.InMemory = args.Contains("inmemory");
-        
+
         var isMigrate = false;
         if (args.Contains("migrate"))
         {
@@ -321,29 +315,14 @@ public static class FrameworkInstaller
             await app.MigrateAll();
         }
 
-        if (app.Environment.IsDevelopment())
+        if (args.Contains("cli"))
         {
-            if (args.Contains("run"))
-            {
-                if(!isMigrate) await app.MigrateAll();
-                await app.RunWithStartupsAsync();
-            }
-            else
-            {
-                await app.RunCliAsync();
-            }
+            await app.RunCliAsync();
         }
         else
         {
-            if (args.Contains("cli"))
-            {
-                await app.RunCliAsync();
-            }
-            else
-            {
-                if(!isMigrate) await app.MigrateAll();
-                await app.RunWithStartupsAsync();
-            }
+            if (!isMigrate) await app.MigrateAll();
+            await app.RunWithStartupsAsync();
         }
     }
 

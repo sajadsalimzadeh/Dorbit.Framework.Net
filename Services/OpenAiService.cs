@@ -40,7 +40,6 @@ public class OpenAiService(IOptions<ConfigOpenAi> configOpenAiOptions)
         }
 
         var contentParts = new List<ChatMessageContentPart>();
-        
         contentParts.Add(ChatMessageContentPart.CreateTextPart(message));
         contentParts.AddRange(extraContentParts);
         

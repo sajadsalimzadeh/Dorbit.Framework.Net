@@ -12,7 +12,7 @@ namespace Dorbit.Framework.Utils.Http;
 public abstract class HttpClientApi<T> where T : ConfigClientApi
 {
     private string _customBaseAddress;
-    
+
     protected T Config { get; set; }
     protected ILogger Logger { get; }
     protected IHttpContextAccessor HttpContextAccessor { get; }
@@ -72,10 +72,20 @@ public abstract class HttpClientApi<T> where T : ConfigClientApi
     protected virtual HttpHelper GetHttpHelperWithoutClientInfo()
     {
         var http = Config.GetHttpHelper(Logger);
+
+        if (HttpContextAccessor.HttpContext is not null)
+        {
+            if (HttpContextAccessor.HttpContext.Request.Headers.TryGetValue("X-Environment", out var env))
+            {
+                http.HttpClient.DefaultRequestHeaders.Add("X-Environment", env.ToString());
+            }
+        }
+
         if (_customBaseAddress.IsNotNullOrEmpty())
         {
             http.HttpClient.BaseAddress = new Uri(_customBaseAddress);
         }
+
         return http;
     }
 }
