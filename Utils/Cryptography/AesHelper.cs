@@ -30,7 +30,7 @@ public class AesHelper
 
     public AesHelper(byte[] password, Size size = Size.Aes128) : this(size)
     {
-        var key = new Rfc2898DeriveBytes(password, password, Iterations, HashAlgorithm);
+        using var key = new Rfc2898DeriveBytes(password, password, Iterations, HashAlgorithm);
         Key = key.GetBytes(_size / 8);
         Iv = key.GetBytes(_size / 8);
 

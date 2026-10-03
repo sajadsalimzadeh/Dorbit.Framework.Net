@@ -69,7 +69,7 @@ public class PdfTable
 
         public override void Draw(XGraphics gfx, XRect rect)
         {
-            var image = XImage.FromFile(filename);
+            using var image = XImage.FromFile(filename);
             if (HorizontalAlignment == XStringAlignment.Near)
             {
                 if (VerticalAlignment == XLineAlignment.Near)
