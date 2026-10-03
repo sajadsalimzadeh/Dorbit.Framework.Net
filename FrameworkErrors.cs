@@ -18,5 +18,11 @@ public enum FrameworkErrors
     MeliPayamakNeedPasswordAsProtectedPropertyInSetting,
     KavenegarNeedApiKeyAsProtectedPropertyInSetting,
     EntityNotFound,
-    MaxSizeOverflow
+    MaxSizeOverflow,
+    QueryIsInvalid,
+    QueryIsTooComplex,
+    FilePathIsInvalid,
+    FileTypeIsNotAllowed,
+    InvalidIpAddress,
+    JiraRequestIsInvalid
 }

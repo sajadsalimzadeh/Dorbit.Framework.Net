@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Dorbit.Framework.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
@@ -25,6 +26,9 @@ public class ODataQueryOptions : QueryOptions
 
     public static ODataQueryOptions Parse(string query)
     {
+        if (query?.Length > 8000)
+            throw new OperationException(FrameworkErrors.QueryIsTooComplex);
+
         var queryOptions = new ODataQueryOptions(query);
         var queryDictionary = QueryHelpers.ParseQuery(Strip(query));
         queryOptions.ParseFilters(queryDictionary);
@@ -44,6 +48,9 @@ public class ODataQueryOptions : QueryOptions
 
     private static FilterQueryOptionExpression ParseFilters(string query)
     {
+        if (query.Length > 4000)
+            throw new OperationException(FrameworkErrors.QueryIsTooComplex);
+
         query = query.Trim();
         FilterQueryOptionExpression ex = null;
         ex ??= ParseGroup(query);
@@ -117,20 +124,53 @@ public class ODataQueryOptions : QueryOptions
         if (value.Length == 0) return null;
         var ex = new FilterQueryOptionLiteralExpression();
 
-        if (value[0] == '\'') ex.Value = $"'{value}'";
-        else if (DateTime.TryParse(value, out var dateTimeVal)) ex.Value = dateTimeVal;
+        if (value.Length >= 2 && value[0] == '\'' && value[^1] == '\'')
+        {
+            ex.IsConstant = true;
+            ex.Value = value[1..^1].Replace("''", "'");
+        }
+        else if (DateTime.TryParse(value, out var dateTimeVal))
+        {
+            ex.IsConstant = true;
+            ex.Value = dateTimeVal;
+        }
         else if (value.IndexOf('.') > -1)
         {
+            ex.IsConstant = true;
             if (float.TryParse(value, out var floatVal)) ex.Value = floatVal;
             else if (double.TryParse(value, out var doubleVal)) ex.Value = doubleVal;
             else if (decimal.TryParse(value, out var decimalVal)) ex.Value = decimalVal;
-            ex.Value ??= value;
+            else
+            {
+                ex.IsConstant = false;
+                ex.Value = value;
+            }
         }
-        else if (bool.TryParse(value, out var boolVal)) ex.Value = boolVal;
-        else if (sbyte.TryParse(value, out var sbyteVal)) ex.Value = sbyteVal;
-        else if (short.TryParse(value, out var shortVal)) ex.Value = shortVal;
-        else if (int.TryParse(value, out var intVal)) ex.Value = intVal;
-        else if (long.TryParse(value, out var longVal)) ex.Value = longVal;
+        else if (bool.TryParse(value, out var boolVal))
+        {
+            ex.IsConstant = true;
+            ex.Value = boolVal;
+        }
+        else if (sbyte.TryParse(value, out var sbyteVal))
+        {
+            ex.IsConstant = true;
+            ex.Value = sbyteVal;
+        }
+        else if (short.TryParse(value, out var shortVal))
+        {
+            ex.IsConstant = true;
+            ex.Value = shortVal;
+        }
+        else if (int.TryParse(value, out var intVal))
+        {
+            ex.IsConstant = true;
+            ex.Value = intVal;
+        }
+        else if (long.TryParse(value, out var longVal))
+        {
+            ex.IsConstant = true;
+            ex.Value = longVal;
+        }
         else ex.Value = value;
 
         return ex;
@@ -209,18 +249,26 @@ public class ODataQueryOptions : QueryOptions
         var orderBy = value.FirstOrDefault();
         OrderBy.Items = [];
         if (orderBy == null) return;
-        foreach (var item in orderBy.Split(','))
+        var items = orderBy.Split(',');
+        if (items.Length > 8)
+            throw new OperationException(FrameworkErrors.QueryIsTooComplex);
+
+        foreach (var item in items)
         {
-            var itemSplit = item.Trim().Split(' ');
+            var itemSplit = item.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
             switch (itemSplit.Length)
             {
                 case 2:
+                    QueryIdentifier.RequireMember(itemSplit[0]);
                     OrderBy.Items.Add(new KeyValuePair<string, bool>(itemSplit[0],
                         itemSplit[1].ToLower() == "desc"));
                     break;
                 case 1:
+                    QueryIdentifier.RequireMember(itemSplit[0]);
                     OrderBy.Items.Add(new KeyValuePair<string, bool>(itemSplit[0], false));
                     break;
+                default:
+                    throw new OperationException(FrameworkErrors.QueryIsInvalid);
             }
         }
     }
@@ -237,7 +285,7 @@ public class ODataQueryOptions : QueryOptions
     {
         if (query.TryGetValue("$skip", out var value))
         {
-            if (int.TryParse(value, out var skip)) Skip.Value = skip;
+            if (int.TryParse(value, out var skip)) Skip.Value = Math.Max(0, skip);
         }
     }
 
@@ -245,12 +293,18 @@ public class ODataQueryOptions : QueryOptions
     {
         if (query.TryGetValue("$top", out var topStr))
         {
-            if (int.TryParse(topStr, out var take)) Top.Value = take;
+            if (int.TryParse(topStr, out var take)) Top.Value = NormalizeTake(take);
         }
         else if (query.TryGetValue("$take", out var takeStr))
         {
-            if (int.TryParse(takeStr, out var take)) Top.Value = take;
+            if (int.TryParse(takeStr, out var take)) Top.Value = NormalizeTake(take);
         }
+    }
+
+    private static int NormalizeTake(int take)
+    {
+        if (take < 0) return 0;
+        return Math.Min(take, QueryOptions.MaxTake);
     }
 
     private static string Strip(string rawValues)

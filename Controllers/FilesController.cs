@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -26,11 +27,36 @@ public class FilesController(
     IIdentityService identityService,
     AttachmentRepository attachmentRepository) : BaseController
 {
+    private static readonly HashSet<string> BlockedExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".html", ".htm", ".svg", ".js", ".mjs", ".xml", ".xhtml", ".shtml",
+        ".aspx", ".asp", ".php", ".exe", ".dll", ".bat", ".cmd", ".ps1",
+        ".hta", ".vbs", ".wsf", ".scr", ".msi", ".com", ".jar", ".cshtml"
+    };
+
+    private static readonly HashSet<string> InlineExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".pdf", ".txt", ".csv"
+    };
+
     private string GetFilePath(string filename)
     {
-        var configFile = configFileOptions.Value;
-        if (!Directory.Exists(configFile.BasePath)) Directory.CreateDirectory(configFile.BasePath);
-        return Path.Combine(configFile.BasePath, filename);
+        if (string.IsNullOrWhiteSpace(filename))
+            throw new OperationException(FrameworkErrors.FilePathIsInvalid);
+
+        var safeName = Path.GetFileName(filename);
+        if (!string.Equals(safeName, filename, StringComparison.Ordinal) ||
+            safeName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            throw new OperationException(FrameworkErrors.FilePathIsInvalid);
+
+        var basePath = Path.GetFullPath(configFileOptions.Value.BasePath);
+        Directory.CreateDirectory(basePath);
+        var filePath = Path.GetFullPath(Path.Combine(basePath, safeName));
+        var relative = Path.GetRelativePath(basePath, filePath);
+        if (relative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(relative))
+            throw new OperationException(FrameworkErrors.FilePathIsInvalid);
+
+        return filePath;
     }
 
     private class FileDto
@@ -45,26 +71,40 @@ public class FilesController(
         if (!attachment.IsPrivate)
             return true;
 
-        if (attachment.Access.IsNullOrEmpty())
-            return true;
-
         var identity = identityService.Identity;
-        if (identity is null)
-            return false;
-
-        if (identity.HasAccess(attachment.Access))
+        if (identity?.User is not null && attachment.UserId == identity.User.GetId())
             return true;
 
-        if (attachment.UserIds != null && attachment.UserIds.Contains(identity.User.GetId()))
+        if (attachment.Access.IsNotNullOrEmpty() && identity is not null && identity.HasAccess(attachment.Access))
             return true;
 
-        if (attachment.AccessTokens != null)
-        {
-            if (Request.Headers.TryGetValue("FileAuthorization", out var accessToken) && attachment.AccessTokens.Contains(accessToken))
-                return true;
-        }
+        if (identity?.User is not null && attachment.UserIds != null && attachment.UserIds.Contains(identity.User.GetId()))
+            return true;
+
+        if (attachment.AccessTokens != null &&
+            Request.Headers.TryGetValue("FileAuthorization", out var accessToken) &&
+            attachment.AccessTokens.Contains(accessToken.ToString()))
+            return true;
 
         return false;
+    }
+
+    private void ApplyFileResponseHeaders(FileDto fileDto)
+    {
+        Response.Headers["X-Content-Type-Options"] = "nosniff";
+        Response.Headers["Content-Security-Policy"] = "default-src 'none'; sandbox";
+        var isPublic = fileDto.Attachment is { IsPrivate: false };
+        Response.Headers["Cache-Control"] = isPublic ? "public,max-age=86400" : "private,no-store";
+    }
+
+    private IActionResult FileResult(FileDto fileDto, string filename, bool download)
+    {
+        ApplyFileResponseHeaders(fileDto);
+        var extension = Path.GetExtension(filename);
+        if (download || !InlineExtensions.Contains(extension))
+            return File(fileDto.Content, "application/octet-stream", Path.GetFileName(filename));
+
+        return File(fileDto.Content, MimeTypeUtil.GetMimeTypeByFilename(filename));
     }
 
     private async Task<FileDto> GetFileAsync(string filename)
@@ -118,40 +158,39 @@ public class FilesController(
 
 
         var ext = Path.GetExtension(file.FileName);
+        if (BlockedExtensions.Contains(ext))
+            throw new OperationException(FrameworkErrors.FileTypeIsNotAllowed);
+
         var filename = Guid.NewGuid() + ext;
         var filePath = GetFilePath(filename);
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms);
         await System.IO.File.WriteAllBytesAsync(filePath, ms.ToArray());
 
-        if (request is not null)
+        await attachmentRepository.InsertAsync(new Attachment()
         {
-            await attachmentRepository.InsertAsync(new Attachment()
-            {
-                UserId = GetUserId(),
-                IsPrivate = true,
-                Filename = filename,
-                Size = file.Length,
-                Access = request.Access,
-            });
-        }
+            UserId = GetUserId(),
+            IsPrivate = true,
+            Filename = filename,
+            Size = file.Length,
+            Access = request?.Access,
+        });
 
         return new QueryResult<string>(filename);
     }
 
-    [HttpGet("{filename}")]
-    [ResponseCache(Duration = 365 * 24 * 60 * 60)]
+    [HttpGet("{filename}"), Auth(IsOptional = true)]
     public async Task<IActionResult> GetAsync([FromRoute] string filename)
     {
         var fileDto = await GetFileAsync(filename);
-        return File(fileDto.Content, MimeTypeUtil.GetMimeTypeByFilename(filename));
+        return FileResult(fileDto, filename, download: false);
     }
 
     [HttpGet("{filename}/Download"), Auth(IsOptional = true)]
     public async Task<IActionResult> DownloadAsync([FromRoute] string filename)
     {
         var fileDto = await GetFileAsync(filename);
-        return File(fileDto.Content, "application/octet-stream", filename);
+        return FileResult(fileDto, filename, download: true);
     }
 
     [HttpGet("{filename}/Info"), Auth]

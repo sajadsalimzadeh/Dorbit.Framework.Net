@@ -92,7 +92,7 @@ public class CaptchaGenerator
 
     public Image<Rgba32> Generate(string text)
     {
-        var rnd = new Random();
+        var rnd = Random.Shared;
         var image = new Image<Rgba32>(Width, Height);
         image.Mutate(ctx =>
         {

@@ -55,7 +55,7 @@ public class ExceptionMiddleware : IMiddleware
                 case AuthenticationException authenticationException:
                     op.Code = StatusCodes.Status401Unauthorized;
                     op.Data = authenticationException.Data;
-                    op.Message = nameof(FrameworkErrors.AuthenticationFailed);
+                    op.Message = authenticationException.Message.IsNotNullOrEmpty() ? authenticationException.Message : nameof(FrameworkErrors.AuthenticationFailed);
                     break;
                 case OperationException operationException:
                     op.Code = 400;

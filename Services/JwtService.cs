@@ -46,8 +46,12 @@ public class JwtService()
                 ValidateIssuer = false,
                 ValidateAudience = false,
                 RequireExpirationTime = true,
+                ValidateLifetime = true,
+                RequireSignedTokens = true,
                 ValidateIssuerSigningKey = true,
+                ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret)),
+                ClockSkew = TimeSpan.FromMinutes(1),
             };
             principals = tokenHandler.ValidateToken(token, validationParameters, out securityToken);
             return securityToken.ValidTo > DateTime.UtcNow;

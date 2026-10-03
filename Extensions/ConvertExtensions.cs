@@ -1,6 +1,5 @@
 using System;
 using System.Text.Json;
-using AutoMapper.Internal;
 
 namespace Dorbit.Framework.Extensions;
 

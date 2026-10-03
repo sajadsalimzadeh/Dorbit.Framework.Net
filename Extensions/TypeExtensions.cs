@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using AutoMapper.Internal;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -12,6 +11,11 @@ public static class TypeExtensions
         return type
             .GetProperties(BindingFlags.Public | BindingFlags.Static)
             .FirstOrDefault(x => x.Name.Equals(name))?.GetValue(null) as T;
+    }
+
+    public static bool IsNullableType(this Type type)
+    {
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
     }
 
     public static bool IsNumeric(this Type type)
