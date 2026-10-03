@@ -1,14 +1,14 @@
 ﻿using System.Linq;
 using System.Reflection;
 using Dorbit.Framework.Attributes;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Dorbit.Framework.Filters;
 
 public class SwaggerExcludeFilter : ISchemaFilter
 {
-    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+    public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
     {
         if (schema?.Properties == null) return;
 

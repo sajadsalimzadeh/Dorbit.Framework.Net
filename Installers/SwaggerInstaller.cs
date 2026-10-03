@@ -4,7 +4,7 @@ using System.Reflection;
 using Dorbit.Framework.Filters;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
@@ -54,19 +54,9 @@ public static class SwaggerInstaller
             Type = SecuritySchemeType.ApiKey,
             Scheme = "Bearer"
         });
-        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
         {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                },
-                Array.Empty<string>()
-            }
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
         });
     }
 }

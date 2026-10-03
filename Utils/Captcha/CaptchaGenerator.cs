@@ -18,44 +18,30 @@ public class CaptchaGenerator
     public int Height { get; set; } = 200;
     
     private static readonly FontFamily[] FontFamilies = SystemFonts.Families.ToArray();
+    private static readonly FontStyle[] FontStyles = [FontStyle.Bold, FontStyle.BoldItalic, FontStyle.Italic, FontStyle.Regular];
+    private static readonly TextDecorations[] TextDecorationItems = [TextDecorations.None, TextDecorations.Overline, TextDecorations.Strikeout, TextDecorations.Underline];
     
-    public string GenerateBase64(string text, int width, int height)
-    {
-        using var image = new Image<Rgba32>(width, height);
-        image.Mutate(ctx =>
-        {
-            ctx.Fill(Color.White);
-            ctx.DrawText(text, SystemFonts.CreateFont("Arial", 24), Color.Black, new PointF(10, 10));
-            ctx.DrawLine(Color.Gray, 1, new PointF(0, 10), new PointF(width, 40), new PointF(0, 40), new PointF(width, 10));
-        });
-
-        using var ms = new MemoryStream();
-        image.Save(ms, new PngEncoder());
-        return Convert.ToBase64String(ms.ToArray());
-    }
-    
-
-    private int GetRotation(Random rnd)
+    private int GetRotation()
     {
         return Difficulty switch
         {
             CaptchaDificulty.VeryEasy => 0,
-            CaptchaDificulty.Easy => rnd.Next(-10, 10),
-            CaptchaDificulty.Normal => rnd.Next(-30, 30),
-            CaptchaDificulty.Hard => rnd.Next(-50, 50),
-            _ => rnd.Next(-60, 60),
+            CaptchaDificulty.Easy => Random.Shared.Next(-10, 10),
+            CaptchaDificulty.Normal => Random.Shared.Next(-30, 30),
+            CaptchaDificulty.Hard => Random.Shared.Next(-50, 50),
+            _ => Random.Shared.Next(-60, 60),
         };
     }
 
-    private int GetFontSize(Random rnd)
+    private int GetFontSize()
     {
         return Difficulty switch
         {
-            CaptchaDificulty.VeryEasy => rnd.Next((int)(Height * .6), (int)(Height * .7)),
-            CaptchaDificulty.Easy => rnd.Next((int)(Height * .5), (int)(Height * .6)),
-            CaptchaDificulty.Normal => rnd.Next((int)(Height * .4), (int)(Height * .5)),
-            CaptchaDificulty.Hard => rnd.Next((int)(Height * .3), (int)(Height * .4)),
-            _ => rnd.Next((int)(Height * .2), (int)(Height * .3)),
+            CaptchaDificulty.VeryEasy => Random.Shared.Next((int)(Height * .7), (int)(Height * .9)),
+            CaptchaDificulty.Easy => Random.Shared.Next((int)(Height * .6), (int)(Height * .8)),
+            CaptchaDificulty.Normal => Random.Shared.Next((int)(Height * .5), (int)(Height * .7)),
+            CaptchaDificulty.Hard => Random.Shared.Next((int)(Height * .4), (int)(Height * .6)),
+            _ => Random.Shared.Next((int)(Height * .3), (int)(Height * .5)),
         };
     }
 
@@ -63,54 +49,77 @@ public class CaptchaGenerator
     {
         return Difficulty switch
         {
-            CaptchaDificulty.VeryEasy => FontStyle.Bold,
-            CaptchaDificulty.Easy => FontStyle.BoldItalic,
-            CaptchaDificulty.Normal => FontStyle.Italic,
-            _ => FontStyle.Regular
+            CaptchaDificulty.VeryEasy => FontStyles[Random.Shared.Next(0, 1)],
+            CaptchaDificulty.Easy => FontStyles[Random.Shared.Next(0, 2)],
+            _ => FontStyles[Random.Shared.Next(0, 3)]
         };
     }
 
-    private FontFamily GetFontFamily(Random rnd)
+    private TextDecorations GetTextDecoration()
+    {
+        return Difficulty switch
+        {
+            CaptchaDificulty.VeryEasy => TextDecorationItems[Random.Shared.Next(0, 1)],
+            CaptchaDificulty.Easy => TextDecorationItems[Random.Shared.Next(0, 2)],
+            _ => TextDecorationItems[Random.Shared.Next(0, 3)]
+        };
+    }
+
+    private FontFamily GetFontFamily()
     {
         switch (Difficulty)
         {
             case CaptchaDificulty.VeryEasy: return FontFamilies[0];
-            case CaptchaDificulty.Easy: return FontFamilies[rnd.Next(0, 1)];
-            case CaptchaDificulty.Normal: return FontFamilies[rnd.Next(0, 2)];
-            case CaptchaDificulty.Hard: return FontFamilies[rnd.Next(0, 4)];
+            case CaptchaDificulty.Easy: return FontFamilies[Random.Shared.Next(0, 1)];
+            case CaptchaDificulty.Normal: return FontFamilies[Random.Shared.Next(0, 2)];
+            case CaptchaDificulty.Hard: return FontFamilies[Random.Shared.Next(0, 4)];
             case CaptchaDificulty.VeryHard:
             case CaptchaDificulty.None:
             default:
-                return FontFamilies[rnd.Next(0, 5)];
+                return FontFamilies[Random.Shared.Next(0, 5)];
         }
     }
 
-    private Color GetColor(Random rnd)
+    private Color GetColor()
     {
-        return Color.FromRgb((byte)rnd.Next(0, 200), (byte)rnd.Next(0, 200), (byte)rnd.Next(0, 200));
+        return Color.FromPixel(new Rgb24((byte)Random.Shared.Next(0, 200), (byte)Random.Shared.Next(0, 200), (byte)Random.Shared.Next(0, 200)));
     }
 
     public Image<Rgba32> Generate(string text)
     {
-        var rnd = Random.Shared;
+        var font = GetFontFamily();
         var image = new Image<Rgba32>(Width, Height);
-        image.Mutate(ctx =>
+        image.Mutate(ctx => ctx.Paint(canvas =>
         {
             for (int i = 0, length = text.Length, unit = Width / (length + 2); i < length; i++)
             {
                 var x = unit * (i + 1);
                 var y = Height / 2 - 20;
 
-                var color = GetColor(rnd);
-                var font = GetFontFamily(rnd);
-                var fontSize = GetFontSize(rnd);
+                var color = GetColor();
+                var fontSize = GetFontSize();
                 var fontStyle = GetFontStyle();
-                var location = new PointF(x, y);
-                ctx.DrawText(text[i].ToString(), font.CreateFont(fontSize, fontStyle), color, location);
+                var textDecoration = GetTextDecoration();
                 
+                RichTextOptions textOptions = new(SystemFonts.CreateFont(font.Name, fontSize, fontStyle))
+                {
+                    Origin = new PointF(x, y),
+                    WrappingLength = 1040,
+                    TextRuns =
+                    [
+                        new RichTextRun
+                        {
+                            Start = 0,
+                            End = 6,
+                            TextDecorations = textDecoration
+                        }
+                    ]
+                };
+                
+                canvas.DrawText(textOptions, text[i].ToString(), Brushes.Solid(color), pen: null);
             }
             
-        });
+        }));
 
         return image;
     }

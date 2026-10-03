@@ -31,7 +31,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
