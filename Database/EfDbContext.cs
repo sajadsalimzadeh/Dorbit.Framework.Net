@@ -32,20 +32,12 @@ public abstract class EfDbContext : DbContext, IDbContext
     private static readonly ConcurrentDictionary<string, int> SequenceCounter = [];
     private readonly EfTransactionContext _efTransactionContext;
 
-    private IUserResolver _userResolver;
-    private IUserResolver UserResolver => _userResolver ??= ServiceProvider.GetService<IUserResolver>();
+    private IUserResolver UserResolver => field ??= ServiceProvider.GetService<IUserResolver>();
 
-    private ITenantResolver _tenantResolver;
-    private ITenantResolver TenantResolver => _tenantResolver ??= ServiceProvider.GetService<ITenantResolver>();
-
-    private IServerResolver _serverResolver;
-    private IServerResolver ServerResolver => _serverResolver ??= ServiceProvider.GetService<IServerResolver>();
-
-    private ISoftwareResolver _softwareResolver;
-    private ISoftwareResolver SoftwareResolver => _softwareResolver ??= ServiceProvider.GetService<ISoftwareResolver>();
-
-    private ILogger _logger;
-    private ILogger Logger => _logger ??= ServiceProvider.GetService<ILogger>();
+    private ITenantResolver TenantResolver => field ??= ServiceProvider.GetService<ITenantResolver>();
+    private IServerResolver ServerResolver => field ??= ServiceProvider.GetService<IServerResolver>();
+    private ISoftwareResolver SoftwareResolver => field ??= ServiceProvider.GetService<ISoftwareResolver>();
+    private ILogger Logger => field ??= ServiceProvider.GetService<ILogger>();
 
     private readonly CancellationToken _cancellationToken;
     
