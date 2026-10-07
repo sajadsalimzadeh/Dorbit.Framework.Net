@@ -63,8 +63,8 @@ public class NotificationService(IOptions<ConfigWebPush> configWebPushOptions, I
                 }
                 else if (item.Subscription.Type == NotificationSubscriptionType.Expo)
                 {
-                    var httpClient = new HttpClient() { BaseAddress = new Uri("https://exp.host/--/api/v2/push/send") };
-                    var responseMessage = await httpClient.PostAsJsonAsync("", new NotificationExpoDto()
+                    using var httpClient = new HttpClient() { BaseAddress = new Uri("https://exp.host/--/api/v2/push/send") };
+                    using var responseMessage = await httpClient.PostAsJsonAsync("", new NotificationExpoDto()
                     {
                         Token = item.Subscription.Token,
                         Title = item.Request.Title,

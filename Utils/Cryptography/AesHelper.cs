@@ -30,7 +30,7 @@ public class AesHelper
 
     public AesHelper(byte[] password, Size size = Size.Aes128) : this(size)
     {
-        var byteSize = _size / 8;
+        using var byteSize = _size / 8;
 
         var derivedBytes = Rfc2898DeriveBytes.Pbkdf2(
             password,

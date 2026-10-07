@@ -8,7 +8,8 @@ public static class Md5Util
 {
     public static Task<byte[]> HashAsync(Stream stream)
     {
-        return Task.FromResult(MD5.Create().ComputeHash(stream));
+        using var md5 = MD5.Create();
+        return Task.FromResult(md5.ComputeHash(stream));
     }
 
     public static Task<byte[]> HashFileAsync(string filePath)

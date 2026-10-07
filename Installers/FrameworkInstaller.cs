@@ -138,8 +138,8 @@ public static class FrameworkInstaller
             {
                 var patterns = (configs.AllowedOrigins ??
                 [
-                    "^https?://localhost(?::\\d+)?$",
-                    "^https?://127\\.0\\.0\\.1(?::\\d+)?$"
+                    "^http://localhost::\\d+$",
+                    "^http?://127\\.0\\.0\\.1::\\d+$"
                 ]).Where(x => !string.IsNullOrWhiteSpace(x))
                     .Select(x => new Regex(x, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250)))
                     .ToList();

@@ -33,7 +33,7 @@ public class BrevoEmailProvider : IMessageProvider<MessageEmailRequest, ConfigMe
 
     public async Task<QueryResult<string>> SendAsync(MessageEmailRequest request, CancellationToken cancellationToken)
     {
-        var helper = new HttpHelper("https://api.brevo.com/v3");
+        using var helper = new HttpHelper("https://api.brevo.com/v3");
         helper.AddHeader("api-key", _apiKey);
         var httpModel = await helper.PostAsync<BrevoResponse>("smtp/email", new
         {
@@ -52,6 +52,9 @@ public class BrevoEmailProvider : IMessageProvider<MessageEmailRequest, ConfigMe
             subject = request.Subject,
             htmlContent = string.Format(request.Body, request.Args ?? [])
         }, cancellationToken);
+
+        using var httpRequest = httpModel.Request;
+        using var httpResponse = httpModel.Response;
 
         if (httpModel.Result is null)
             throw new Exception($"Brevo result is null content: {httpModel.Content}");

@@ -14,7 +14,8 @@ public static class HashUtil
     
     public static string Sha1(byte[] bytes)
     {
-        var hashData = SHA1.Create().ComputeHash(bytes);
+        using var sha1 = SHA1.Create();
+        var hashData = sha1.ComputeHash(bytes);
         var hash = string.Empty;
         foreach (var b in hashData)
         {

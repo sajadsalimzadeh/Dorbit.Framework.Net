@@ -38,7 +38,7 @@ public class SmtpProvider : IMessageProvider<MessageEmailRequest, ConfigMessageE
 
     public async Task<QueryResult<string>> SendAsync(MessageEmailRequest request, CancellationToken cancellationToken = default)
     {
-        var message = new MimeMessage();
+        using var message = new MimeMessage();
         message.From.Add(new MailboxAddress(_senderName, _senderEmail));
         message.To.Add(MailboxAddress.Parse(request.Receiver));
         message.Subject = request.Subject;
