@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Google.Protobuf;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -298,5 +299,40 @@ public static class StringExtensions
         }
 
         return result.ToArray();
+    }
+    
+    public static byte[] ToBytesAscii(this string input)
+    {
+        return Encoding.ASCII.GetBytes(input);
+    }
+
+    public static byte[] ToBytesUtf8(this string input)
+    {
+        return Encoding.UTF8.GetBytes(input);
+    }
+
+    public static byte[] ToByteArray(this string input)
+    {
+        return Encoding.UTF8.GetBytes(input);
+    }
+
+    public static ByteString ToByteString(this string input)
+    {
+        return ByteString.CopyFrom(input.ToByteArray());
+    }
+
+    public static byte[] ToBytesUtf32(this string input)
+    {
+        return Encoding.UTF32.GetBytes(input);
+    }
+
+    public static byte[] FromBase64String(this string str)
+    {
+        return Convert.FromBase64String(str);
+    }
+
+    public static string ToHexString(this string str)
+    {
+        return str.ToByteArray().ToHexString();
     }
 }

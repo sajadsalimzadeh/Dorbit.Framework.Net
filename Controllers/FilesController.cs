@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Configs;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Attachments;
 using Dorbit.Framework.Contracts.Files;
 using Dorbit.Framework.Contracts.Results;
@@ -18,6 +19,7 @@ using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
@@ -25,7 +27,7 @@ namespace Dorbit.Framework.Controllers;
 
 [ApiExplorerSettings(GroupName = "framework")]
 [Route("Framework/[controller]")]
-public class FilesController(FileService fileService) : BaseController
+public class FilesController(FileService fileService, AttachmentRepository attachmentRepository) : BaseController
 {
     private static readonly HashSet<string> InlineExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -50,8 +52,20 @@ public class FilesController(FileService fileService) : BaseController
         return File(fileDto.Content, MimeTypeUtil.GetMimeTypeByFilename(filename));
     }
 
-    [HttpPost, Auth, AntiDos(AntiDosAttribute.DurationType.Hour, 20)]
-    public Task<QueryResult<string>> UploadAsync([FromForm] AttachmentUploadPrivateRequest request)
+    [HttpGet, Auth("File-View")]
+    public Task<QueryResult<List<AttachmentFullDto>>> GetAllFileAsync()
+    {
+        return attachmentRepository.Set().ToListAsync().MapToAsync<Attachment, AttachmentFullDto>().ToQueryResultAsync();
+    }
+
+    [HttpGet("{id:guid}"), Auth("File-View")]
+    public Task<QueryResult<AttachmentFullDto>> GetInfoAsync([FromRoute] Guid id)
+    {
+        return attachmentRepository.GetByIdAsync(id).MapToAsync<Attachment, AttachmentFullDto>().ToQueryResultAsync();
+    }
+
+    [HttpPost, Auth, AntiDos(AntiDosAttribute.DurationType.Minute, 3)]
+    public Task<QueryResult<string>> UploadAsync([FromForm] AttachmentUploadRequest request)
     {
         request.UserId = GetUserId();
         var file = Request.Form.Files[0];
@@ -69,7 +83,7 @@ public class FilesController(FileService fileService) : BaseController
         {
             await using var entryStream = await entry.OpenAsync();
             using var reader = new StreamReader(stream);
-            await fileService.UploadAsync(new AttachmentUploadPrivateRequest()
+            await fileService.UploadAsync(new AttachmentUploadRequest()
             {
                 UserId = GetUserId(),
                 Name = entry.Name,
@@ -78,6 +92,20 @@ public class FilesController(FileService fileService) : BaseController
         }
 
         return Succeed();
+    }
+
+    [HttpPatch("{id:guid}"), Auth("File-Save")]
+    public async Task<QueryResult<AttachmentFullDto>> PatchAsync([FromRoute] string filename, [FromBody] AttachmentUploadRequest request)
+    {
+        var attachment = await attachmentRepository.Set().FirstOrDefaultAsync(x => x.Filename == filename);
+        attachment.Drive = request.Drive;
+        attachment.Name = request.Name;
+        attachment.Description = request.Description;
+        attachment.Access = request.Access;
+        attachment.IsPrivate = request.IsPrivate;
+        if (request.UserIds is not null) attachment.UserIds = request.UserIds;
+        if (request.AccessTokens is not null) attachment.AccessTokens = request.AccessTokens;
+        return await attachmentRepository.UpdateAsync(attachment).MapToAsync<Attachment, AttachmentFullDto>().ToQueryResultAsync();
     }
 
     [HttpGet("{filename}"), Auth(IsOptional = true)]
@@ -92,17 +120,5 @@ public class FilesController(FileService fileService) : BaseController
     {
         var fileDto = await fileService.GetFileAsync(filename);
         return FileResult(fileDto, filename, download: true);
-    }
-
-    [HttpGet("{filename}/Info"), Auth]
-    public Task<QueryResult<Attachment>> GetInfoAsync([FromRoute] string filename)
-    {
-        return fileService.GetInfoAsync(filename).ToQueryResultAsync();
-    }
-
-    [HttpPatch("{filename}/Info"), Auth]
-    public Task<QueryResult<Attachment>> PatchInfoAsync([FromRoute] string filename, [FromBody] JsonElement request)
-    {
-        return fileService.PatchInfoAsync(filename, request).ToQueryResultAsync();
     }
 }

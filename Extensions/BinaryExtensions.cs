@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Text;
 
 namespace Dorbit.Framework.Extensions;
 
@@ -25,5 +27,30 @@ public static class BinaryExtensions
             if(data[i - 1] != 0) break;
         }
         return data.Take(i).ToArray();
+    }
+
+    public static string ToStringAscii(this byte[] bytes)
+    {
+        return Encoding.ASCII.GetString(bytes);
+    }
+
+    public static string ToStringUtf8(this byte[] bytes)
+    {
+        return Encoding.UTF8.GetString(bytes);
+    }
+
+    public static string ToStringUtf32(this byte[] bytes)
+    {
+        return Encoding.UTF32.GetString(bytes);
+    }
+
+    public static string ToHexString(this byte[] bytes)
+    {
+        return BitConverter.ToString(bytes).Replace("-", "");
+    }
+
+    public static string ToBase64String(this byte[] bytes)
+    {
+        return Convert.ToBase64String(bytes);
     }
 }

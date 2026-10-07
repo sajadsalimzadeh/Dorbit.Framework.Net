@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Jobs;
 using Dorbit.Framework.Contracts.Settings;
 using Dorbit.Framework.Entities;
@@ -14,5 +15,7 @@ public class Profiles : Profile
         CreateMap<JobLog, JobLogDto>();
 
         CreateMap<Setting, SettingDto>();
+        CreateMap<Attachment, AttachmentDto>();
+        CreateMap<Attachment, AttachmentFullDto>();
     }
 }

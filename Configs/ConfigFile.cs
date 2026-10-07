@@ -7,4 +7,10 @@ public class ConfigFile
     public string BasePath { get; set; }
     public int MaxSize { get; set; } = 5 * 1024 * 1024;
     public Dictionary<string, int> MaxSizeAccessibility { get; set; }
+    public Dictionary<string, ConfigFileDrive> Drives { get; set; }
+}
+
+public class ConfigFileDrive
+{
+    public string Access { get; set; }
 }

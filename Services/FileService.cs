@@ -37,7 +37,7 @@ public class FileService(
         ".hta", ".vbs", ".wsf", ".scr", ".msi", ".com", ".jar", ".cshtml"
     };
 
-    private string GetFilePath(string filename)
+    private string GetFilePath(string filename, Attachment attachment)
     {
         if (string.IsNullOrWhiteSpace(filename))
             throw new OperationException(FrameworkErrors.FilePathIsInvalid);
@@ -47,7 +47,15 @@ public class FileService(
             safeName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             throw new OperationException(FrameworkErrors.FilePathIsInvalid);
 
-        var basePath = Path.GetFullPath(configFileOptions.Value.BasePath);
+        var configFile = configFileOptions.Value;
+        var basePath = Path.GetFullPath(configFile.BasePath);
+        if (attachment is not null && attachment.Drive.IsNotNullOrEmpty() && configFile.Drives is not null)
+        {
+            if (configFile.Drives.TryGetValue(attachment.Drive, out var drive))
+            {
+                basePath = Path.Combine(basePath, attachment.Drive);
+            }
+        }
         Directory.CreateDirectory(basePath);
         var filePath = Path.GetFullPath(Path.Combine(basePath, safeName));
         var relative = Path.GetRelativePath(basePath, filePath);
@@ -87,7 +95,7 @@ public class FileService(
         {
             var dto = new FileDto();
             dto.Attachment = await attachmentRepository.FirstOrDefaultAsync(x => x.Filename == filename);
-            var filePath = GetFilePath(filename);
+            var filePath = GetFilePath(filename, dto.Attachment);
             var fileInfo = new FileInfo(filePath);
             if (!File.Exists(filePath)) throw new FileNotFoundException();
             dto.LastModifyTime = fileInfo.LastWriteTime;
@@ -100,7 +108,7 @@ public class FileService(
         return fileDto;
     }
 
-    public async Task<string> UploadAsync([FromForm] AttachmentUploadPrivateRequest request)
+    public async Task<string> UploadAsync([FromForm] AttachmentUploadRequest request)
     {
         var size = request.Stream.Length;
         if (size > configFileOptions.Value.MaxSize)
@@ -133,53 +141,27 @@ public class FileService(
             throw new OperationException(FrameworkErrors.FileTypeIsNotAllowed);
 
         var filename = Guid.NewGuid() + ext;
-        var filePath = GetFilePath(filename);
-        using var ms = new MemoryStream();
-        await request.Stream.CopyToAsync(ms);
-        await File.WriteAllBytesAsync(filePath, ms.ToArray());
-
-        await attachmentRepository.InsertAsync(new Attachment()
+        var attachment = new Attachment()
         {
             UserId = request.UserId,
-            IsPrivate = true,
+            Drive = request.Drive,
             Filename = filename,
             Size = size,
             Access = request.Access,
-        });
+            IsPrivate = request.IsPrivate,
+        };
+        
+        if (configFileOptions.Value.Drives is not null && configFileOptions.Value.Drives.TryGetValue(request.Drive, out var drive))
+        {
+            attachment.Access = drive.Access;
+        }
+        
+        var filePath = GetFilePath(filename, attachment);
+        using var ms = new MemoryStream();
+        await request.Stream.CopyToAsync(ms);
+        await File.WriteAllBytesAsync(filePath, ms.ToArray());
+        await attachmentRepository.InsertAsync(attachment);
 
         return filename;
-    }
-
-    public Task<FileDto> GetAsync([FromRoute] string filename)
-    {
-        return GetFileAsync(filename);
-    }
-
-    public Task<FileDto> DownloadAsync([FromRoute] string filename)
-    {
-        return GetFileAsync(filename);
-    }
-
-    public async Task<Attachment> GetInfoAsync([FromRoute] string filename)
-    {
-        var attachment = await attachmentRepository.FirstOrDefaultAsync(x => x.Filename == filename)
-                         ?? throw new OperationException(FrameworkErrors.EntityNotFound);
-
-        if (attachment.IsPrivate && !ValidateAccess(attachment))
-            throw new UnauthorizedAccessException();
-
-        return attachment;
-    }
-
-    public async Task<Attachment> PatchInfoAsync([FromRoute] string filename, [FromBody] JsonElement request)
-    {
-        var attachment = await attachmentRepository.FirstOrDefaultAsync(x => x.Filename == filename)
-                         ?? throw new OperationException(FrameworkErrors.EntityNotFound);
-
-        if (identityService.Identity.User.GetId() != attachment.UserId)
-            throw new UnauthorizedAccessException();
-
-        attachment = await attachmentRepository.UpdateWithJsonAsync<AttachmentPatchRequest>(attachment, request);
-        return attachment;
     }
 }
