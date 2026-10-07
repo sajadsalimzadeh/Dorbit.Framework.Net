@@ -1,22 +1,26 @@
-using System.IO;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using System.Drawing;
+using SkiaSharp;
 
 namespace Dorbit.Framework.Utils;
 
 public static class ImageUtils
 {
-    public static byte[] CropImage(byte[] imageBytes, Rectangle cropArea)
+    public static byte[] CropImage(byte[] imageBytes, Rectangle cropRect)
     {
-        using var inputStream = new MemoryStream(imageBytes);
-        using var image = Image.Load<Rgba32>(inputStream);
+        using var source = SKBitmap.Decode(imageBytes);
+        using var cropped = new SKBitmap(cropRect.Width, cropRect.Height);
+        using var canvas = new SKCanvas(cropped);
 
-        image.Mutate(x => x.Crop(cropArea));
+        var srcRect = new SKRect(cropRect.Left, cropRect.Top, cropRect.Right, cropRect.Bottom);
+        var destRect = new SKRect(0, 0, cropRect.Width, cropRect.Height);
+        var sampling = new SKSamplingOptions(SKFilterMode.Nearest);
 
-        using var outputStream = new MemoryStream();
-        image.SaveAsPng(outputStream);
-        return outputStream.ToArray();
+        canvas.DrawBitmap(source, srcRect, destRect, sampling);
+
+        using var image = SKImage.FromBitmap(cropped);
+        using var data = image.Encode(SKEncodedImageFormat.Jpeg, 90);
+
+        return data.ToArray();
     }
 
     public enum ImageCornerType
@@ -25,26 +29,5 @@ public static class ImageUtils
         TopRight,
         BottomLeft,
         BottomRight,
-    }
-
-    public static byte[] CropImageCorner(byte[] imageBytes, ImageCornerType cornerType, int width, int height)
-    {
-        using var inputStream = new MemoryStream(imageBytes);
-        using var image = Image.Load<Rgba32>(inputStream);
-
-        var cropArea = cornerType switch
-        {
-            ImageCornerType.TopLeft => new Rectangle(0, 0, image.Width * width / 100, image.Height * height / 100),
-            ImageCornerType.TopRight => new Rectangle(image.Width - (image.Width * width / 100), 0, (image.Width * width / 100), image.Height * height / 100),
-            ImageCornerType.BottomLeft => new Rectangle(0, image.Height - (image.Height * height / 100), image.Width * width / 100, image.Height * height / 100),
-            ImageCornerType.BottomRight => new Rectangle(image.Width - (image.Width * width / 100), image.Height - (image.Height * height / 100), image.Width * width / 100, image.Height * height / 100),
-            _ => new Rectangle(0, 0, image.Width, image.Height)
-        };
-
-        image.Mutate(x => x.Crop(cropArea));
-
-        using var outputStream = new MemoryStream();
-        image.SaveAsPng(outputStream);
-        return outputStream.ToArray();
     }
 }

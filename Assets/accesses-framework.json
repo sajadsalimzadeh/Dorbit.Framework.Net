@@ -3,6 +3,14 @@
     "Name": "Framework",
     "Children": [
       {
+        "Name": "File",
+        "Children": [
+          {
+            "Name": "File-Bulk"
+          }
+        ]
+      },
+      {
         "Name": "Setting"
       },
       {

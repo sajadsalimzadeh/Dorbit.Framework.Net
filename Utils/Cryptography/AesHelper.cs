@@ -30,11 +30,22 @@ public class AesHelper
 
     public AesHelper(byte[] password, Size size = Size.Aes128) : this(size)
     {
-        var key = new Rfc2898DeriveBytes(password, password, Iterations, HashAlgorithm);
-        Key = key.GetBytes(_size / 8);
-        Iv = key.GetBytes(_size / 8);
+        var byteSize = _size / 8;
+
+        var derivedBytes = Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            password,
+            Iterations,
+            HashAlgorithm,
+            byteSize * 2);
+
+        Key = derivedBytes[..byteSize];
+        Iv  = derivedBytes[byteSize..];
 
         var aes = Create();
+        aes.Key = Key;
+        aes.IV = Iv;
+
         _encryptor = aes.CreateEncryptor();
         _decryptor = aes.CreateDecryptor();
     }
@@ -68,9 +79,9 @@ public class AesHelper
     {
     }
 
-    private System.Security.Cryptography.Aes Create()
+    private Aes Create()
     {
-        var aes = System.Security.Cryptography.Aes.Create();
+        var aes = Aes.Create();
         aes.KeySize = _size;
         aes.BlockSize = _size;
         aes.Padding = PaddingMode.Zeros;

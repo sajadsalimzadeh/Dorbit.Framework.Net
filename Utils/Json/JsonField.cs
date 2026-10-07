@@ -46,7 +46,7 @@ public static class ModelBuilderExtensions
             bool NotIgnored(PropertyInfo property)
             {
                 return property != null &&
-                       !ignoredMembers.ContainsKey(property.Name) &&
+                       (ignoredMembers == null || !ignoredMembers.ContainsKey(property.Name)) &&
                        property.CustomAttributes.All(a => a.AttributeType != typeof(NotMappedAttribute));
             }
 

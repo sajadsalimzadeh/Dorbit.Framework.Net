@@ -51,7 +51,7 @@ public static class ConfigurationExtensions
         return dictionary;
     }
 
-    private static object ParseValue(string? value)
+    private static object ParseValue(string value)
     {
         if (value == null)
             return "";
