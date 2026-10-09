@@ -96,7 +96,8 @@ public static class FrameworkInstaller
 
                 var swaggerConfigs = _configs.SwaggerConfigs.Where(x => x.Name == docName).ToList();
 
-                if (swaggerConfigs.Any(x => x.PrefixNamespace != null && methodInfo.ReflectedType.Namespace.StartsWith(x.PrefixNamespace)))
+                if (swaggerConfigs.Any(x =>
+                        x.PrefixNamespace != null && methodInfo.ReflectedType.Namespace.StartsWith(x.PrefixNamespace)))
                 {
                     return true;
                 }
@@ -130,18 +131,23 @@ public static class FrameworkInstaller
             configs.Namespaces.Add("Dorbit");
         }
 
-        services.Configure<ForwardedHeadersOptions>(options => { options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto; });
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        });
 
         services.AddCors(options =>
         {
             options.AddDefaultPolicy(policyBuilder =>
             {
-                var patterns = (configs.AllowedOrigins ??
+                configs.AllowedOrigins ??=
                 [
-                    "^http://localhost::\\d+$",
-                    "^http?://127\\.0\\.0\\.1::\\d+$"
-                ]).Where(x => !string.IsNullOrWhiteSpace(x))
-                    .Select(x => new Regex(x, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250)))
+                    "^http://localhost:\\d+",
+                    "^http?://127\\.0\\.0\\.1:\\d+"
+                ];
+                var patterns = configs.AllowedOrigins.Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => new Regex(x, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
+                        TimeSpan.FromMilliseconds(250)))
                     .ToList();
                 policyBuilder
                     .SetIsOriginAllowed(origin => IsAllowedOrigin(origin, patterns))
@@ -178,7 +184,8 @@ public static class FrameworkInstaller
         //     services.AddControllers().AddRazorRuntimeCompilation();
         // }
 
-        var frameworkDbContextConfiguration = configs.DbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
+        var frameworkDbContextConfiguration =
+            configs.DbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
         services.AddDbContextPool<FrameworkDbContext>(frameworkDbContextConfiguration);
 
         configs.ConfigProject?.Configure(services);
@@ -204,7 +211,8 @@ public static class FrameworkInstaller
             {
                 var fileName = Path.GetFileName(securityAssembly);
                 if (!fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidOperationException("Security assembly must be a .dll in the application directory.");
+                    throw new InvalidOperationException(
+                        "Security assembly must be a .dll in the application directory.");
 
                 var baseDir = Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory);
                 var path = Path.GetFullPath(Path.Combine(baseDir, fileName));
@@ -255,22 +263,39 @@ public static class FrameworkInstaller
     {
         public string AutoMapperLicenseKey { get; init; } = configuration["AutoMapper:LicenseKey"];
         public List<string> Namespaces { get; init; } = configuration.GetSection("Namespaces").Get<List<string>>();
-        public List<string> AllowedOrigins { get; set; } = configuration.GetSection("AllowedOrigins").Get<List<string>>();
+
+        public List<string> AllowedOrigins { get; set; } =
+            configuration.GetSection("AllowedOrigins").Get<List<string>>();
 
         public IConfig<ConfigProject> ConfigProject { get; init; } = configuration.GetConfig<ConfigProject>("Project");
         public IConfig<ConfigFile> ConfigFile { get; init; } = configuration.GetConfig<ConfigFile>("File");
-        public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; } = configuration.GetConfig<ConfigMessageProviders>("MessageProviders");
-        public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; } = configuration.GetConfig<ConfigFrameworkSecurity>("Security");
-        public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; } = configuration.GetConfig<ConfigLogRequest>("LogRequest");
+
+        public IConfig<ConfigMessageProviders> ConfigMessageProviders { get; init; } =
+            configuration.GetConfig<ConfigMessageProviders>("MessageProviders");
+
+        public IConfig<ConfigFrameworkSecurity> ConfigSecurity { get; init; } =
+            configuration.GetConfig<ConfigFrameworkSecurity>("Security");
+
+        public IConfig<ConfigLogRequest> ConfigLogRequest { get; init; } =
+            configuration.GetConfig<ConfigLogRequest>("LogRequest");
+
         public IConfig<ConfigCaptcha> ConfigCaptcha { get; init; } = configuration.GetConfig<ConfigCaptcha>("Captcha");
         public IConfig<ConfigGeo> ConfigGeo { get; init; } = configuration.GetConfig<ConfigGeo>("Geo");
         public IConfig<ConfigOpenAi> ConfigOpenAi { get; set; } = configuration.GetConfig<ConfigOpenAi>("OpenAi");
         public IConfig<ConfigWebPush> ConfigWebPush { get; set; } = configuration.GetConfig<ConfigWebPush>("WebPush");
         public IConfig<ConfigJira> ConfigJira { get; set; } = configuration.GetConfig<ConfigJira>("Jira");
-        public IConfig<ConfigIpFilter> ConfigIpFilter { get; set; } = configuration.GetConfig<ConfigIpFilter>("IpFilter");
-        public IConfig<ConfigIdentity> ConfigIdentity { get; init; } = configuration.GetConfig<ConfigIdentity>("Identity");
-        public IConfig<ConfigTranslation> ConfigTranslation { get; init; } = configuration.GetConfig<ConfigTranslation>("Translation");
-        public IConfig<ConfigOpenWeather> ConfigOpenWeather { get; init; } = configuration.GetConfig<ConfigOpenWeather>("OpenWeather");
+
+        public IConfig<ConfigIpFilter> ConfigIpFilter { get; set; } =
+            configuration.GetConfig<ConfigIpFilter>("IpFilter");
+
+        public IConfig<ConfigIdentity> ConfigIdentity { get; init; } =
+            configuration.GetConfig<ConfigIdentity>("Identity");
+
+        public IConfig<ConfigTranslation> ConfigTranslation { get; init; } =
+            configuration.GetConfig<ConfigTranslation>("Translation");
+
+        public IConfig<ConfigOpenWeather> ConfigOpenWeather { get; init; } =
+            configuration.GetConfig<ConfigOpenWeather>("OpenWeather");
 
         public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
 
@@ -312,7 +337,8 @@ public static class FrameworkInstaller
         return app;
     }
 
-    public static WebApplicationBuilder UseDorbitSerilog(this WebApplicationBuilder builder, Action<LoggerConfiguration> configure = null)
+    public static WebApplicationBuilder UseDorbitSerilog(this WebApplicationBuilder builder,
+        Action<LoggerConfiguration> configure = null)
     {
         var loggerConfiuration = new LoggerConfiguration()
             .ReadFrom.Configuration(builder.Configuration)
