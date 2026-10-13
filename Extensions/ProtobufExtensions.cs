@@ -13,8 +13,8 @@ public static class ProtobufExtensions
     }
 
 
-    public static string ToHexString(this ByteString bytes)
+    public static string ToHexStringOrDefault(this ByteString bytes)
     {
-        return bytes.ToByteArray().ToHexString();
+        return (bytes != null ? bytes.ToByteArray().ToHexString() : null);
     }
 }
