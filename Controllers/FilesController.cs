@@ -64,7 +64,7 @@ public class FilesController(FileService fileService, AttachmentRepository attac
         return attachmentRepository.GetByIdAsync(id).MapToAsync<Attachment, AttachmentFullDto>().ToQueryResultAsync();
     }
 
-    [HttpPost, Auth, AntiDos(AntiDosAttribute.DurationType.Minute, 3)]
+    [HttpPost, Auth, AntiDos(AntiDosAttribute.DurationType.Minute, 10)]
     public Task<QueryResult<string>> UploadAsync([FromForm] AttachmentUploadRequest request)
     {
         request.UserId = GetUserId();
