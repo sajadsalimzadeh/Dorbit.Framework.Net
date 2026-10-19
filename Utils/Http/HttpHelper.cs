@@ -52,7 +52,8 @@ public class HttpHelper : IDisposable
             Proxy = null,
             UseProxy = false,
             CookieContainer = CookieContainer,
-            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+            AutomaticDecompression =
+                DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
             ServerCertificateCustomValidationCallback = (_, _, _, errors) =>
                 IgnoreUnTrustedCertificate || errors == System.Net.Security.SslPolicyErrors.None,
         };
@@ -74,7 +75,7 @@ public class HttpHelper : IDisposable
                 var name = (jsonPropertyAttribute != null ? jsonPropertyAttribute.Name : p.Name);
                 var value = p.GetValue(obj, null);
                 if (value == null) return null;
-                return name + "=" + Uri.EscapeDataString(value.ToString());
+                return name + "=" + Uri.EscapeDataString(value.ToString() ?? "");
             }).Where(x => x != null);
 
         return string.Join("&", properties.ToArray());
@@ -89,10 +90,10 @@ public class HttpHelper : IDisposable
     private HttpRequestMessage CreateRequest(HttpHelperRequest httpRequest)
     {
         var request = new HttpRequestMessage(httpRequest.Method, httpRequest.Url);
-        
+
         request.Headers.Add("Accept", "*/*");
         request.Headers.Add("Cache-Control", "no-cache");
-        if(IsAcceptGzipResponse) request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
+        if (IsAcceptGzipResponse) request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
 
         if (Username is not null && Password is not null)
         {
@@ -115,7 +116,8 @@ public class HttpHelper : IDisposable
                 case "options":
                     if (httpRequest.Parameter is not null)
                     {
-                        var url = httpRequest.Url + (httpRequest.Url.Contains("?") ? "&" : "?") + GetQueryString(httpRequest.Parameter);
+                        var url = httpRequest.Url + (httpRequest.Url.Contains("?") ? "&" : "?") +
+                                  GetQueryString(httpRequest.Parameter);
                         request.RequestUri = new Uri(url, UriKind.Relative);
                     }
 
@@ -164,7 +166,8 @@ public class HttpHelper : IDisposable
     {
         if (AuthorizationToken is not null)
         {
-            request.Headers.Add("Authorization", (AuthorizationToken.StartsWith("Bearer") ? "" : "Bearer ") + AuthorizationToken);
+            request.Headers.Add("Authorization",
+                (AuthorizationToken.StartsWith("Bearer") ? "" : "Bearer ") + AuthorizationToken);
         }
 
         foreach (var item in _headers)
@@ -180,68 +183,81 @@ public class HttpHelper : IDisposable
         };
     }
 
-    public async Task<HttpModel<T>> SendAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken = default)
+    public async Task<HttpModel<T>> SendAsync<T>(HttpRequestMessage request,
+        CancellationToken cancellationToken = default)
     {
-        var httpModel = await SendAsync(request);
-        if (httpModel.Response.StatusCode == HttpStatusCode.Unauthorized)
+        try
         {
-            OnUnAuthorizedHandler?.Invoke();
-        }
-
-        if (httpModel.Response.StatusCode == HttpStatusCode.Forbidden)
-        {
-            OnForbiddenHandler?.Invoke();
-        }
-
-        var httpModelType = new HttpModel<T>()
-        {
-            Request = httpModel.Request,
-            Response = httpModel.Response,
-        };
-
-        httpModelType.Content = await httpModel.Response.Content.ReadAsStringAsync(CancellationToken);
-        if (httpModel.Response.IsSuccessStatusCode)
-        {
-            try
+            var httpModel = await SendAsync(request, cancellationToken);
+            if (httpModel.Response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                if (ResponseContentType == ContentType.Json)
+                OnUnAuthorizedHandler?.Invoke();
+            }
+
+            if (httpModel.Response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                OnForbiddenHandler?.Invoke();
+            }
+
+            var httpModelType = new HttpModel<T>()
+            {
+                Request = httpModel.Request,
+                Response = httpModel.Response,
+            };
+
+            httpModelType.Content = await httpModel.Response.Content.ReadAsStringAsync(CancellationToken);
+            if (httpModel.Response.IsSuccessStatusCode)
+            {
+                try
                 {
-                    httpModelType.Result = JsonSerializer.Deserialize<T>(httpModelType.Content, JsonSerializerOptions.Web);
+                    if (ResponseContentType == ContentType.Json)
+                    {
+                        httpModelType.Result =
+                            JsonSerializer.Deserialize<T>(httpModelType.Content, JsonSerializerOptions.Web);
+                    }
+                    else if (ResponseContentType == ContentType.Xml)
+                    {
+                        var serializer = new XmlSerializer(typeof(T));
+                        using var stringReader = new StringReader(httpModelType.Content);
+                        httpModelType.Result = (T)serializer.Deserialize(stringReader);
+                    }
                 }
-                else if (ResponseContentType == ContentType.Xml)
+                catch (Exception ex)
                 {
-                    var serializer = new XmlSerializer(typeof(T));
-                    using var stringReader = new StringReader(httpModelType.Content);
-                    httpModelType.Result = (T)serializer.Deserialize(stringReader);
+                    OnException?.Invoke(
+                        new Exception(
+                            $"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}",
+                            ex), httpModel);
                 }
             }
-            catch (Exception ex)
+            else
             {
-                OnException?.Invoke(
-                    new Exception($"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}", ex), httpModel);
+                OnException?.Invoke(new Exception($"[{httpModel.Response.StatusCode}]"), httpModel);
             }
-        }
-        else
-        {
-            OnException?.Invoke(new Exception($"[{httpModel.Response.StatusCode}]"), httpModel);
-        }
 
-        return httpModelType;
+            return httpModelType;
+        }
+        finally
+        {
+            HttpClient?.Dispose();
+        }
     }
 
     public Task<HttpModel> SendAsync(HttpHelperRequest helperRequest, CancellationToken cancellationToken = default)
     {
         var request = CreateRequest(helperRequest);
-        return SendAsync(request);
+        return SendAsync(request, cancellationToken);
     }
 
-    public Task<HttpModel<T>> SendAsync<T>(HttpHelperRequest helperRequest, CancellationToken cancellationToken = default)
+    public Task<HttpModel<T>> SendAsync<T>(HttpHelperRequest helperRequest,
+        CancellationToken cancellationToken = default)
     {
         var request = CreateRequest(helperRequest);
         return SendAsync<T>(request, cancellationToken);
     }
 
-    public async Task<HttpModel<T>> SendAsyncWithCache<T>(HttpHelperRequest helperRequest, string key, TimeSpan timeout, CancellationToken cancellationToken = default)
+    public async Task<HttpModel<T>> SendAsyncWithCache<T>(HttpHelperRequest helperRequest, string key, TimeSpan timeout,
+        CancellationToken cancellationToken = default)
     {
         if (!App.MemoryCache.TryGetValue(key, out HttpModel<T> value))
         {
@@ -256,19 +272,24 @@ public class HttpHelper : IDisposable
         return value;
     }
 
-    public Task<HttpModel<T>> GetAsync<T>(string url, object parameter = null, CancellationToken cancellationToken = default) =>
+    public Task<HttpModel<T>> GetAsync<T>(string url, object parameter = null,
+        CancellationToken cancellationToken = default) =>
         SendAsync<T>(new HttpHelperRequest(HttpMethod.Get, url) { Parameter = parameter }, cancellationToken);
 
-    public Task<HttpModel<T>> PostAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
+    public Task<HttpModel<T>>
+        PostAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
         SendAsync<T>(new HttpHelperRequest(HttpMethod.Post, url) { Parameter = parameter }, cancellationToken);
 
-    public Task<HttpModel<T>> PutAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
+    public Task<HttpModel<T>>
+        PutAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
         SendAsync<T>(new HttpHelperRequest(HttpMethod.Put, url) { Parameter = parameter }, cancellationToken);
 
-    public Task<HttpModel<T>> PatchAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
+    public Task<HttpModel<T>>
+        PatchAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
         SendAsync<T>(new HttpHelperRequest(HttpMethod.Patch, url) { Parameter = parameter }, cancellationToken);
 
-    public Task<HttpModel<T>> DeleteAsync<T>(string url, object parameter, CancellationToken cancellationToken = default) =>
+    public Task<HttpModel<T>> DeleteAsync<T>(string url, object parameter,
+        CancellationToken cancellationToken = default) =>
         SendAsync<T>(new HttpHelperRequest(HttpMethod.Delete, url) { Parameter = parameter }, cancellationToken);
 
     public Task<HttpModel<T>> OptionsAsync<T>(string url, CancellationToken cancellationToken = default) =>
