@@ -10,6 +10,7 @@
     </PropertyGroup>
     
     <ItemGroup>
+        <Compile Remove="Tests/**/*.cs" />
         <None Include="README.md" Pack="true" PackagePath="\" />
         <None Update="Assets\accesses-framework.json">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

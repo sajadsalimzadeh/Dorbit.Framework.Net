@@ -175,7 +175,9 @@ public class HttpHelper : IDisposable
             request.Headers.Add(item.Key, item.Value);
         }
 
-        var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken, CancellationToken, App.StoppingToken);
+        var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linkedCancellation.Token);
         return new HttpModel()
         {
             Request = request,
@@ -186,9 +188,12 @@ public class HttpHelper : IDisposable
     public async Task<HttpModel<T>> SendAsync<T>(HttpRequestMessage request,
         CancellationToken cancellationToken = default)
     {
+        HttpModel httpModel = null;
         try
         {
-            var httpModel = await SendAsync(request, cancellationToken);
+            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken, CancellationToken, App.StoppingToken);
+            httpModel = await SendAsync(request, linkedCancellation.Token);
             if (httpModel.Response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 OnUnAuthorizedHandler?.Invoke();
@@ -205,7 +210,7 @@ public class HttpHelper : IDisposable
                 Response = httpModel.Response,
             };
 
-            httpModelType.Content = await httpModel.Response.Content.ReadAsStringAsync(CancellationToken);
+            httpModelType.Content = await httpModel.Response.Content.ReadAsStringAsync(linkedCancellation.Token);
             if (httpModel.Response.IsSuccessStatusCode)
             {
                 try
@@ -236,6 +241,11 @@ public class HttpHelper : IDisposable
             }
 
             return httpModelType;
+        }
+        catch
+        {
+            httpModel?.Response.Dispose();
+            throw;
         }
         finally
         {

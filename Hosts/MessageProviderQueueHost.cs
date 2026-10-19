@@ -14,12 +14,16 @@ public class MessageProviderQueueHost(IServiceProvider serviceProvider) : BaseHo
     protected override async Task InvokeAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken)
     {
         var messageManager = serviceProvider.GetService<MessageManager>();
-        while (true)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
                 var result = await messageManager.SendFromQueue(cancellationToken);
                 if(!result.Success) break;
+            }
+            catch (Exception) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
             }
             catch(Exception ex)
             {

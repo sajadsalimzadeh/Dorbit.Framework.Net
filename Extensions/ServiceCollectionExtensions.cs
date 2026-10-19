@@ -23,8 +23,6 @@ public static class ServiceCollectionExtensions
 
     public static void RegisterServicesByAssembly(this IServiceCollection services, Assembly entryAssembly, string[] prefixes)
     {
-        using var serviceProvider = services.BuildServiceProvider();
-        using var scope = serviceProvider.CreateScope();
         var allAssemblies = AppDomain.CurrentDomain.GetAssemblies(prefixes);
         var descriptors = new List<Descriptor>();
         foreach (var assembly in allAssemblies)

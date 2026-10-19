@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Services.Abstractions;
-using Dorbit.Framework.Utils;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dorbit.Framework.Hosts;
@@ -13,36 +12,24 @@ public abstract class BaseHostInterval(IServiceProvider serviceProvider) : BaseH
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (IsConcurrent)
+        while (!stoppingToken.IsCancellationRequested)
         {
-            new Thread(() => { Start().Wait(stoppingToken); }).Start();
-        }
-        else
-        {
-            await Start();
-        }
-
-        return;
-
-        async Task Start()
-        {
-            while (true)
+            try
             {
-                try
-                {
-                    await TaskUtil.Delay(Interval, stoppingToken);
-                    using var scope = ServiceProvider.CreateScope();
-                    var cancellationTokenService = scope.ServiceProvider.GetRequiredService<ICancellationTokenService>();
-                    cancellationTokenService.Token = stoppingToken;
-                    await InvokeAsync(scope.ServiceProvider, stoppingToken);
-                }
-                catch (TaskCanceledException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    Logger?.Error(ex, ex.Message);
-                }
+                await Task.Delay(Interval, stoppingToken);
+                stoppingToken.ThrowIfCancellationRequested();
+                await using var scope = ServiceProvider.CreateAsyncScope();
+                var cancellationTokenService = scope.ServiceProvider.GetRequiredService<ICancellationTokenService>();
+                cancellationTokenService.Token = stoppingToken;
+                await InvokeAsync(scope.ServiceProvider, stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                Logger?.Error(ex, ex.Message);
             }
         }
     }

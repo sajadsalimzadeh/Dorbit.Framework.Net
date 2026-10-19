@@ -362,12 +362,13 @@ public static class FrameworkInstaller
 
     public static WebApplication BuildDorbit(this WebApplicationBuilder builder)
     {
-        App.ServiceProvider = builder.Services.BuildServiceProvider();
+        var app = builder.Build();
+        App.ServiceProvider = app.Services;
         App.Current = App.ServiceProvider.GetRequiredService<IApplication>();
         App.MemoryCache = App.ServiceProvider.GetRequiredService<IMemoryCache>();
         App.Mapper = App.ServiceProvider.GetRequiredService<IMapper>();
         App.Security ??= new AppSecurityInternal(App.Current.EncryptionKey);
-        return builder.Build();
+        return app;
     }
 
     public static async Task RunWithStartupsAsync(this WebApplication app)

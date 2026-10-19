@@ -48,7 +48,9 @@ public class Job
 
 
     private JobStatus _status = JobStatus.Draft;
-    private Thread _thread;
+    private readonly Lock _startLock = new();
+    private Task _startTask;
+    private CancellationToken _executionToken;
     private double _progress;
     private readonly JobService _jobService;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
@@ -64,7 +66,7 @@ public class Job
     public bool Pausable { get; set; }
     public string DownloadFilename { get; set; }
     public Func<Stream> Download { get; set; }
-    public CancellationToken CancellationToken => _cancellationTokenSource.Token;
+    public CancellationToken CancellationToken => _executionToken;
 
     public DateTime? StartTime { get; private set; }
     public DateTime? CancelTime { get; private set; }
@@ -101,29 +103,37 @@ public class Job
         Action = action;   
         Logger = new JobLogger(this);
         _jobService = jobService;
+        _executionToken = _cancellationTokenSource.Token;
     }
 
     public void Start()
     {
-        if (_thread is not null) return;
-
-        _thread = new Thread(ThreadStart);
-        _thread.Start();
-        StartTime = DateTime.UtcNow;
-        return;
-
-        async void ThreadStart()
+        lock (_startLock)
         {
-            await StartAndWaitAsync();
+            _startTask ??= StartAndWaitAsync();
         }
     }
 
-    public async Task StartAndWaitAsync()
+    public Task StartAndWaitAsync()
     {
+        return _jobService?.RunJobAsync(this, RunAsync) ?? Task.Run(RunAsync);
+    }
+
+    private async Task RunAsync()
+    {
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(
+            _cancellationTokenSource.Token, _jobService?.StoppingToken ?? App.StoppingToken);
+        _executionToken = linked.Token;
         try
         {
+            CancellationToken.ThrowIfCancellationRequested();
+            StartTime = DateTime.UtcNow;
             Status = JobStatus.Running;
             await Action.Invoke(this);
+        }
+        catch (OperationCanceledException) when (CancellationToken.IsCancellationRequested)
+        {
+            CancelTime ??= DateTime.UtcNow;
         }
         catch (Exception ex)
         {
@@ -134,7 +144,15 @@ public class Job
         {
             EndTime = DateTime.UtcNow;
             Status = (Logs.Any(x => x.Level == LogLevel.Error || x.Level == LogLevel.Critical) ? JobStatus.FinishError : JobStatus.Finish);
-            await UpdateStatusAsync();
+            try
+            {
+                await UpdateStatusAsync();
+            }
+            catch (OperationCanceledException) when (linked.IsCancellationRequested) { }
+            finally
+            {
+                _executionToken = _cancellationTokenSource.Token;
+            }
         }
     }
 

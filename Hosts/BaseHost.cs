@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Services.Abstractions;
@@ -10,39 +10,28 @@ namespace Dorbit.Framework.Hosts;
 
 public abstract class BaseHost(IServiceProvider serviceProvider, bool isConcurrent = false) : BackgroundService
 {
+    // Retained for source compatibility. BackgroundService runs ExecuteAsync on the thread pool in .NET 10.
     protected bool IsConcurrent { get; } = isConcurrent;
     protected readonly ILogger Logger = serviceProvider.GetService<ILogger>();
     protected readonly IServiceProvider ServiceProvider = serviceProvider;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (IsConcurrent)
+        try
         {
-            new Thread(() =>
-            {
-                Start().Wait(stoppingToken);
-            }).Start();
+            stoppingToken.ThrowIfCancellationRequested();
+            await using var scope = ServiceProvider.CreateAsyncScope();
+            var cancellationTokenService = scope.ServiceProvider.GetRequiredService<ICancellationTokenService>();
+            cancellationTokenService.Token = stoppingToken;
+            await InvokeAsync(scope.ServiceProvider, stoppingToken);
         }
-        else
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
-            await Start();
+            // Normal host shutdown.
         }
-
-        return;
-
-        async Task Start()
+        catch (Exception ex)
         {
-            try
-            {
-                using var scope = ServiceProvider.CreateScope();
-                var cancellationTokenService = scope.ServiceProvider.GetRequiredService<ICancellationTokenService>();
-                cancellationTokenService.Token = stoppingToken;
-                await InvokeAsync(scope.ServiceProvider, stoppingToken);
-            }
-            catch (Exception ex)
-            {
-                Logger?.Error(ex, ex.Message);
-            }
+            Logger?.Error(ex, ex.Message);
         }
     }
 
