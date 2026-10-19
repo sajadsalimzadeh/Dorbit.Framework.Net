@@ -75,6 +75,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
     private async Task<CommandResult> ProcessAsync<T, TConfig>(List<IMessageProvider<T, TConfig>> providers, T request, List<TConfig> configurations, CancellationToken cancellationToken = default)
         where T : MessageRequest where TConfig : ConfigMessageProvider
     {
+        configurations ??= [];
         if (!string.IsNullOrEmpty(request.ProviderName))
         {
             configurations = configurations.Where(x => x.ProviderName == request.ProviderName).ToList();
@@ -82,6 +83,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
 
         foreach (var configuration in configurations)
         {
+            if (configuration is null) continue;
             try
             {
                 if(configuration.FilterPrefixes.IsNotNullOrEmpty() && configuration.FilterPrefixes.All(x => !request.Receiver.StartsWith(x)))

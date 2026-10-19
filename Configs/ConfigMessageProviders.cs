@@ -5,9 +5,9 @@ namespace Dorbit.Framework.Configs;
 
 public class ConfigMessageProviders
 {
-    public List<ConfigMessageSmsProvider> Sms { get; set; }
-    public List<ConfigMessageEmailProvider> Email { get; set; }
-    public List<ConfigMessageNotificationProvider> Notification { get; set; }
+    public List<ConfigMessageSmsProvider> Sms { get; set; } = [];
+    public List<ConfigMessageEmailProvider> Email { get; set; } = [];
+    public List<ConfigMessageNotificationProvider> Notification { get; set; } = [];
 }
 
 public class ConfigMessageProvider
