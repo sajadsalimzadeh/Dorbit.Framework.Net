@@ -88,7 +88,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
             {
                 if(configuration.FilterPrefixes.IsNotNullOrEmpty() && configuration.FilterPrefixes.All(x => !request.Receiver.StartsWith(x)))
                     continue;
-                
+
                 if (!string.IsNullOrEmpty(request.TemplateType))
                 {
                     if (configuration.Templates is not null && configuration.Templates.TryGetValue(request.TemplateType, out var templateId))
@@ -106,7 +106,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
 
                 var provider = GetProvider(providers, configuration);
                 if (provider is null) continue;
-                
+
                 var op = await provider.SendAsync(request, cancellationToken);
                 if (op.Success) return op;
             }
@@ -147,7 +147,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
                             TemplateId = configuration.Monitoring.TemplateId,
                             Args = [credit.ToString()],
                             Receiver = number
-                        });
+                        }, cancellationToken);
                     }
 
                     RemainCreditNotifies.Add(key);
