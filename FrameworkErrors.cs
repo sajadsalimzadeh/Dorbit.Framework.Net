@@ -24,5 +24,6 @@ public enum FrameworkErrors
     FilePathIsInvalid,
     FileTypeIsNotAllowed,
     InvalidIpAddress,
-    JiraRequestIsInvalid
+    JiraRequestIsInvalid,
+    ServiceResultNullOrEmpty
 }
