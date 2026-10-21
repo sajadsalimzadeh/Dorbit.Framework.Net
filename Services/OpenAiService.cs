@@ -11,15 +11,13 @@ using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Utils.Http;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OpenAI;
-using OpenAI.Chat;
 
 namespace Dorbit.Framework.Services;
 
 [ServiceSingletone]
 public class OpenAiService(IOptions<ConfigOpenAi> configOpenAiOptions)
 {
-    private string _apiKey = configOpenAiOptions.Value.ApiKey.GetDecryptedValue();
+    private string _apiKey = configOpenAiOptions.Value?.ApiKey?.GetDecryptedValue();
 
     public void SetApiKey(string value)
     {
@@ -28,6 +26,9 @@ public class OpenAiService(IOptions<ConfigOpenAi> configOpenAiOptions)
 
     public async Task<string> ChatAsync(string message, string system = null)
     {
+        if (string.IsNullOrWhiteSpace(_apiKey))
+            throw new OperationException(FrameworkErrors.ServiceResultNullOrEmpty);
+
         var messages = new List<OpenAiChatCompletionRequestMessage>();
         messages.Add(new OpenAiChatCompletionRequestMessage("system", "Don't tell any extra things and just tell the answer shortest possible."));
         if (system.IsNotNullOrEmpty())
@@ -38,8 +39,11 @@ public class OpenAiService(IOptions<ConfigOpenAi> configOpenAiOptions)
         messages.Add(new OpenAiChatCompletionRequestMessage("user", message));
 
         using var httpHelper = new HttpHelper("https://api.openai.com/v1");
-        httpHelper.HttpClientHandler.Proxy = new WebProxy(configOpenAiOptions.Value.Proxy);
-        httpHelper.HttpClientHandler.UseProxy = true;
+        if (!string.IsNullOrWhiteSpace(configOpenAiOptions.Value?.Proxy))
+        {
+            httpHelper.HttpClientHandler.Proxy = new WebProxy(configOpenAiOptions.Value.Proxy);
+            httpHelper.HttpClientHandler.UseProxy = true;
+        }
         httpHelper.AuthorizationToken = _apiKey;
         var responseModel = await httpHelper.PostAsync<OpenAiChatCompletionResponse>("chat/completions", new
         {
