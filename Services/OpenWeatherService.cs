@@ -12,7 +12,7 @@ namespace Dorbit.Framework.Services;
 [ServiceRegister]
 public class OpenWeatherService(IOptions<ConfigOpenWeather> configOpenWeatherOptions)
 {
-    private string _apiKey = configOpenWeatherOptions.Value.ApiKey.GetDecryptedValue();
+    private string _apiKey = configOpenWeatherOptions.Value?.ApiKey?.GetDecryptedValue();
 
     private HttpHelper GetHttpHelper()
     {

@@ -1,9 +1,6 @@
-using Dorbit.Framework.Contracts.Cryptograpy;
-
 namespace Dorbit.Framework.Configs;
 
-public class ConfigOpenAi
+public class ConfigOpenAi : ConfigClientApi
 {
-    public ProtectedProperty ApiKey { get; set; }
     public string Model { get; set; } = "gpt-5-nano";
 }

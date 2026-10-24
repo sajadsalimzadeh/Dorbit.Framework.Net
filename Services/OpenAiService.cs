@@ -1,58 +1,63 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Configs;
+using Dorbit.Framework.Contracts.OpenAi;
+using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
+using Dorbit.Framework.Utils.Http;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using OpenAI;
-using OpenAI.Chat;
 
 namespace Dorbit.Framework.Services;
 
 [ServiceSingletone]
 public class OpenAiService(IOptions<ConfigOpenAi> configOpenAiOptions)
 {
-    private string _apiKey;
+    private string _apiKey = configOpenAiOptions.Value?.ApiKey?.GetDecryptedValue();
 
     public void SetApiKey(string value)
     {
         _apiKey = value;
     }
 
-    private ChatClient GetChatClient()
+    public async Task<string> ChatAsync(string message, string system = null)
     {
-        var client = new OpenAIClient(_apiKey ?? configOpenAiOptions.Value.ApiKey.GetDecryptedValue());
-        var chatClient = client.GetChatClient(configOpenAiOptions.Value.Model);
-        return chatClient;
-    }
+        if (string.IsNullOrWhiteSpace(_apiKey))
+            throw new OperationException(FrameworkErrors.ServiceResultNullOrEmpty);
 
-    public async Task<string> ChatAsync(string message, string system = null, params ChatMessageContentPart[]  extraContentParts)
-    {
-        var client = GetChatClient();
-        var messages = new List<ChatMessage>();
-        messages.Add(ChatMessage.CreateSystemMessage("Don't tell any extra things and just tell the answer shortest possible."));
+        var messages = new List<OpenAiChatCompletionRequestMessage>();
+        messages.Add(new OpenAiChatCompletionRequestMessage("system", "Don't tell any extra things and just tell the answer shortest possible."));
         if (system.IsNotNullOrEmpty())
         {
-            messages.Add(ChatMessage.CreateSystemMessage(system));
+            messages.Add(new OpenAiChatCompletionRequestMessage("system", system));
         }
 
-        var contentParts = new List<ChatMessageContentPart>();
-        contentParts.Add(ChatMessageContentPart.CreateTextPart(message));
-        contentParts.AddRange(extraContentParts);
-        
-        messages.Add(ChatMessage.CreateUserMessage(contentParts));
-        var chatCompletion = await client.CompleteChatAsync(messages.ToArray());
-        var firstContent = chatCompletion.Value.Content.FirstOrDefault();
-        if(firstContent is null) return null;
-        return firstContent.Text;
+        messages.Add(new OpenAiChatCompletionRequestMessage("user", message));
+
+        using var httpHelper = new HttpHelper("https://api.openai.com/v1");
+        if (!string.IsNullOrWhiteSpace(configOpenAiOptions.Value?.Proxy))
+        {
+            httpHelper.HttpClientHandler.Proxy = new WebProxy(configOpenAiOptions.Value.Proxy);
+            httpHelper.HttpClientHandler.UseProxy = true;
+        }
+        httpHelper.AuthorizationToken = _apiKey;
+        var responseModel = await httpHelper.PostAsync<OpenAiChatCompletionResponse>("chat/completions", new
+        {
+            Model = configOpenAiOptions.Value.Model,
+            Messages = messages
+        });
+        if (!responseModel.IsSuccess || responseModel.Result == null || responseModel.Result.Choices.IsNullOrEmpty())
+            throw new OperationException(FrameworkErrors.ServiceResultNullOrEmpty);
+        return responseModel.Result.Choices.First().Message.Content;
     }
-    
-    public async Task<T> ChatAsync<T>(string message, string system = null, params ChatMessageContentPart[]  extraContentParts)
+
+    public async Task<T> ChatAsync<T>(string message, string system = null)
     {
-        var result = await ChatAsync(message, system, extraContentParts);
+        var result = await ChatAsync(message, system);
         try
         {
             var startIndex = result.IndexOf("{", StringComparison.Ordinal);

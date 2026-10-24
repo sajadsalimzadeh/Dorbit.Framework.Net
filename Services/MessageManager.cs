@@ -75,6 +75,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
     private async Task<CommandResult> ProcessAsync<T, TConfig>(List<IMessageProvider<T, TConfig>> providers, T request, List<TConfig> configurations, CancellationToken cancellationToken = default)
         where T : MessageRequest where TConfig : ConfigMessageProvider
     {
+        configurations ??= [];
         if (!string.IsNullOrEmpty(request.ProviderName))
         {
             configurations = configurations.Where(x => x.ProviderName == request.ProviderName).ToList();
@@ -82,11 +83,12 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
 
         foreach (var configuration in configurations)
         {
+            if (configuration is null) continue;
             try
             {
                 if(configuration.FilterPrefixes.IsNotNullOrEmpty() && configuration.FilterPrefixes.All(x => !request.Receiver.StartsWith(x)))
                     continue;
-                
+
                 if (!string.IsNullOrEmpty(request.TemplateType))
                 {
                     if (configuration.Templates is not null && configuration.Templates.TryGetValue(request.TemplateType, out var templateId))
@@ -104,7 +106,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
 
                 var provider = GetProvider(providers, configuration);
                 if (provider is null) continue;
-                
+
                 var op = await provider.SendAsync(request, cancellationToken);
                 if (op.Success) return op;
             }
@@ -145,7 +147,7 @@ public class MessageManager(IServiceProvider serviceProvider, ILogger logger, IO
                             TemplateId = configuration.Monitoring.TemplateId,
                             Args = [credit.ToString()],
                             Receiver = number
-                        });
+                        }, cancellationToken);
                     }
 
                     RemainCreditNotifies.Add(key);
