@@ -2,26 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Dorbit.Framework.Configs;
 using Dorbit.Framework.Contracts;
 using Dorbit.Framework.Contracts.Attachments;
 using Dorbit.Framework.Contracts.Files;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Entities;
-using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Filters;
 using Dorbit.Framework.Repositories;
 using Dorbit.Framework.Services;
-using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 
 namespace Dorbit.Framework.Controllers;
 
@@ -75,8 +69,9 @@ public class FilesController(FileService fileService, AttachmentRepository attac
     }
 
     [HttpPost("Bulk"), Auth("File-Bulk"), AntiDos(AntiDosAttribute.DurationType.Minute, 1)]
-    public async Task<CommandResult> UploadAsync([FromForm] IFormFile file)
+    public async Task<CommandResult> UploadBulkAsync()
     {
+        var file = Request.Form.Files[0];
         await using var stream = file.OpenReadStream();
         await using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true);
         foreach (var entry in archive.Entries)
