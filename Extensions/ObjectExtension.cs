@@ -101,6 +101,10 @@ public static class ObjectExtension
             {
                 sb.Append($"<{tagName}/>");
             }
+            else if (value is DateTime dateTime)
+            {
+                sb.Append($"<{tagName}>{dateTime:yyyy-MM-dd HH:mm:ss}</{tagName}>");
+            }
             else if (value is IList enumerable)
             {
                 var xmlArrayAttribute = property.GetCustomAttribute<XmlArrayAttribute>();

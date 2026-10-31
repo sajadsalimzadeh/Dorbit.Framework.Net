@@ -136,16 +136,24 @@ internal static class JsonHelper
 {
     public static T Deserialize<T>(string json, PolymorphismOptions polymorphismOptions = null) where T : class
     {
-        if (string.IsNullOrWhiteSpace(json)) return null;
-        if (polymorphismOptions != null)
+        try
         {
-            foreach (var driveTypeAttribute in polymorphismOptions.DriveTypes)
+            if (string.IsNullOrWhiteSpace(json)) return null;
+            if (polymorphismOptions != null)
             {
-                if(!json.Contains($"\"{polymorphismOptions.PropertyName}\": \"{driveTypeAttribute.TypeDiscriminator}\"")) continue;
-                return JsonSerializer.Deserialize(json, driveTypeAttribute.DerivedType) as T;
+                foreach (var driveTypeAttribute in polymorphismOptions.DriveTypes)
+                {
+                    if (!json.Contains($"\"{polymorphismOptions.PropertyName}\": \"{driveTypeAttribute.TypeDiscriminator}\"")) continue;
+                    return JsonSerializer.Deserialize(json, driveTypeAttribute.DerivedType) as T;
+                }
             }
+
+            return JsonSerializer.Deserialize<T>(json);
         }
-        return  JsonSerializer.Deserialize<T>(json);
+        catch
+        {
+            return null;
+        }
     }
 
     public static string Serialize<T>(T obj) where T : class
