@@ -164,93 +164,84 @@ public class HttpHelper : IDisposable
 
     public async Task<HttpModel> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
-        if (AuthorizationToken is not null)
-        {
-            request.Headers.Add("Authorization",
-                (AuthorizationToken.StartsWith("Bearer") ? "" : "Bearer ") + AuthorizationToken);
-        }
-
-        foreach (var item in _headers)
-        {
-            request.Headers.Add(item.Key, item.Value);
-        }
-
-        using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-            cancellationToken, CancellationToken, App.StoppingToken);
-        var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linkedCancellation.Token);
-        return new HttpModel()
-        {
-            Request = request,
-            Response = response
-        };
-    }
-
-    public async Task<HttpModel<T>> SendAsync<T>(HttpRequestMessage request,
-        CancellationToken cancellationToken = default)
-    {
-        HttpModel httpModel = null;
+        HttpResponseMessage response = null;
         try
         {
-            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-                cancellationToken, CancellationToken, App.StoppingToken);
-            httpModel = await SendAsync(request, linkedCancellation.Token);
-            if (httpModel.Response.StatusCode == HttpStatusCode.Unauthorized)
+            if (AuthorizationToken is not null)
             {
-                OnUnAuthorizedHandler?.Invoke();
+                request.Headers.Add("Authorization",
+                    (AuthorizationToken.StartsWith("Bearer") ? "" : "Bearer ") + AuthorizationToken);
             }
 
-            if (httpModel.Response.StatusCode == HttpStatusCode.Forbidden)
+            foreach (var item in _headers)
             {
-                OnForbiddenHandler?.Invoke();
+                request.Headers.Add(item.Key, item.Value);
             }
 
-            var httpModelType = new HttpModel<T>()
+            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, CancellationToken, App.StoppingToken);
+            response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linkedCancellation.Token);
+            switch (response.StatusCode)
             {
-                Request = httpModel.Request,
-                Response = httpModel.Response,
+                case HttpStatusCode.Unauthorized:
+                    OnUnAuthorizedHandler?.Invoke();
+                    break;
+                case HttpStatusCode.Forbidden:
+                    OnForbiddenHandler?.Invoke();
+                    break;
+            }
+
+            var content = await response.Content.ReadAsStringAsync(linkedCancellation.Token);
+            return new HttpModel()
+            {
+                Request = request,
+                Response = response,
+                Content = content,
             };
-
-            httpModelType.Content = await httpModel.Response.Content.ReadAsStringAsync(linkedCancellation.Token);
-            if (httpModel.Response.IsSuccessStatusCode)
-            {
-                try
-                {
-                    if (ResponseContentType == ContentType.Json)
-                    {
-                        httpModelType.Result =
-                            JsonSerializer.Deserialize<T>(httpModelType.Content, JsonSerializerOptions.Web);
-                    }
-                    else if (ResponseContentType == ContentType.Xml)
-                    {
-                        var serializer = new XmlSerializer(typeof(T));
-                        using var stringReader = new StringReader(httpModelType.Content);
-                        httpModelType.Result = (T)serializer.Deserialize(stringReader);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    OnException?.Invoke(
-                        new Exception(
-                            $"{httpModel.Request.Method} {httpModel.Request.RequestUri} -> {httpModel.Response.StatusCode}",
-                            ex), httpModel);
-                }
-            }
-            else
-            {
-                OnException?.Invoke(new Exception($"[{httpModel.Response.StatusCode}]"), httpModel);
-            }
-
-            return httpModelType;
-        }
-        catch
-        {
-            httpModel?.Response.Dispose();
-            throw;
         }
         finally
         {
+            response?.Dispose();
             HttpClient?.Dispose();
         }
+    }
+
+    public async Task<HttpModel<T>> SendAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken = default)
+    {
+        var httpModel = await SendAsync(request, cancellationToken);
+        var httpModelType = new HttpModel<T>
+        {
+            Request = httpModel.Request,
+            Response = httpModel.Response,
+            Content = httpModel.Content
+        };
+
+        if (httpModelType.Response.IsSuccessStatusCode)
+        {
+            try
+            {
+                if (ResponseContentType == ContentType.Json)
+                {
+                    httpModelType.Result =
+                        JsonSerializer.Deserialize<T>(httpModelType.Content, JsonSerializerOptions.Web);
+                }
+                else if (ResponseContentType == ContentType.Xml)
+                {
+                    var serializer = new XmlSerializer(typeof(T));
+                    using var stringReader = new StringReader(httpModelType.Content);
+                    httpModelType.Result = (T)serializer.Deserialize(stringReader);
+                }
+            }
+            catch (Exception ex)
+            {
+                OnException?.Invoke(new Exception($"{httpModelType.Request.Method} {httpModelType.Request.RequestUri} -> {httpModelType.Response.StatusCode}", ex), httpModelType);
+            }
+        }
+        else
+        {
+            OnException?.Invoke(new Exception($"[{httpModelType.Response.StatusCode}]"), httpModelType);
+        }
+
+        return httpModelType;
     }
 
     public Task<HttpModel> SendAsync(HttpHelperRequest helperRequest, CancellationToken cancellationToken = default)
