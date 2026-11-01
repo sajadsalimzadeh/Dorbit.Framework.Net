@@ -40,7 +40,7 @@ public abstract class EfDbContext : DbContext, IDbContext
     private ILogger Logger => field ??= ServiceProvider.GetService<ILogger>();
 
     private readonly CancellationToken _cancellationToken;
-    
+
     public IServiceProvider ServiceProvider { get; }
 
     private DatabaseProviderType? _providerType;
@@ -75,7 +75,7 @@ public abstract class EfDbContext : DbContext, IDbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-        
+
         optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
     }
 
@@ -299,10 +299,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     private async Task SaveIfNotInTransactionAsync(CancellationToken? cancellationToken = null)
     {
-        if (_efTransactionContext.Transactions.Count == 0)
-        {
-            await SaveChangesAsync(cancellationToken ?? _cancellationToken);
-        }
+        await SaveChangesAsync(cancellationToken ?? _cancellationToken);
     }
 
     private void Log<TKey>(IEntity<TKey> newEntity, LogAction action, IEntity<TKey> oldEntity = null)
@@ -322,7 +319,11 @@ public abstract class EfDbContext : DbContext, IDbContext
         try
         {
             var result = await base.SaveChangesAsync(cancellationToken);
-            ChangeTracker.Clear();
+            if (_efTransactionContext.Transactions.Count == 0)
+            {
+                ChangeTracker.Clear();
+            }
+
             return result;
         }
         catch (Exception ex)
@@ -458,7 +459,7 @@ public abstract class EfDbContext : DbContext, IDbContext
 
     public Task MigrateAsync()
     {
-        if(ProviderType == DatabaseProviderType.InMemory) return Task.CompletedTask;
+        if (ProviderType == DatabaseProviderType.InMemory) return Task.CompletedTask;
         return Database.MigrateAsync();
     }
 }
