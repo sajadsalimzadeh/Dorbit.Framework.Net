@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Entities;
@@ -52,7 +53,7 @@ public class SettingsController(SettingService settingService) : BaseController
     }
 
     [HttpPost, Auth("Setting")]
-    public async Task<CommandResult> SaveAsync([FromBody] Dictionary<string, dynamic> dict)
+    public async Task<CommandResult> SaveAsync([FromBody] Dictionary<string, JsonElement> dict)
     {
         await settingService.SaveAllAsync(dict);
         return Succeed();

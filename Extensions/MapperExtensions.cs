@@ -48,15 +48,21 @@ public static class MapperExtensions
 
     public static T PatchObjectWithJson<T, TPatch>(this T model, JsonElement jsonElement, MapperPatchOptions options = null)
     {
+
+        return (T)model.PatchObjectWithJson(jsonElement, typeof(T), typeof(TPatch), options);
+    }
+
+    public static object PatchObjectWithJson(this object model, JsonElement jsonElement, Type destinationType, Type patchType, MapperPatchOptions options = null)
+    {
         options ??= new MapperPatchOptions();
         var serializerOptions = new JsonSerializerOptions
         {
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
             PropertyNameCaseInsensitive = true
         };
-        var patchObject = JsonSerializer.Deserialize<TPatch>(jsonElement.GetRawText(), serializerOptions);
-        var resultProperties = typeof(T).GetProperties();
-        var patchProperties = typeof(TPatch).GetProperties();
+        var patchObject = JsonSerializer.Deserialize(jsonElement.GetRawText(), patchType, serializerOptions);
+        var resultProperties = destinationType.GetProperties();
+        var patchProperties = patchType.GetProperties();
         foreach (var jsonProperty in jsonElement.EnumerateObject())
         {
             var resultProperty = resultProperties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.CurrentCultureIgnoreCase));
