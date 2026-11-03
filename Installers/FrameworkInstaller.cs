@@ -17,6 +17,7 @@ using Dorbit.Framework.Converters;
 using Dorbit.Framework.Database;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Middlewares;
+using Dorbit.Framework.Services;
 using Dorbit.Framework.Services.Abstractions;
 using Dorbit.Framework.Services.AppSecurities;
 using Microsoft.AspNetCore.Builder;
@@ -385,6 +386,13 @@ public static class FrameworkInstaller
     public static async Task RunDorbitAsync(this WebApplication app, string[] args)
     {
         App.InMemory = args.Contains("inmemory");
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var serviceProvider = scope.ServiceProvider;
+            var settingService = serviceProvider.GetService<SettingService>();
+            await settingService.InitAsync();
+        }
 
         var isMigrate = false;
         if (args.Contains("migrate"))

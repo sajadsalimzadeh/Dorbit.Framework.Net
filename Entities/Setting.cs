@@ -10,7 +10,7 @@ public class Setting : Entity
 {
     [MaxLength(32), Required]
     public string Key { get; set; }
-    [MaxLength(10 * 1024)]
+    [MaxLength(100 * 1024)]
     public string Value { get; set; }
 
     [MaxLength(64)]
