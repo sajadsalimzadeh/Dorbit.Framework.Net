@@ -112,18 +112,15 @@ public static class ObjectExtension
 
                 var arrayTagName = xmlArrayAttribute?.ElementName ?? property.Name;
                 var arrayItemTagName = xmlArrayItemAttribute?.ElementName ?? "item";
-                if (enumerable.Count > 0)
+                sb.Append($"<{arrayTagName}>");
+                foreach (var item in enumerable)
                 {
-                    sb.Append($"<{arrayTagName}>");
-                    foreach (var item in enumerable)
-                    {
-                        sb.Append($"<{arrayItemTagName}>");
-                        sb.Append(item.ToXml());
-                        sb.Append($"</{arrayItemTagName}>");
-                    }
-
-                    sb.Append($"</{arrayTagName}>");
+                    sb.Append($"<{arrayItemTagName}>");
+                    sb.Append(item.ToXml());
+                    sb.Append($"</{arrayItemTagName}>");
                 }
+
+                sb.Append($"</{arrayTagName}>");
             }
             else
             {
