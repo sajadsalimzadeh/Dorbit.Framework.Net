@@ -386,6 +386,7 @@ public static class FrameworkInstaller
     public static async Task RunDorbitAsync(this WebApplication app, string[] args)
     {
         App.InMemory = args.Contains("inmemory");
+        await app.MigrateAll();
 
         using (var scope = app.Services.CreateScope())
         {
@@ -394,20 +395,12 @@ public static class FrameworkInstaller
             await settingService.InitAsync();
         }
 
-        var isMigrate = false;
-        if (args.Contains("migrate"))
-        {
-            isMigrate = true;
-            await app.MigrateAll();
-        }
-
         if (args.Contains("cli"))
         {
             await app.RunCliAsync();
         }
         else
         {
-            if (!isMigrate) await app.MigrateAll();
             await app.RunWithStartupsAsync();
         }
     }
