@@ -10,6 +10,7 @@ using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Abstractions;
 using Dorbit.Framework.Contracts.Identities;
 using Dorbit.Framework.Entities;
+using Dorbit.Framework.Entities.Abstractions;
 using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Repositories;
@@ -86,6 +87,7 @@ public class SettingService(SettingRepository settingRepository)
 
     public async Task SetAsync<T>(T value) where T : class, ISettingDto
     {
+        Validate(value);
         var key = value.GetKey();
         var setting = await settingRepository.Set().FirstOrDefaultAsync(x => x.Key == key);
         if (setting is null)
@@ -111,12 +113,12 @@ public class SettingService(SettingRepository settingRepository)
         foreach (var keyValue in dict)
         {
             var settingType = SettingTypes.GetValueOrDefault(keyValue.Key);
-            if (settingType is null) throw new OperationException(FrameworkErrors.SettingKeyTypeNotFound);
-            var patch = AuthorizeSetPropertiesAsync(identity, keyValue.Key, keyValue.Value);
-
-            var settingDto = Activator.CreateInstance(settingType) as ISettingDto;
-            settingDto = settingDto.PatchObjectWithJson(patch, settingType, settingType) as ISettingDto;
-
+            if(settingType is null) return;
+            
+            var settingDto = Activator.CreateInstance(settingType);
+            settingDto = settingDto.PatchObjectWithJson(keyValue.Value, settingType, settingType);
+            Validate(settingDto);
+            
             var setting = settings.FirstOrDefault(x => x.Key == keyValue.Key);
             if (setting is not null)
             {
@@ -135,55 +137,11 @@ public class SettingService(SettingRepository settingRepository)
         await settingRepository.BulkUpdateAsync(updateEntities);
     }
 
-    public JsonElement AuthorizeSetPropertiesAsync(IdentityDto identity, string key, JsonElement json)
+    private static void Validate(object value)
     {
-        var type = SettingTypes.GetValueOrDefault(key);
-        if (type is null) throw new OperationException(FrameworkErrors.SettingKeyTypeNotFound);
-        
-        var typeAuthSettingAttr = type.GetCustomAttribute<AuthSettingAttribute>();
-        var properties = type.GetProperties();
-
-        var jsonObject = JsonNode.Parse(json.GetRawText())!.AsObject();
-
-        foreach (var propertyInfo in properties)
-        {
-            if (json.TryGetPropertyIgnoreCase(propertyInfo.Name, out var jsonProperty))
-            {
-                var authAttr = propertyInfo.SetMethod?.GetCustomAttribute<AuthSettingAttribute>() ?? propertyInfo.GetCustomAttribute<AuthSettingAttribute>() ?? typeAuthSettingAttr;
-                if (authAttr is not null && authAttr.Access.IsNotNullOrEmpty())
-                {
-                    if (!identity.HasAccess(authAttr.Access))
-                        jsonObject.Remove(jsonProperty.Name);
-                }
-            }
-        }
-
-        return JsonSerializer.Deserialize<JsonElement>(jsonObject.ToJsonString());
-    }
-
-    public JsonElement AuthorizeGetPropertiesAsync(IdentityDto identity, string key, JsonElement json)
-    {
-        var type = SettingTypes.GetValueOrDefault(key);
-        if (type is null) throw new OperationException(FrameworkErrors.SettingKeyTypeNotFound);
-        
-        var typeAuthSettingAttr = type.GetCustomAttribute<AuthSettingAttribute>();
-        var properties = type.GetProperties();
-
-        var jsonObject = JsonNode.Parse(json.GetRawText())!.AsObject();
-
-        foreach (var propertyInfo in properties)
-        {
-            if (json.TryGetPropertyIgnoreCase(propertyInfo.Name, out var jsonProperty))
-            {
-                var authAttr = propertyInfo.GetMethod?.GetCustomAttribute<AuthSettingAttribute>() ?? propertyInfo.GetCustomAttribute<AuthSettingAttribute>() ?? typeAuthSettingAttr;
-                if (authAttr is not null && authAttr.Access.IsNotNullOrEmpty())
-                {
-                    if (!identity.HasAccess(authAttr.Access))
-                        jsonObject.Remove(jsonProperty.Name);
-                }
-            }
-        }
-
-        return JsonSerializer.Deserialize<JsonElement>(jsonObject.ToJsonString());
+        if (value is not IValidate validator) return;
+        var error = new ModelValidationException();
+        validator.Validate(error);
+        error.ThrowIfHasError();
     }
 }
