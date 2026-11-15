@@ -37,7 +37,7 @@ public class SettingsController(SettingService settingService) : BaseController
     {
         var jsonElement = settingService.Get(key);
         if (jsonElement is null) throw new OperationException(FrameworkErrors.SettingNotFound);
-        settingService.AuthorizeGetPropertiesAsync(Identity, key, jsonElement.Value);
+        // settingService.AuthorizeGetPropertiesAsync(Identity, key, jsonElement.Value);
         return jsonElement.Value.ToQueryResult();
     }
 

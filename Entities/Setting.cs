@@ -24,17 +24,17 @@ public class Setting : Entity
     {
     }
 
-    public Setting(Enum key, ISettingDto value) : this(key.ToString(), value)
+    public Setting(Enum key, object value) : this(key.ToString(), value)
     {
     }
 
-    public Setting(string key, ISettingDto value)
+    public Setting(string key, object value)
     {
         Key = key;
         SetValue(value);
     }
 
-    public void SetValue(ISettingDto value)
+    public void SetValue(object value)
     {
         var authAttr = value.GetType().GetCustomAttribute<AuthSettingAttribute>();
         Access = authAttr?.Access;
