@@ -2,11 +2,15 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Abstractions;
+using Dorbit.Framework.Contracts.Identities;
 using Dorbit.Framework.Entities;
+using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -47,7 +51,7 @@ public class SettingService(SettingRepository settingRepository)
         return Get(instance.GetKey(), defaultValue ?? instance);
     }
 
-    public T Get<T>(string key, T defaultValue = default)
+    public T Get<T>(string key, T defaultValue) where T : class, ISettingDto
     {
         var setting = Settings.GetValueOrDefault(key);
         if (setting is not null) return setting.GetValue(defaultValue);
@@ -65,6 +69,13 @@ public class SettingService(SettingRepository settingRepository)
         Settings[setting.Key] = setting;
 
         return setting.GetValue(defaultValue);
+    }
+
+    public JsonElement? Get(string key)
+    {
+        var setting = Settings.GetValueOrDefault(key);
+        if (setting is not null && setting.Value.IsNotNullOrEmpty()) return JsonSerializer.Deserialize<JsonElement>(setting.Value);
+        return null;
     }
 
     public List<Setting> GetAll()
@@ -91,7 +102,7 @@ public class SettingService(SettingRepository settingRepository)
         Settings[setting.Key] = setting;
     }
 
-    public async Task SaveAllAsync(Dictionary<string, JsonElement> dict)
+    public async Task SaveAllAsync(IdentityDto identity, Dictionary<string, JsonElement> dict)
     {
         var keys = dict.Keys;
         var settings = await settingRepository.Set().Where(x => keys.Contains(x.Key)).ToListAsync();
@@ -100,11 +111,12 @@ public class SettingService(SettingRepository settingRepository)
         foreach (var keyValue in dict)
         {
             var settingType = SettingTypes.GetValueOrDefault(keyValue.Key);
-            if(settingType is null) return;
-            
-            var settingDto = Activator.CreateInstance(settingType);
-            settingDto = settingDto.PatchObjectWithJson(keyValue.Value, settingType, settingType);
-            
+            if (settingType is null) throw new OperationException(FrameworkErrors.SettingKeyTypeNotFound);
+            var patch = AuthorizeSetPropertiesAsync(identity, keyValue.Key, keyValue.Value);
+
+            var settingDto = Activator.CreateInstance(settingType) as ISettingDto;
+            settingDto = settingDto.PatchObjectWithJson(patch, settingType, settingType) as ISettingDto;
+
             var setting = settings.FirstOrDefault(x => x.Key == keyValue.Key);
             if (setting is not null)
             {
@@ -115,10 +127,63 @@ public class SettingService(SettingRepository settingRepository)
             {
                 insertEntities.Add(setting = new Setting(keyValue.Key, settingDto));
             }
+
             Settings[keyValue.Key] = setting;
         }
 
         await settingRepository.BulkInsertAsync(insertEntities);
         await settingRepository.BulkUpdateAsync(updateEntities);
+    }
+
+    public JsonElement AuthorizeSetPropertiesAsync(IdentityDto identity, string key, JsonElement json)
+    {
+        var type = SettingTypes.GetValueOrDefault(key);
+        if (type is null) throw new OperationException(FrameworkErrors.SettingKeyTypeNotFound);
+        
+        var typeAuthSettingAttr = type.GetCustomAttribute<AuthSettingAttribute>();
+        var properties = type.GetProperties();
+
+        var jsonObject = JsonNode.Parse(json.GetRawText())!.AsObject();
+
+        foreach (var propertyInfo in properties)
+        {
+            if (json.TryGetPropertyIgnoreCase(propertyInfo.Name, out var jsonProperty))
+            {
+                var authAttr = propertyInfo.SetMethod?.GetCustomAttribute<AuthSettingAttribute>() ?? propertyInfo.GetCustomAttribute<AuthSettingAttribute>() ?? typeAuthSettingAttr;
+                if (authAttr is not null && authAttr.Access.IsNotNullOrEmpty())
+                {
+                    if (!identity.HasAccess(authAttr.Access))
+                        jsonObject.Remove(jsonProperty.Name);
+                }
+            }
+        }
+
+        return JsonSerializer.Deserialize<JsonElement>(jsonObject.ToJsonString());
+    }
+
+    public JsonElement AuthorizeGetPropertiesAsync(IdentityDto identity, string key, JsonElement json)
+    {
+        var type = SettingTypes.GetValueOrDefault(key);
+        if (type is null) throw new OperationException(FrameworkErrors.SettingKeyTypeNotFound);
+        
+        var typeAuthSettingAttr = type.GetCustomAttribute<AuthSettingAttribute>();
+        var properties = type.GetProperties();
+
+        var jsonObject = JsonNode.Parse(json.GetRawText())!.AsObject();
+
+        foreach (var propertyInfo in properties)
+        {
+            if (json.TryGetPropertyIgnoreCase(propertyInfo.Name, out var jsonProperty))
+            {
+                var authAttr = propertyInfo.GetMethod?.GetCustomAttribute<AuthSettingAttribute>() ?? propertyInfo.GetCustomAttribute<AuthSettingAttribute>() ?? typeAuthSettingAttr;
+                if (authAttr is not null && authAttr.Access.IsNotNullOrEmpty())
+                {
+                    if (!identity.HasAccess(authAttr.Access))
+                        jsonObject.Remove(jsonProperty.Name);
+                }
+            }
+        }
+
+        return JsonSerializer.Deserialize<JsonElement>(jsonObject.ToJsonString());
     }
 }

@@ -25,5 +25,7 @@ public enum FrameworkErrors
     FileTypeIsNotAllowed,
     InvalidIpAddress,
     JiraRequestIsInvalid,
-    ServiceResultNullOrEmpty
+    ServiceResultNullOrEmpty,
+    SettingNotFound,
+    SettingKeyTypeNotFound
 }

@@ -1,6 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Text.Json;
+using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Contracts.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dorbit.Framework.Entities;
@@ -21,18 +24,20 @@ public class Setting : Entity
     {
     }
 
-    public Setting(Enum key, object value) : this(key.ToString(), value)
+    public Setting(Enum key, ISettingDto value) : this(key.ToString(), value)
     {
     }
 
-    public Setting(string key, object value)
+    public Setting(string key, ISettingDto value)
     {
         Key = key;
         SetValue(value);
     }
 
-    public void SetValue(object value)
+    public void SetValue(ISettingDto value)
     {
+        var authAttr = value.GetType().GetCustomAttribute<AuthSettingAttribute>();
+        Access = authAttr?.Access;
         Value = JsonSerializer.Serialize(value, JsonSerializerOptions.Web);
     }
 
