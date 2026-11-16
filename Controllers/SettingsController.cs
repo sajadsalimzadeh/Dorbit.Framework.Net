@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Entities;
-using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Filters;
 using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi;
 
 namespace Dorbit.Framework.Controllers;
 
@@ -19,41 +15,37 @@ namespace Dorbit.Framework.Controllers;
 public class SettingsController(SettingService settingService) : BaseController
 {
     [HttpGet, Auth]
-    public QueryResult<Dictionary<string, object>> GetAll([FromQuery] List<string> keys)
+    public QueryResult<Dictionary<string, JsonElement?>> GetAll([FromQuery] List<string> keys)
     {
-        var settings = settingService.GetAll().Where(CanRead).ToList();
-        if (keys is { Count: > 0 }) settings = settings.Where(x => keys.Contains(x.Key)).ToList();
-        var result = new Dictionary<string, object>();
-        foreach (var setting in settings)
+        var result = new Dictionary<string, JsonElement?>();
+        foreach (var key in keys)
         {
-            result.Add(setting.Key.ToLower(), setting.GetValue<object>());
+            var setting = settingService.Get(key);
+            if(setting.HasValue)
+            {
+                settingService.ApplyAuthentication(key, setting.Value, Identity, false);
+            }
+            result.Add(key.ToLower(), setting);
         }
 
         return result.ToQueryResult();
     }
 
     [HttpGet("{key}"), Auth]
-    public QueryResult<JsonElement> Get(string key)
+    public QueryResult<JsonElement?> Get(string key)
     {
-        var jsonElement = settingService.Get(key);
-        if (jsonElement is null) throw new OperationException(FrameworkErrors.SettingNotFound);
-        // settingService.AuthorizeGetPropertiesAsync(Identity, key, jsonElement.Value);
-        return jsonElement.Value.ToQueryResult();
-    }
-
-    private bool CanRead(Setting setting)
-    {
-        if (setting.Access.IsNullOrEmpty())
-            return true;
-
-        var identity = Identity;
-        return identity is not null && (identity.IsFullAccess || identity.HasAccess(setting.Access));
+        return settingService.Get(key).ToQueryResult();
     }
 
     [HttpPost, Auth("Setting")]
     public async Task<CommandResult> SaveAsync([FromBody] Dictionary<string, JsonElement> dict)
     {
-        await settingService.SaveAllAsync(Identity, dict);
+        foreach (var key in dict.Keys)
+        {
+            dict[key] = settingService.ApplyAuthentication(key, dict[key.ToLower()], Identity, true);
+        }
+
+        await settingService.SaveAllAsync(dict);
         return Succeed();
     }
 }

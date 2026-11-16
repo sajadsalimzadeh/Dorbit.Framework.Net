@@ -29,7 +29,7 @@ public class SettingService(SettingRepository settingRepository)
         var allSettings = await settingRepository.Set().ToListAsync();
         foreach (var setting in allSettings)
         {
-            Settings[setting.Key] = setting;
+            Settings[setting.Key.ToLower()] = setting;
         }
 
         var settingDtoType = typeof(ISettingDto);
@@ -79,12 +79,6 @@ public class SettingService(SettingRepository settingRepository)
         return null;
     }
 
-    public List<Setting> GetAll()
-    {
-        return Settings.Values.ToList();
-    }
-
-
     public async Task SetAsync<T>(T value) where T : class, ISettingDto
     {
         Validate(value);
@@ -104,7 +98,7 @@ public class SettingService(SettingRepository settingRepository)
         Settings[setting.Key] = setting;
     }
 
-    public async Task SaveAllAsync(IdentityDto identity, Dictionary<string, JsonElement> dict)
+    public async Task SaveAllAsync(Dictionary<string, JsonElement> dict)
     {
         var keys = dict.Keys;
         var settings = await settingRepository.Set().Where(x => keys.Contains(x.Key)).ToListAsync();
@@ -113,12 +107,13 @@ public class SettingService(SettingRepository settingRepository)
         foreach (var keyValue in dict)
         {
             var settingType = SettingTypes.GetValueOrDefault(keyValue.Key);
-            if(settingType is null) return;
-            
+            if (settingType is null) return;
+            var json = Get(keyValue.Key);
             var settingDto = Activator.CreateInstance(settingType);
+            if(json.HasValue) settingDto.PatchObjectWithJson(json.Value, settingType, settingType);
             settingDto = settingDto.PatchObjectWithJson(keyValue.Value, settingType, settingType);
             Validate(settingDto);
-            
+
             var setting = settings.FirstOrDefault(x => x.Key == keyValue.Key);
             if (setting is not null)
             {
@@ -143,5 +138,43 @@ public class SettingService(SettingRepository settingRepository)
         var error = new ModelValidationException();
         validator.Validate(error);
         error.ThrowIfHasError();
+    }
+
+    public JsonElement ApplyAuthentication(string key, JsonElement value, IdentityDto identity, bool isCheckSetMethod)
+    {
+        var type = SettingTypes.GetValueOrDefault(key.ToLower());
+        if (type is null) return JsonSerializer.Deserialize<JsonElement>("{}");
+
+        var jsonObject = JsonSerializer.Deserialize<JsonObject>(value.ToString());
+        var properties = type.GetProperties();
+
+        var typeAttr = type.GetCustomAttribute<AuthSettingAttribute>();
+        if (typeAttr is not null)
+        {
+            foreach (var jsonProperty in value.EnumerateObject())
+            {
+                var propertyInfo = properties.FirstOrDefault(x => string.Equals(x.Name, jsonProperty.Name, StringComparison.OrdinalIgnoreCase));
+                if (propertyInfo is not null)
+                {
+                    var propertyAccess = propertyInfo.GetCustomAttribute<AuthSettingAttribute>()?.Access ?? typeAttr.Access + "-" + propertyInfo.Name;
+                    if (isCheckSetMethod)
+                    {
+                        var setAccess = propertyInfo.SetMethod?.GetCustomAttribute<AuthSettingAttribute>()?.Access ?? propertyAccess;
+                        if (!identity.HasAccess(setAccess)) jsonObject.Remove(jsonProperty.Name);
+                    }
+                    else
+                    {
+                        var getAccess = propertyInfo.GetMethod?.GetCustomAttribute<AuthSettingAttribute>()?.Access ?? propertyAccess;
+                        if (!identity.HasAccess(getAccess)) jsonObject.Remove(jsonProperty.Name);
+                    }
+                }
+                else
+                {
+                    jsonObject.Remove(jsonProperty.Name);
+                }
+            }
+        }
+
+        return JsonSerializer.Deserialize<JsonElement>(jsonObject.ToString());
     }
 }

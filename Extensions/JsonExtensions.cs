@@ -24,9 +24,7 @@ public static class JsonExtensions
         {
             foreach (var property in element.EnumerateObject())
             {
-                if (property.Name.Equals(
-                        propertyName,
-                        StringComparison.OrdinalIgnoreCase))
+                if (property.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase))
                 {
                     jsonProperty = property;
                     return true;
