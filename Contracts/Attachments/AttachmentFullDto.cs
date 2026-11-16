@@ -1,4 +1,4 @@
-namespace Dorbit.Framework.Contracts;
+namespace Dorbit.Framework.Contracts.Attachments;
 
 public class AttachmentFullDto : AttachmentDto
 {

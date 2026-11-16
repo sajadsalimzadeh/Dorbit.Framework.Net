@@ -32,6 +32,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
+using OpenTelemetry.Metrics;
 using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Swashbuckle.AspNetCore.SwaggerUI;
@@ -132,10 +133,7 @@ public static class FrameworkInstaller
             configs.Namespaces.Add("Dorbit");
         }
 
-        services.Configure<ForwardedHeadersOptions>(options =>
-        {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-        });
+        services.Configure<ForwardedHeadersOptions>(options => { options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto; });
 
         services.AddCors(options =>
         {
@@ -180,10 +178,25 @@ public static class FrameworkInstaller
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
             });
 
-        // if (EnvironmentUtil.IsDevelopment())
-        // {
-        //     services.AddControllers().AddRazorRuntimeCompilation();
-        // }
+        services.AddOpenTelemetry()
+            .WithMetrics(metrics =>
+            {
+                metrics.AddMeter(
+                    "Microsoft.AspNetCore.Hosting",
+                    "Microsoft.AspNetCore.Routing",
+                    "Microsoft.AspNetCore.Server.Kestrel",
+                    "Microsoft.AspNetCore.Diagnostics",
+                    "Microsoft.AspNetCore.RateLimiting",
+                    "System.Runtime",
+                    "System.Net.Http",
+                    "System.Net.NameResolution",
+                    "Microsoft.EntityFrameworkCore",
+                    "Microsoft.AspNetCore.Authentication",
+                    "Microsoft.AspNetCore.Authorization"
+                );
+
+                metrics.AddOtlpExporter();
+            });
 
         var frameworkDbContextConfiguration =
             configs.DbContextConfiguration ?? (builder => builder.UseInMemoryDatabase("Framework"));
@@ -285,19 +298,12 @@ public static class FrameworkInstaller
         public IConfig<ConfigOpenAi> ConfigOpenAi { get; set; } = configuration.GetConfig<ConfigOpenAi>("OpenAi");
         public IConfig<ConfigWebPush> ConfigWebPush { get; set; } = configuration.GetConfig<ConfigWebPush>("WebPush");
         public IConfig<ConfigJira> ConfigJira { get; set; } = configuration.GetConfig<ConfigJira>("Jira");
-
-        public IConfig<ConfigIpFilter> ConfigIpFilter { get; set; } =
-            configuration.GetConfig<ConfigIpFilter>("IpFilter");
-
-        public IConfig<ConfigIdentity> ConfigIdentity { get; init; } =
-            configuration.GetConfig<ConfigIdentity>("Identity");
-
-        public IConfig<ConfigTranslation> ConfigTranslation { get; init; } =
-            configuration.GetConfig<ConfigTranslation>("Translation");
-
-        public IConfig<ConfigOpenWeather> ConfigOpenWeather { get; init; } =
-            configuration.GetConfig<ConfigOpenWeather>("OpenWeather");
-
+        public IConfig<ConfigIpFilter> ConfigIpFilter { get; set; } = configuration.GetConfig<ConfigIpFilter>("IpFilter");
+        public IConfig<ConfigIdentity> ConfigIdentity { get; init; } = configuration.GetConfig<ConfigIdentity>("Identity");
+        public IConfig<ConfigTranslation> ConfigTranslation { get; init; } = configuration.GetConfig<ConfigTranslation>("Translation");
+        public IConfig<ConfigOpenWeather> ConfigOpenWeather { get; init; } = configuration.GetConfig<ConfigOpenWeather>("OpenWeather");
+        public IConfig<ConfigOpenTelemetry> ConfigOpenTelemetry { get; set; } = configuration.GetConfig<ConfigOpenTelemetry>("OpenTelemetry");
+        
         public List<ConfigSwaggerDoc> SwaggerConfigs { get; set; } = new();
 
         public Action<DbContextOptionsBuilder> DbContextConfiguration { get; init; }

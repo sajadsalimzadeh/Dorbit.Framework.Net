@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Dorbit.Framework.Contracts;
+using Dorbit.Framework.Contracts.Attachments;
 using Dorbit.Framework.Contracts.Jobs;
 using Dorbit.Framework.Contracts.Settings;
 using Dorbit.Framework.Entities;

@@ -1,6 +1,7 @@
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Dorbit.Framework.Contracts;
+namespace Dorbit.Framework.Contracts.Attachments;
 
 [NotMapped]
 public class AttachmentDto
@@ -9,4 +10,5 @@ public class AttachmentDto
     public string Description { get; set; }
     public string Filename { get; set; }
     public long Size { get; set; }
+    public DateTime CreationTime { get; set; }
 }
