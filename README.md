@@ -17,3 +17,13 @@ dotnet run --project Tests/ShutdownRegression/ShutdownRegression.csproj
 ```
 
 It checks worker task tracking, idle and active interval cancellation, asynchronous scope disposal, queued/manual job shutdown, the shutdown wait budget, HTTP body cancellation/disposal, and host ownership of static DI resources. It uses fake HTTP handlers and disposable local hosts; it does not start a real application, migrate databases, access hardware, or contact external services.
+
+## OpenAI service
+
+`OpenAiService` retains `SetApiKey`, `ChatAsync(string, string)` and `ChatAsync<T>(string, string)`, including the short-answer system prompt and generic JSON extraction. `CompleteAsync(OpenAiChatCompletionRequest, CancellationToken)` accepts caller-supplied messages without adding that prompt, with optional storage, completion-token and response-format settings. Omitted settings are absent from the request. `EmbedAsync(string[], string, CancellationToken)` returns raw embedding vectors in input order and rejects incomplete or invalid responses. Callers can normalize vectors for their own retrieval strategy.
+
+All requests share API-key and proxy handling and honor `ConfigOpenAi.ApiUrl`, falling back to `https://api.openai.com/v1`. Previously the legacy chat methods used the default URL unconditionally; a configured API URL now applies to them too. Cancellation passes through `HttpHelper`. Applications should use this service rather than duplicate provider HTTP calls.
+
+## Runtime settings
+
+`SettingService` stores feature DTOs implementing `ISettingDto` in the existing Settings table. DTOs can optionally implement `IValidate`; `SetAsync` and `SaveAllAsync` run that validation before writing. Bulk settings saves use ordinary repository insert/update methods in one transaction and publish the in-process cache only after commit. Existing DTOs without validation retain their behavior. The cache is process-local; changes are not broadcast to other API instances.

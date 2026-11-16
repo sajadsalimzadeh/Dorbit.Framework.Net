@@ -14,27 +14,16 @@ namespace Dorbit.Framework.Controllers;
 [Route("[controller]"), ApiController]
 public abstract class BaseController : ControllerBase
 {
-    private IServiceProvider _serviceProvider;
-    protected IServiceProvider ServiceProvider => _serviceProvider ??= HttpContext.RequestServices;
-
-    private IUserResolver _userResolver;
-    protected IUserResolver UserResolver => _userResolver ??= ServiceProvider.GetRequiredService<IUserResolver>();
-
-    private IIdentityService _identityService;
-    protected IIdentityService IdentityService => _identityService ??= ServiceProvider.GetRequiredService<IIdentityService>();
-    
+    protected IServiceProvider ServiceProvider => field ??= HttpContext.RequestServices;
+    protected IUserResolver UserResolver => field ??= ServiceProvider.GetRequiredService<IUserResolver>();
+    protected IIdentityService IdentityService => field ??= ServiceProvider.GetRequiredService<IIdentityService>();
     protected IdentityDto Identity => IdentityService.Identity;
-    
-    private ILogger _logger;
-    protected ILogger Logger => _logger ??= ServiceProvider.GetRequiredService<ILogger>();
-    
-    private IMemoryCache _memoryCache;
-    protected IMemoryCache MemoryCache => _memoryCache ??= ServiceProvider.GetRequiredService<IMemoryCache>();
-
-    protected IMapper Mapper => ServiceProvider.GetService<IMapper>();
+    protected ILogger Logger => field ??= ServiceProvider.GetRequiredService<ILogger>();
+    protected IMemoryCache MemoryCache => field ??= ServiceProvider.GetRequiredService<IMemoryCache>();
+    protected IMapper Mapper => field ??= ServiceProvider.GetService<IMapper>();
+    protected QueryOptions QueryOptions => field ??= ODataQueryOptions.Parse(Request);
 
     protected Guid GetUserId() => UserResolver.User?.GetId() ?? throw new UnauthorizedAccessException();
-    protected QueryOptions QueryOptions => ODataQueryOptions.Parse(Request);
 
     protected CommandResult Succeed()
     {

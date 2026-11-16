@@ -5,10 +5,12 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Dorbit.Framework.Contracts.Results;
 using Dorbit.Framework.Entities;
+using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Filters;
 using Dorbit.Framework.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi;
 
 namespace Dorbit.Framework.Controllers;
 
@@ -16,7 +18,7 @@ namespace Dorbit.Framework.Controllers;
 [Route("Framework/[controller]")]
 public class SettingsController(SettingService settingService) : BaseController
 {
-    [HttpGet, Auth("Setting")]
+    [HttpGet, Auth]
     public QueryResult<Dictionary<string, object>> GetAll([FromQuery] List<string> keys)
     {
         var settings = settingService.GetAll().Where(CanRead).ToList();
@@ -30,17 +32,13 @@ public class SettingsController(SettingService settingService) : BaseController
         return result.ToQueryResult();
     }
 
-    [HttpGet("{key}"), Auth("Setting")]
-    public QueryResult<object> Get(string key)
+    [HttpGet("{key}"), Auth]
+    public QueryResult<JsonElement> Get(string key)
     {
-        var setting = settingService.GetAll()
-            .FirstOrDefault(x => string.Equals(x.Key, key, StringComparison.OrdinalIgnoreCase));
-        if (setting is null)
-            return default(object).ToQueryResult();
-        if (!CanRead(setting))
-            throw new UnauthorizedAccessException();
-
-        return setting.GetValue<object>().ToQueryResult();
+        var jsonElement = settingService.Get(key);
+        if (jsonElement is null) throw new OperationException(FrameworkErrors.SettingNotFound);
+        // settingService.AuthorizeGetPropertiesAsync(Identity, key, jsonElement.Value);
+        return jsonElement.Value.ToQueryResult();
     }
 
     private bool CanRead(Setting setting)
@@ -55,7 +53,7 @@ public class SettingsController(SettingService settingService) : BaseController
     [HttpPost, Auth("Setting")]
     public async Task<CommandResult> SaveAsync([FromBody] Dictionary<string, JsonElement> dict)
     {
-        await settingService.SaveAllAsync(dict);
+        await settingService.SaveAllAsync(Identity, dict);
         return Succeed();
     }
 }

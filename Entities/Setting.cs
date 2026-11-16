@@ -1,6 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using System.Text.Json;
+using Dorbit.Framework.Attributes;
+using Dorbit.Framework.Contracts.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dorbit.Framework.Entities;
@@ -33,6 +36,8 @@ public class Setting : Entity
 
     public void SetValue(object value)
     {
+        var authAttr = value.GetType().GetCustomAttribute<AuthSettingAttribute>();
+        Access = authAttr?.Access;
         Value = JsonSerializer.Serialize(value, JsonSerializerOptions.Web);
     }
 

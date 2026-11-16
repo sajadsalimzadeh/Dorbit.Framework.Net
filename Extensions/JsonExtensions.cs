@@ -18,6 +18,25 @@ public static class JsonExtensions
         return false;
     }
 
+    public static bool TryGetPropertyIgnoreCase(this JsonElement element, string propertyName, out JsonProperty jsonProperty)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (property.Name.Equals(
+                        propertyName,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    jsonProperty = property;
+                    return true;
+                }
+            }
+        }
+
+        jsonProperty = default;
+        return false;
+    }
 
     public static object ToObject(this JsonValue value)
     {

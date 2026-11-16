@@ -2,11 +2,16 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Contracts.Abstractions;
+using Dorbit.Framework.Contracts.Identities;
 using Dorbit.Framework.Entities;
+using Dorbit.Framework.Entities.Abstractions;
+using Dorbit.Framework.Exceptions;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -47,7 +52,7 @@ public class SettingService(SettingRepository settingRepository)
         return Get(instance.GetKey(), defaultValue ?? instance);
     }
 
-    public T Get<T>(string key, T defaultValue = default)
+    public T Get<T>(string key, T defaultValue) where T : class, ISettingDto
     {
         var setting = Settings.GetValueOrDefault(key);
         if (setting is not null) return setting.GetValue(defaultValue);
@@ -67,6 +72,13 @@ public class SettingService(SettingRepository settingRepository)
         return setting.GetValue(defaultValue);
     }
 
+    public JsonElement? Get(string key)
+    {
+        var setting = Settings.GetValueOrDefault(key);
+        if (setting is not null && setting.Value.IsNotNullOrEmpty()) return JsonSerializer.Deserialize<JsonElement>(setting.Value);
+        return null;
+    }
+
     public List<Setting> GetAll()
     {
         return Settings.Values.ToList();
@@ -75,6 +87,7 @@ public class SettingService(SettingRepository settingRepository)
 
     public async Task SetAsync<T>(T value) where T : class, ISettingDto
     {
+        Validate(value);
         var key = value.GetKey();
         var setting = await settingRepository.Set().FirstOrDefaultAsync(x => x.Key == key);
         if (setting is null)
@@ -91,7 +104,7 @@ public class SettingService(SettingRepository settingRepository)
         Settings[setting.Key] = setting;
     }
 
-    public async Task SaveAllAsync(Dictionary<string, JsonElement> dict)
+    public async Task SaveAllAsync(IdentityDto identity, Dictionary<string, JsonElement> dict)
     {
         var keys = dict.Keys;
         var settings = await settingRepository.Set().Where(x => keys.Contains(x.Key)).ToListAsync();
@@ -104,6 +117,7 @@ public class SettingService(SettingRepository settingRepository)
             
             var settingDto = Activator.CreateInstance(settingType);
             settingDto = settingDto.PatchObjectWithJson(keyValue.Value, settingType, settingType);
+            Validate(settingDto);
             
             var setting = settings.FirstOrDefault(x => x.Key == keyValue.Key);
             if (setting is not null)
@@ -115,10 +129,19 @@ public class SettingService(SettingRepository settingRepository)
             {
                 insertEntities.Add(setting = new Setting(keyValue.Key, settingDto));
             }
+
             Settings[keyValue.Key] = setting;
         }
 
         await settingRepository.BulkInsertAsync(insertEntities);
         await settingRepository.BulkUpdateAsync(updateEntities);
+    }
+
+    private static void Validate(object value)
+    {
+        if (value is not IValidate validator) return;
+        var error = new ModelValidationException();
+        validator.Validate(error);
+        error.ThrowIfHasError();
     }
 }
