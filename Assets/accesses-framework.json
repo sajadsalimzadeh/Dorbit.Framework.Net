@@ -7,6 +7,12 @@
         "Children": [
           {
             "Name": "File-Bulk"
+          },
+          {
+            "Name": "File-View"
+          },
+          {
+            "Name": "File-Save"
           }
         ]
       },
@@ -18,7 +24,24 @@
       },
       {
         "Name": "System-MemoryCache"
+      },
+      {
+        "Name": "Message",
+        "Children": [
+          {
+            "Name": "Message-Sms"
+          },
+          {
+            "Name": "Message-Email"
+          },
+          {
+            "Name": "Message-Notification"
+          }
+        ]
       }
     ]
+  },
+  {
+    "Name": "Developer"
   }
 ]
