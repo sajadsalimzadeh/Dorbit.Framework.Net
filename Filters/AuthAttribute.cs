@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Security.Authentication;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Dorbit.Framework.Attributes;
 using Dorbit.Framework.Controllers;
 using Dorbit.Framework.Extensions;
 using Dorbit.Framework.Services.Abstractions;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +21,19 @@ namespace Dorbit.Framework.Filters;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFilter
 {
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> _userLocks = new();
+    
     public string[] Accesses { get; set; } = accesses;
     public bool IsOptional { get; set; }
+    public int MaxConcurrencyRequest { get; set; }
+    public UserConcurrencyLevel ConcurrencyLevel { get; set; }
+
+    public enum UserConcurrencyLevel
+    {
+        Application = 0,
+        Controller = 1,
+        Action = 2
+    }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
@@ -65,6 +80,7 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
             accesses = accesses.Select(x => authPrefixAttribute.Prefix + "-" + x).ToArray();
         }
 
+        var userId = Guid.NewGuid();
         try
         {
             var identityRequest = context.HttpContext.GetIdentityRequest();
@@ -75,13 +91,14 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
             
             if (identity is null)
                 throw new AuthenticationException();
+
+            userId = identity.User.GetId();
             
-            if (accesses is not null && accesses.Length > 0 && !identity.IsFullAccess && !accesses.Any(x => identity.HasAccess(x)))
+            if (accesses is not null && accesses.Length > 0 && !identity.IsFullAccess && !accesses.Any(identity.HasAccess))
                 throw new UnauthorizedAccessException();
 
-            for (var i = 0; i < context.ActionDescriptor.Parameters.Count; i++)
+            foreach (var parameter in context.ActionDescriptor.Parameters)
             {
-                var parameter = context.ActionDescriptor.Parameters[i];
                 var fromClaimAttribute = parameter.ParameterType.GetCustomAttribute<FromClaimAttribute>();
                 if (fromClaimAttribute is null) continue;
 
@@ -115,6 +132,29 @@ public class AuthAttribute(params string[] accesses) : Attribute, IAsyncActionFi
             }
         }
 
-        await next.Invoke();
+        if (MaxConcurrencyRequest > 0)
+        {
+            var key = ConcurrencyLevel switch
+            {
+                UserConcurrencyLevel.Application => $"{userId}",
+                UserConcurrencyLevel.Controller => $"{actionDescriptor.ControllerName}-{userId}",
+                UserConcurrencyLevel.Action => $"{actionDescriptor.ControllerName}-{actionDescriptor.ActionName}-{userId}",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            var semaphore = _userLocks.GetOrAdd(key, new SemaphoreSlim(MaxConcurrencyRequest, MaxConcurrencyRequest));
+            try
+            {
+                await semaphore.WaitAsync();
+                await next.Invoke();
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+        else
+        {
+            await next.Invoke();
+        }
     }
 }
